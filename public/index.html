@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CartoLMM - Large Magnum Master | Del Terruño al Ciberespacio</title>
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="components.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Socket.io for realtime -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Wine-Tech Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'>🍷</svg>">
+</head>
+<body>
+    <div id="cartolmm-app">
+        <!-- Header -->
+        <header class="cartolmm-header">
+            <div class="header-left">
+                <h1>🍷 CartoLMM</h1>
+                <span class="subtitle">Del Terruño al Ciberespacio</span>
+            </div>
+            <div class="header-controls">
+                <button id="toggle-layers" class="control-btn">📋 Capas</button>
+                <button id="toggle-3d" class="control-btn">🔄 Vista</button>
+                <button id="search-btn" class="control-btn">🔍 Buscar</button>
+                <button id="settings-btn" class="control-btn">⚙️</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="cartolmm-main">
+            <!-- Map Container -->
+            <div class="map-container">
+                <div id="map" class="leaflet-map"></div>
+            </div>
+
+            <!-- Sidebar Panel -->
+            <aside class="sidebar-panel">
+                <!-- Blockchain Metrics -->
+                <section class="metrics-section">
+                    <h3>📊 Red Blockchain</h3>
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <span class="metric-value" id="total-blocks">-</span>
+                            <span class="metric-label">Bloques</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="active-nodes">-</span>
+                            <span class="metric-label">Nodos</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="transactions-per-hour">-</span>
+                            <span class="metric-label">TX/h</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bodegas Metrics -->
+                <section class="metrics-section">
+                    <h3>🍇 Bodegas Conectadas</h3>
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <span class="metric-value" id="total-bodegas">-</span>
+                            <span class="metric-label">Total</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="stock-custodiado">-</span>
+                            <span class="metric-label">Stock</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="regiones-activas">-</span>
+                            <span class="metric-label">Regiones</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bitcoin Treasury -->
+                <section class="metrics-section">
+                    <h3>₿ Bitcoin Treasury</h3>
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <span class="metric-value" id="btc-acumulado">-</span>
+                            <span class="metric-label">BTC</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="valor-eur">-</span>
+                            <span class="metric-label">EUR</span>
+                        </div>
+                        <div class="metric-card bitcoin-change">
+                            <span class="metric-value" id="btc-change">-</span>
+                            <span class="metric-label">24h</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent Activity -->
+                <section class="activity-section">
+                    <h3>⚡ Actividad Reciente</h3>
+                    <div id="recent-activities" class="activity-feed">
+                        <!-- Activities will be populated by JavaScript -->
+                    </div>
+                </section>
+            </aside>
+        </main>
+
+        <!-- Bottom Timeline Control -->
+        <footer class="timeline-control">
+            <div class="timeline-container">
+                <button id="play-pause" class="timeline-btn">⏯️</button>
+                <input type="range" id="timeline-slider" min="0" max="100" value="100" class="timeline-slider">
+                <span id="timeline-time" class="timeline-time">Tiempo Real</span>
+            </div>
+            <div class="timeline-filters">
+                <select id="region-filter" class="filter-select">
+                    <option value="">Todas las Regiones</option>
+                    <option value="ribera">Ribera del Duero</option>
+                    <option value="rioja">La Rioja</option>
+                    <option value="priorat">Priorat</option>
+                </select>
+                <select id="wine-type-filter" class="filter-select">
+                    <option value="">Todos los Vinos</option>
+                    <option value="tinto">Tinto</option>
+                    <option value="blanco">Blanco</option>
+                    <option value="rosado">Rosado</option>
+                </select>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Bodega Detail Modal -->
+    <div id="bodega-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-bodega-name">Bodega</h2>
+                <button id="modal-close" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="bodega-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Región:</strong>
+                            <span id="modal-region">-</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Stock Custodiado:</strong>
+                            <span id="modal-stock">-</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Estado Nodo:</strong>
+                            <span id="modal-node-status">-</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Última Actividad:</strong>
+                            <span id="modal-last-activity">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-transactions">
+                    <h3>Transacciones Recientes</h3>
+                    <div id="modal-transactions" class="transaction-list">
+                        <!-- Transactions will be populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Servicios CartoLMM -->
+    <script src="../src/services/blockchainService.js"></script>
+    <script src="../src/services/mapService.js"></script>
+    <script src="../src/services/dashboardService.js"></script>
+    
+    <!-- Main App -->
+    <script src="../src/main.js"></script>
+    
+    <!-- Loader inicial -->
+    <div class="loader" style="display: flex;">
+        <div>Iniciando CartoLMM...</div>
+    </div>
+</body>
+</html>
+    <script src="../src/components/dashboard.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
