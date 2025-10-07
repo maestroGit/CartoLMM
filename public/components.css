@@ -427,12 +427,439 @@ kbd {
     font-family: monospace;
 }
 
+/* WebSocket & Real-time Elements */
+.connection-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.connection-status.pulse {
+    animation: pulse-glow 1.5s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* Welcome Message */
+.welcome-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #8B0000, #A52A2A);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 2000;
+    max-width: 500px;
+    animation: welcome-enter 0.5s ease;
+}
+
+.welcome-message.fade-out {
+    animation: welcome-exit 3s ease forwards;
+}
+
+@keyframes welcome-enter {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes welcome-exit {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+.welcome-content h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+}
+
+.welcome-content ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.welcome-content li {
+    margin: 5px 0;
+}
+
+/* Notifications */
+.notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    padding: 15px;
+    margin-bottom: 10px;
+    max-width: 350px;
+    z-index: 1500;
+    animation: notification-enter 0.3s ease;
+    border-left: 4px solid #2196F3;
+}
+
+.notification.fade-out {
+    animation: notification-exit 0.3s ease forwards;
+}
+
+.notification-success { border-left-color: #4CAF50; }
+.notification-info { border-left-color: #2196F3; }
+.notification-network { border-left-color: #FF9800; }
+.notification-error { border-left-color: #F44336; }
+
+@keyframes notification-enter {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes notification-exit {
+    to { opacity: 0; transform: translateX(100%); }
+}
+
+.notification-content {
+    margin-right: 30px;
+}
+
+.notification-content strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.notification-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.notification-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-close:hover {
+    color: #666;
+}
+
+/* Metrics Display */
+.metrics-display {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    max-width: 400px;
+    z-index: 1000;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #f8f9ff, #e8eaff);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(139,0,0,0.1);
+}
+
+.metric-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #8B0000;
+}
+
+.metric-card p {
+    margin: 3px 0;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Counters */
+.counter {
+    font-weight: bold;
+    color: #8B0000;
+    transition: all 0.3s ease;
+}
+
+.counter.updated {
+    animation: counter-flash 0.5s ease;
+}
+
+@keyframes counter-flash {
+    0%, 100% { color: #8B0000; }
+    50% { color: #FF4444; }
+}
+
+.last-block-info {
+    background: linear-gradient(135deg, #f0f8ff, #e6f3ff);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(139,0,0,0.2);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.last-block-info strong {
+    color: #8B0000;
+}
+
+.last-block-info small {
+    color: #666;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Real-time Markers */
+.realtime-marker .marker-pulse {
+    animation: realtime-pulse 2s infinite;
+}
+
+.transaction-marker .marker-pulse {
+    background: rgba(255, 215, 0, 0.4);
+}
+
+.block-marker .block-pulse {
+    background: rgba(50, 205, 50, 0.4);
+    animation: block-pulse 3s infinite;
+}
+
+@keyframes realtime-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+@keyframes block-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.transaction-popup, .block-popup {
+    min-width: 250px;
+}
+
+.transaction-popup h4, .block-popup h4 {
+    margin: 0 0 10px 0;
+    color: #8B0000;
+}
+
+.transaction-popup p, .block-popup p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.transaction-popup strong, .block-popup strong {
+    color: #333;
+}
+
+/* Marcadores de Bodegas JSON */
+.genesis-node .marker-icon {
+    background: #10B981 !important;
+    border: 2px solid #ffffff;
+    font-size: 18px;
+}
+
+.winery-node .marker-icon {
+    border: 2px solid #ffffff;
+    font-size: 16px;
+}
+
+.bodega-popup {
+    min-width: 300px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.bodega-popup h3 {
+    margin: 0 0 15px 0;
+    color: #8B0000;
+    border-bottom: 2px solid #8B0000;
+    padding-bottom: 8px;
+}
+
+.bodega-info p, .inventory-info p, .genesis-info p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.genesis-info {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.genesis-info h4 {
+    margin: 0 0 8px 0;
+    color: white;
+}
+
+.inventory-info {
+    background: linear-gradient(135deg, #f8f9ff, #e8eaff);
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 4px solid #8B0000;
+}
+
+.inventory-info h4 {
+    margin: 0 0 8px 0;
+    color: #8B0000;
+}
+
+.wines-info {
+    background: linear-gradient(135deg, #fff8f0, #ffedd5);
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 4px solid #D97706;
+}
+
+.wines-info h4 {
+    margin: 0 0 8px 0;
+    color: #D97706;
+}
+
+.wine-item {
+    margin: 5px 0;
+    padding: 5px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.wine-item strong {
+    color: #8B0000;
+}
+
+.wine-item small {
+    color: #666;
+    display: block;
+}
+
+.status.active {
+    color: #10B981;
+    font-weight: bold;
+}
+
+.status.inactive {
+    color: #EF4444;
+    font-weight: bold;
+}
+
+/* Activity Feed */
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #f8f9ff, #e8eaff);
+    border-radius: 8px;
+    border-left: 3px solid #8B0000;
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.activity-icon {
+    font-size: 20px;
+    margin-right: 12px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-content strong {
+    display: block;
+    color: #8B0000;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.activity-content p {
+    margin: 0 0 4px 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.activity-content small {
+    font-size: 11px;
+    color: #999;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .notification {
         right: 10px;
         left: 10px;
         max-width: none;
+    }
+    
+    .welcome-message {
+        margin: 20px;
+        max-width: none;
+        left: 20px;
+        right: 20px;
+        transform: translateY(-50%);
+    }
+    
+    .metrics-display {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
     }
     
     .error-content {

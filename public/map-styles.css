@@ -78,40 +78,6 @@
     100% { opacity: 1; }
 }
 
-/* Estadísticas en Tiempo Real */
-.stats-overlay {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    min-width: 200px;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.stat-item:last-child {
-    margin-bottom: 0;
-}
-
-.stat-label {
-    color: #ccc;
-}
-
-.stat-value {
-    color: #FFD700;
-    font-weight: bold;
-}
-
 /* Control de Timeline */
 .timeline-overlay {
     position: absolute;
@@ -153,10 +119,12 @@
     border-radius: 3px;
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 .timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
+    appearance: none;
     width: 20px;
     height: 20px;
     background: #FFD700;
@@ -429,10 +397,6 @@
 }
 
 @media (max-width: 480px) {
-    .stats-overlay .stat-item {
-        font-size: 12px;
-    }
-    
     .timeline-btn {
         width: 35px;
         height: 35px;

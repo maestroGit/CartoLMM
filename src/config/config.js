@@ -20,7 +20,7 @@ export const config = {
     
     // Datos mock
     enableMockData: process.env.ENABLE_MOCK_DATA !== 'false',
-    mockDataInterval: parseInt(process.env.MOCK_INTERVAL) || 30000,
+    mockDataInterval: parseInt(process.env.MOCK_INTERVAL) || 5000, // Reduced to 5 seconds for testing
     
     // Paths
     publicPath: 'public',

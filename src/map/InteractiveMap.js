@@ -251,9 +251,42 @@ class CartoLMMMap {
     }
 
     /**
-     * 🍇 Cargar datos de bodegas españolas
+     * 🍇 Cargar datos de bodegas españolas desde archivo JSON
      */
-    loadBodegasData() {
+    async loadBodegasData() {
+        try {
+            console.log('🍇 Cargando datos de bodegas desde JSON...');
+            
+            // Cargar datos del archivo JSON completo
+            const response = await fetch('../src/data/bodegas.json');
+            
+            if (!response.ok) {
+                throw new Error(`Error cargando bodegas: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const bodegas = data.bodegas;
+            
+            console.log(`✅ Cargadas ${bodegas.length} bodegas desde JSON`);
+            
+            // Crear marcadores para cada bodega
+            bodegas.forEach((bodega, index) => {
+                this.createBodegaMarker(bodega, index);
+            });
+            
+        } catch (error) {
+            console.error('❌ Error cargando datos de bodegas:', error);
+            console.log('🔄 Usando datos de fallback...');
+            
+            // Fallback: usar datos hardcodeados básicos
+            this.loadFallbackBodegasData();
+        }
+    }
+    
+    /**
+     * 🔄 Datos de fallback si no se puede cargar el JSON
+     */
+    loadFallbackBodegasData() {
         const bodegas = [
             {
                 id: 'bodega-1',
@@ -303,6 +336,112 @@ class CartoLMMMap {
         ];
 
         this.renderBodegas(bodegas);
+    }
+    
+    /**
+     * 🍷 Crear marcador individual para bodega (desde JSON completo)
+     */
+    createBodegaMarker(bodega, index) {
+        try {
+            const lat = bodega.location.lat;
+            const lng = bodega.location.lng;
+            
+            // Determinar icono y color según el tipo
+            const icon = bodega.visual?.icon || '🍷';
+            const color = bodega.visual?.color || '#722F37';
+            const isGenesis = bodega.blockchain?.isGenesis || false;
+            
+            // Crear icono personalizado
+            const bodegaIcon = L.divIcon({
+                className: `bodega-marker ${isGenesis ? 'genesis-node' : 'winery-node'}`,
+                html: `
+                    <div class="marker-container">
+                        <div class="marker-pulse" style="background: ${color}40;"></div>
+                        <div class="marker-icon" style="background: ${color};">
+                            ${icon}
+                        </div>
+                    </div>
+                `,
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            });
+
+            // Crear marcador
+            const marker = L.marker([lat, lng], {
+                icon: bodegaIcon
+            });
+
+            // Popup con información completa
+            const popupContent = this.generateBodegaPopup(bodega);
+            marker.bindPopup(popupContent);
+            
+            // Añadir al mapa y arrays
+            marker.addTo(this.map);
+            this.markers.bodegas.push(marker);
+            
+            console.log(`✅ Marcador creado: ${bodega.name} (${lat}, ${lng})`);
+            
+        } catch (error) {
+            console.error(`❌ Error creando marcador para bodega ${bodega.name}:`, error);
+        }
+    }
+    
+    /**
+     * 📋 Generar contenido del popup para bodega
+     */
+    generateBodegaPopup(bodega) {
+        const isGenesis = bodega.blockchain?.isGenesis || false;
+        const wines = bodega.wines || [];
+        const inventory = bodega.inventory || {};
+        
+        return `
+            <div class="bodega-popup">
+                <h3>${bodega.visual?.icon || '🍷'} ${bodega.name}</h3>
+                
+                <div class="bodega-info">
+                    <p><strong>📍 Región:</strong> ${bodega.region}</p>
+                    <p><strong>🏷️ D.O.:</strong> ${bodega.denomination}</p>
+                    ${bodega.contact?.terroir ? `<p><strong>🌱 Terroir:</strong> ${bodega.contact.terroir}</p>` : ''}
+                    ${bodega.contact?.establecido ? `<p><strong>📅 Establecido:</strong> ${bodega.contact.establecido}</p>` : ''}
+                </div>
+                
+                ${isGenesis ? `
+                    <div class="genesis-info">
+                        <h4>⛓️ Nodo Génesis</h4>
+                        <p><strong>Puerto HTTP:</strong> ${bodega.blockchain.httpPort}</p>
+                        <p><strong>Puerto P2P:</strong> ${bodega.blockchain.p2pPort}</p>
+                        <p><strong>Estado:</strong> <span class="status ${bodega.blockchain.status}">${bodega.blockchain.status}</span></p>
+                    </div>
+                ` : `
+                    <div class="inventory-info">
+                        <h4>📦 Inventario</h4>
+                        <p><strong>Stock:</strong> ${inventory.stockCustodiado || 0} botellas</p>
+                        <p><strong>Valor:</strong> ${inventory.valorCustodia || '0 €'}</p>
+                        <p><strong>Transacciones:</strong> ${inventory.transaccionesActivas || 0}</p>
+                    </div>
+                `}
+                
+                ${wines.length > 0 ? `
+                    <div class="wines-info">
+                        <h4>🍷 Vinos Disponibles</h4>
+                        ${wines.slice(0, 3).map(wine => `
+                            <div class="wine-item">
+                                <strong>${wine.nombre}</strong> - ${wine.precio}
+                                <small>(Stock: ${wine.stock})</small>
+                            </div>
+                        `).join('')}
+                        ${wines.length > 3 ? `<small>... y ${wines.length - 3} más</small>` : ''}
+                    </div>
+                ` : ''}
+                
+                <div class="popup-actions">
+                    <button onclick="window.cartoLMMMap.viewBodegaDetails('${bodega.id}')">📊 Ver Detalles</button>
+                    ${bodega.blockchain?.nodeId ? `
+                        <button onclick="window.cartoLMMMap.viewTransactions('${bodega.blockchain.nodeId}')">⛓️ Blockchain</button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
     }
 
     /**
@@ -588,6 +727,152 @@ class CartoLMMMap {
         } catch (error) {
             console.error('Error obteniendo transacciones:', error);
         }
+    }
+
+    /**
+     * 💰 Agregar marcador de transacción en tiempo real (WebSocket)
+     */
+    addTransactionMarker(transaction) {
+        console.log('🔥 Nueva transacción en mapa:', transaction);
+        
+        // Solo mostrar si tiene coordenadas
+        if (!transaction.lat || !transaction.lng) {
+            console.log('⚠️ Transacción sin coordenadas, skipping...');
+            return;
+        }
+        
+        try {
+            // Crear marcador animado
+            const marker = L.marker([transaction.lat, transaction.lng], {
+                icon: L.divIcon({
+                    className: 'transaction-marker realtime-marker',
+                    html: `
+                        <div class="marker-container">
+                            <div class="marker-pulse"></div>
+                            <div class="marker-icon" style="background: ${this.colors.transaction};">
+                                💸
+                            </div>
+                        </div>
+                    `,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                })
+            });
+            
+            // Popup con información de transacción
+            marker.bindPopup(`
+                <div class="transaction-popup">
+                    <h4>💰 Nueva Transacción</h4>
+                    <p><strong>ID:</strong> ${transaction.id}</p>
+                    <p><strong>Cantidad:</strong> ${transaction.amount}</p>
+                    <p><strong>Tipo:</strong> ${transaction.type}</p>
+                    ${transaction.bodega ? `<p><strong>Bodega:</strong> ${transaction.bodega}</p>` : ''}
+                    ${transaction.metadata?.wine ? `<p><strong>Vino:</strong> ${transaction.metadata.wine}</p>` : ''}
+                    <p><strong>Hora:</strong> ${new Date(transaction.timestamp).toLocaleString()}</p>
+                </div>
+            `).openPopup();
+            
+            // Agregar al mapa
+            marker.addTo(this.map);
+            this.markers.transactions.push(marker);
+            
+            // Auto-remover después de 30 segundos
+            setTimeout(() => {
+                this.map.removeLayer(marker);
+                const index = this.markers.transactions.indexOf(marker);
+                if (index > -1) {
+                    this.markers.transactions.splice(index, 1);
+                }
+            }, 30000);
+            
+            // Animar zoom a la transacción
+            this.map.flyTo([transaction.lat, transaction.lng], 10, {
+                animate: true,
+                duration: 1.5
+            });
+            
+        } catch (error) {
+            console.error('❌ Error agregando marcador de transacción:', error);
+        }
+    }
+    
+    /**
+     * 🔗 Agregar marcador de bloque en tiempo real (WebSocket)
+     */
+    addBlockMarker(block) {
+        console.log('🔗 Nuevo bloque:', block);
+        
+        // Generar coordenadas aleatorias en España para demostración
+        const lat = 40.0 + (Math.random() - 0.5) * 6;
+        const lng = -4.0 + (Math.random() - 0.5) * 8;
+        
+        try {
+            const marker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'block-marker realtime-marker',
+                    html: `
+                        <div class="marker-container">
+                            <div class="marker-pulse block-pulse"></div>
+                            <div class="marker-icon" style="background: ${this.colors.node};">
+                                🔗
+                            </div>
+                        </div>
+                    `,
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 17]
+                })
+            });
+            
+            marker.bindPopup(`
+                <div class="block-popup">
+                    <h4>🔗 Nuevo Bloque</h4>
+                    <p><strong>Índice:</strong> ${block.index}</p>
+                    <p><strong>Hash:</strong> ${block.hash?.substring(0, 16)}...</p>
+                    <p><strong>Transacciones:</strong> ${block.transactions}</p>
+                    <p><strong>Minero:</strong> ${block.miner}</p>
+                    <p><strong>Recompensa:</strong> ${block.reward}</p>
+                    <p><strong>Hora:</strong> ${new Date(block.timestamp).toLocaleString()}</p>
+                </div>
+            `);
+            
+            marker.addTo(this.map);
+            this.markers.nodes.push(marker);
+            
+            // Auto-remover después de 60 segundos
+            setTimeout(() => {
+                this.map.removeLayer(marker);
+                const index = this.markers.nodes.indexOf(marker);
+                if (index > -1) {
+                    this.markers.nodes.splice(index, 1);
+                }
+            }, 60000);
+            
+        } catch (error) {
+            console.error('❌ Error agregando marcador de bloque:', error);
+        }
+    }
+    
+    /**
+     * 🌐 Actualizar nodos de red (WebSocket)
+     */
+    updateNetworkNodes(peerEvent) {
+        console.log('🌐 Actualizando nodos de red:', peerEvent);
+        
+        // TODO: Implementar actualización visual de nodos
+        // Por ahora solo log
+    }
+    
+    /**
+     * 📊 Ver detalles de bodega
+     */
+    viewBodegaDetails(bodegaId) {
+        console.log('📊 Ver detalles de bodega:', bodegaId);
+        // TODO: Implementar panel lateral con detalles completos
+        // Por ahora solo mostrar en consola
+        
+        // Buscar la bodega en los datos
+        // En el futuro esto vendrá de una base de datos
+        alert(`🍷 Detalles de bodega: ${bodegaId}\n\n📊 Panel de detalles próximamente disponible.\n\n🔧 Funcionalidad planificada para el CRUD de bodegas.`);
     }
 
     /**

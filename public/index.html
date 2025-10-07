@@ -27,7 +27,7 @@
         <!-- Header -->
         <header class="cartolmm-header">
             <div class="header-left">
-                <h1>🍷 CartoLMM</h1>
+                <h1>🍷 Large Magnum Master</h1>
                 <span class="subtitle">Del Terruño al Ciberespacio</span>
             </div>
             <div class="header-controls">
@@ -47,25 +47,13 @@
                 <!-- Map Overlays -->
                 <div class="map-overlays">
                     <!-- Connection Status -->
-                    <div id="connection-status" class="status-indicator">
-                        <span id="status-dot" class="status-dot offline"></span>
-                        <span id="status-text">Conectando...</span>
+                    <div id="connection-status" class="connection-status">
+                        🔄 Conectando...
                     </div>
                     
-                    <!-- Real-time Stats -->
-                    <div id="realtime-stats" class="stats-overlay">
-                        <div class="stat-item">
-                            <span class="stat-label">Bloques:</span>
-                            <span id="block-count" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Transacciones:</span>
-                            <span id="tx-count" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Nodos:</span>
-                            <span id="node-count" class="stat-value">-</span>
-                        </div>
+                    <!-- WebSocket Metrics Display -->
+                    <div id="metrics-display" class="metrics-display" style="display: none;">
+                        <!-- Se llenará dinámicamente vía WebSocket -->
                     </div>
                     
                     <!-- Timeline Control -->
@@ -84,8 +72,12 @@
                     <h3>📊 Red Blockchain</h3>
                     <div class="metric-grid">
                         <div class="metric-card">
-                            <span class="metric-value" id="total-blocks">-</span>
+                            <span class="metric-value counter" id="blocks-counter">0</span>
                             <span class="metric-label">Bloques</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value counter" id="transactions-counter">0</span>
+                            <span class="metric-label">Transacciones</span>
                         </div>
                         <div class="metric-card">
                             <span class="metric-value" id="active-nodes">-</span>
@@ -133,6 +125,14 @@
                             <span class="metric-value" id="btc-change">-</span>
                             <span class="metric-label">24h</span>
                         </div>
+                    </div>
+                </section>
+
+                <!-- Last Block Info -->
+                <section class="metrics-section">
+                    <h3>🔗 Último Bloque</h3>
+                    <div id="last-block" class="last-block-info">
+                        <p>Conectando a blockchain...</p>
                     </div>
                 </section>
 
@@ -241,10 +241,10 @@
                 if (loader) loader.style.display = 'none';
                 
                 // Crear instancia del mapa
-                window.cartoMap = new CartoLMMMap('map');
+                window.cartoLMMMap = new CartoLMMMap('map');
                 
                 // Inicializar
-                await window.cartoMap.initialize();
+                await window.cartoLMMMap.initialize();
                 
                 console.log('✅ CartoLMM inicializado exitosamente');
                 
