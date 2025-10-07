@@ -1,0 +1,504 @@
+/**
+ * 🎨 Estilos CSS para CartoLMM Interactive Map
+ * Visualización blockchain geográfica moderna
+ */
+
+/* ============================================
+   🗺️ CONTAINER PRINCIPAL DEL MAPA
+   ============================================ */
+
+.map-container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.leaflet-map {
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+}
+
+/* ============================================
+   📊 OVERLAYS Y CONTROLES DEL MAPA
+   ============================================ */
+
+.map-overlays {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.map-overlays > * {
+    pointer-events: auto;
+}
+
+/* Status de Conexión */
+.status-indicator {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.online {
+    background: #32CD32;
+    box-shadow: 0 0 10px #32CD32;
+}
+
+.status-dot.offline {
+    background: #FF4444;
+    box-shadow: 0 0 10px #FF4444;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Estadísticas en Tiempo Real */
+.stats-overlay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 200px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.stat-item:last-child {
+    margin-bottom: 0;
+}
+
+.stat-label {
+    color: #ccc;
+}
+
+.stat-value {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+/* Control de Timeline */
+.timeline-overlay {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 400px;
+}
+
+.timeline-btn {
+    background: #FFD700;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.timeline-btn:hover {
+    background: #FFA500;
+    transform: scale(1.1);
+}
+
+.timeline-slider {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #FFD700;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.timeline-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #FFD700;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.timeline-time {
+    font-size: 12px;
+    color: #ccc;
+    min-width: 80px;
+    text-align: right;
+}
+
+/* ============================================
+   🍷 MARCADORES DE BODEGAS
+   ============================================ */
+
+.bodega-marker {
+    background: none;
+    border: none;
+}
+
+.marker-bodega {
+    display: flex;
+    align-items: center;
+    background: rgba(139, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
+    border: 2px solid #FFD700;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.marker-bodega:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.6);
+}
+
+.marker-bodega .marker-icon {
+    margin-right: 5px;
+    font-size: 16px;
+}
+
+.marker-bodega .marker-label {
+    white-space: nowrap;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================
+   🔗 MARCADORES DE NODOS BLOCKCHAIN
+   ============================================ */
+
+.node-marker {
+    background: none;
+    border: none;
+}
+
+.marker-node {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.marker-node.online {
+    background: rgba(50, 205, 50, 0.8);
+    border: 2px solid #32CD32;
+    color: white;
+}
+
+.marker-node.offline {
+    background: rgba(128, 128, 128, 0.8);
+    border: 2px solid #808080;
+    color: white;
+}
+
+.marker-node:hover {
+    transform: scale(1.2);
+}
+
+.marker-node .marker-icon {
+    font-size: 14px;
+    z-index: 2;
+}
+
+.marker-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    animation: pulse-ring 2s infinite;
+    opacity: 0.6;
+}
+
+.marker-node.online .marker-pulse {
+    background: #32CD32;
+}
+
+.marker-node.offline .marker-pulse {
+    animation: none;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0.3;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   📋 POPUPS Y TOOLTIPS
+   ============================================ */
+
+/* Popup de Bodega */
+.bodega-popup {
+    font-family: 'Arial', sans-serif;
+    min-width: 250px;
+}
+
+.bodega-popup h3 {
+    margin: 0 0 10px 0;
+    color: #8B0000;
+    font-size: 16px;
+    border-bottom: 2px solid #FFD700;
+    padding-bottom: 5px;
+}
+
+.bodega-popup p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.bodega-popup code {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+.popup-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.popup-actions button {
+    background: #8B0000;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.popup-actions button:hover {
+    background: #A52A2A;
+}
+
+/* Popup de Nodo */
+.node-popup {
+    font-family: 'Arial', sans-serif;
+    min-width: 200px;
+}
+
+.node-popup h3 {
+    margin: 0 0 10px 0;
+    color: #32CD32;
+    font-size: 16px;
+    border-bottom: 2px solid #32CD32;
+    padding-bottom: 5px;
+}
+
+.node-popup p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.node-popup .status {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.node-popup .status.online {
+    color: #32CD32;
+}
+
+.node-popup .status.offline {
+    color: #FF4444;
+}
+
+/* ============================================
+   📱 RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .stats-overlay {
+        position: fixed;
+        top: 80px;
+        left: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.95);
+    }
+    
+    .status-indicator {
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+    }
+    
+    .timeline-overlay {
+        bottom: 20px;
+        left: 10px;
+        right: 10px;
+        transform: none;
+        min-width: auto;
+        padding: 10px 15px;
+    }
+    
+    .marker-bodega .marker-label {
+        display: none;
+    }
+    
+    .bodega-popup,
+    .node-popup {
+        min-width: 200px;
+    }
+    
+    .popup-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-overlay .stat-item {
+        font-size: 12px;
+    }
+    
+    .timeline-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+    
+    .timeline-time {
+        font-size: 10px;
+        min-width: 60px;
+    }
+}
+
+/* ============================================
+   🎨 ANIMACIONES Y TRANSICIONES
+   ============================================ */
+
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+    transition: all 0.3s ease;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.leaflet-popup-tip {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Fade in animation para overlays */
+.map-overlays > * {
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   🔧 UTILIDADES
+   ============================================ */
+
+.hidden {
+    display: none !important;
+}
+
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.error {
+    border: 2px solid #FF4444 !important;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}

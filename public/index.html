@@ -8,6 +8,7 @@
     <!-- Estilos -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="components.css">
+    <link rel="stylesheet" href="map-styles.css">
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -17,9 +18,6 @@
     
     <!-- Socket.io for realtime -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css">
     
     <!-- Wine-Tech Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'>🍷</svg>">
@@ -45,6 +43,38 @@
             <!-- Map Container -->
             <div class="map-container">
                 <div id="map" class="leaflet-map"></div>
+                
+                <!-- Map Overlays -->
+                <div class="map-overlays">
+                    <!-- Connection Status -->
+                    <div id="connection-status" class="status-indicator">
+                        <span id="status-dot" class="status-dot offline"></span>
+                        <span id="status-text">Conectando...</span>
+                    </div>
+                    
+                    <!-- Real-time Stats -->
+                    <div id="realtime-stats" class="stats-overlay">
+                        <div class="stat-item">
+                            <span class="stat-label">Bloques:</span>
+                            <span id="block-count" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Transacciones:</span>
+                            <span id="tx-count" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Nodos:</span>
+                            <span id="node-count" class="stat-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline Control -->
+                    <div id="timeline-control" class="timeline-overlay">
+                        <button id="play-pause" class="timeline-btn">▶️</button>
+                        <input type="range" id="timeline-slider" min="0" max="100" value="100" class="timeline-slider">
+                        <span id="timeline-time" class="timeline-time">Tiempo real</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Sidebar Panel -->
@@ -193,6 +223,50 @@
     <div class="loader" style="display: flex;">
         <div>Iniciando CartoLMM...</div>
     </div>
+    
+    <!-- Leaflet.js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Inicialización del mapa -->
+    <script type="module">
+        import CartoLMMMap from '../src/map/InteractiveMap.js';
+        
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('🚀 Inicializando CartoLMM...');
+                
+                // Ocultar loader
+                const loader = document.querySelector('.loader');
+                if (loader) loader.style.display = 'none';
+                
+                // Crear instancia del mapa
+                window.cartoMap = new CartoLMMMap('map');
+                
+                // Inicializar
+                await window.cartoMap.initialize();
+                
+                console.log('✅ CartoLMM inicializado exitosamente');
+                
+            } catch (error) {
+                console.error('❌ Error inicializando CartoLMM:', error);
+                
+                // Mostrar error al usuario
+                const mapContainer = document.getElementById('map');
+                if (mapContainer) {
+                    mapContainer.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; background: #f0f0f0;">
+                            <h2 style="color: #d32f2f;">❌ Error cargando CartoLMM</h2>
+                            <p style="color: #666;">${error.message}</p>
+                            <button onclick="location.reload()" style="padding: 10px 20px; background: #8B0000; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                🔄 Reintentar
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
     <script src="../src/components/dashboard.js"></script>
