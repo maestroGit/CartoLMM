@@ -1,14 +1,28 @@
 /**
  * Módulo de APIs REST para CartoLMM
- * Maneja todos los endpoints de la aplicación
+ * Maneja todos los endpoints de la aplicación con integración a magnumsmaster
  */
 
 import { mockData } from '../config/config.js';
+import MagnusmasterAPI from './magnusmasterAPI.js';
+
+// Instancia global del cliente API
+const magnusmasterClient = new MagnusmasterAPI();
 
 /**
  * Configurar todas las rutas API
  */
-export function setupAPIRoutes(app) {
+export async function setupAPIRoutes(app) {
+    // Inicializar conexión con magnumsmaster
+    console.log('🔌 Inicializando conexión con magnumsmaster...');
+    const connected = await magnusmasterClient.initialize();
+    
+    if (connected) {
+        console.log('✅ Integración con magnumsmaster establecida');
+    } else {
+        console.log('⚠️ Ejecutando en modo standalone (sin magnumsmaster)');
+    }
+    
     // API: Obtener bloques
     app.get('/api/blocks', handleGetBlocks);
     
@@ -27,14 +41,38 @@ export function setupAPIRoutes(app) {
     // API: Estado del sistema
     app.get('/api/status', handleGetStatus);
     
+    // API: Métricas del dashboard
+    app.get('/api/dashboard-metrics', handleGetDashboardMetrics);
+    
+    // API: Datos geográficos
+    app.get('/api/geographic-data', handleGetGeographicData);
+    
+    // API: Estado de conexión con magnumsmaster
+    app.get('/api/magnumsmaster-status', handleGetMagnusmasterStatus);
+    
     console.log('✅ API Routes configuradas');
 }
 
 /**
- * Handler: Obtener bloques
+ * Handler: Obtener bloques (desde magnumsmaster o mock)
  */
 async function handleGetBlocks(req, res) {
     try {
+        // Intentar obtener datos reales de magnumsmaster
+        const blocksResponse = await magnusmasterClient.getBlocks();
+        
+        if (blocksResponse.success) {
+            res.json({
+                success: true,
+                data: blocksResponse.data,
+                source: 'magnumsmaster',
+                timestamp: blocksResponse.timestamp
+            });
+            return;
+        }
+        
+        // Fallback a datos mock si magnumsmaster no está disponible
+        console.log('⚠️ Usando datos mock para bloques:', blocksResponse.error);
         const mockBlocks = [
             {
                 index: 0,
@@ -316,6 +354,115 @@ async function handleGetStatus(req, res) {
         });
     } catch (error) {
         handleAPIError(res, error, 'Error obteniendo estado');
+    }
+}
+
+/**
+ * Handler: Métricas del dashboard
+ */
+async function handleGetDashboardMetrics(req, res) {
+    try {
+        const metricsResponse = await magnusmasterClient.getDashboardMetrics();
+        
+        if (metricsResponse.success) {
+            res.json({
+                success: true,
+                data: metricsResponse.metrics,
+                source: 'magnumsmaster',
+                errors: metricsResponse.errors || [],
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            // Datos mock para métricas
+            const mockMetrics = {
+                blocks: { success: true, data: { length: 42 } },
+                transactions: { success: true, data: { length: 15 } },
+                systemInfo: { success: true, data: { status: 'mock' } },
+                balance: { success: true, data: { balance: 1000 } },
+                connectionStatus: false,
+                lastUpdate: new Date().toISOString()
+            };
+            
+            res.json({
+                success: true,
+                data: mockMetrics,
+                source: 'mock',
+                timestamp: new Date().toISOString()
+            });
+        }
+    } catch (error) {
+        handleAPIError(res, error, 'Error obteniendo métricas del dashboard');
+    }
+}
+
+/**
+ * Handler: Datos geográficos
+ */
+async function handleGetGeographicData(req, res) {
+    try {
+        const geoResponse = await magnusmasterClient.getGeographicData();
+        
+        if (geoResponse.success) {
+            res.json({
+                success: true,
+                data: geoResponse.data,
+                source: 'magnumsmaster',
+                timestamp: geoResponse.timestamp
+            });
+        } else {
+            // Datos mock geográficos
+            const mockGeoData = {
+                nodes: [
+                    {
+                        id: 'mock-node-1',
+                        name: 'Nodo Mock Madrid',
+                        lat: 40.4168,
+                        lng: -3.7038,
+                        city: 'Madrid',
+                        status: 'offline',
+                        lastSeen: new Date().toISOString()
+                    }
+                ],
+                transactions: [],
+                coverage: 'Spain (Mock Data)'
+            };
+            
+            res.json({
+                success: true,
+                data: mockGeoData,
+                source: 'mock',
+                timestamp: new Date().toISOString()
+            });
+        }
+    } catch (error) {
+        handleAPIError(res, error, 'Error obteniendo datos geográficos');
+    }
+}
+
+/**
+ * Handler: Estado de conexión con magnumsmaster
+ */
+async function handleGetMagnusmasterStatus(req, res) {
+    try {
+        const connectionStatus = magnusmasterClient.getConnectionStatus();
+        const healthCheck = await magnusmasterClient.checkHealth();
+        
+        res.json({
+            success: true,
+            data: {
+                ...connectionStatus,
+                healthCheck: healthCheck,
+                endpoints: {
+                    blocks: `${connectionStatus.baseURL}/blocks`,
+                    transactions: `${connectionStatus.baseURL}/transactionsPool`,
+                    balance: `${connectionStatus.baseURL}/balance`,
+                    systemInfo: `${connectionStatus.baseURL}/system-info`
+                }
+            },
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        handleAPIError(res, error, 'Error verificando estado de magnumsmaster');
     }
 }
 
