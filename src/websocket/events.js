@@ -217,13 +217,13 @@ function startRealTimeUpdates(socket) {
         }
     }, 30000);
 
-    // Iniciar simulación de datos mock para este cliente específico
-    const mockDataInterval = startMockDataSimulation(socket);
+    // SIMULACIÓN DESHABILITADA: Comentado para evitar inicio automático
+    // const mockDataInterval = startMockDataSimulation(socket);
     
-    // Guardar referencias para limpieza
+    // Guardar referencias para limpieza (sin mock data)
     activeIntervals.set(socket.id, {
-        ping: pingInterval,
-        mockData: mockDataInterval
+        ping: pingInterval
+        // mockData: mockDataInterval
     });
 }
 

@@ -120,6 +120,11 @@ function setupGlobalListeners() {
         handleKeyboardShortcuts(event);
     });
 
+    // Manejar selección de bodega
+    window.addEventListener('bodega:selected', (event) => {
+        handleBodegaSelected(event.detail);
+    });
+
     console.log('✅ Listeners globales configurados');
 }
 
@@ -485,6 +490,48 @@ function cleanupCartoLMM() {
     }
     
     window.CartoLMM.initialized = false;
+}
+
+/**
+ * Maneja la selección de una bodega
+ */
+function handleBodegaSelected(bodega) {
+    console.log('🍷 Manejando selección de bodega:', bodega);
+    
+    // Llenar el modal con los datos de la bodega
+    const modal = document.getElementById('bodega-modal');
+    const modalName = document.getElementById('modal-bodega-name');
+    const modalRegion = document.getElementById('modal-region');
+    const modalStock = document.getElementById('modal-stock');
+    const modalNodeStatus = document.getElementById('modal-node-status');
+    const modalLastActivity = document.getElementById('modal-last-activity');
+    
+    if (modal && modalName && modalRegion && modalStock && modalNodeStatus && modalLastActivity) {
+        // Llenar los campos con los datos correctos
+        modalName.textContent = bodega.name || 'Sin nombre';
+        modalRegion.textContent = bodega.region || 'Sin región';
+        modalStock.textContent = `${bodega.inventory?.stockCustodiado || 0} botellas`;
+        modalNodeStatus.textContent = bodega.blockchain?.status || 'Desconocido';
+        modalLastActivity.textContent = bodega.inventory?.ultimaActividad || 'No disponible';
+        
+        // Mostrar el modal
+        modal.classList.remove('hidden');
+        
+        // Cerrar modal al hacer click en el botón de cerrar
+        const closeBtn = document.getElementById('modal-close');
+        if (closeBtn) {
+            closeBtn.onclick = () => modal.classList.add('hidden');
+        }
+        
+        // Cerrar modal al hacer click fuera del contenido
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        };
+    } else {
+        console.error('❌ No se encontraron elementos del modal');
+    }
 }
 
 // Exponer funciones útiles globalmente

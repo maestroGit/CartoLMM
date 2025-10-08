@@ -258,7 +258,7 @@ class CartoLMMMap {
             console.log('🍇 Cargando datos de bodegas desde JSON...');
             
             // Cargar datos del archivo JSON completo
-            const response = await fetch('../src/data/bodegas.json');
+            const response = await fetch('/src/data/bodegas.json');
             
             if (!response.ok) {
                 throw new Error(`Error cargando bodegas: ${response.status}`);

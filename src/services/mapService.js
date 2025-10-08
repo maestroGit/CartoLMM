@@ -26,11 +26,23 @@ class MapService {
                 attributionControl: true
             });
 
-            // Agregar tile layer de OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 18
-            }).addTo(this.map);
+            // Definir capas base
+            const baseLayers = {
+                "🗺️ OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 18
+                }),
+                "🛰️ Satélite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri',
+                    maxZoom: 18
+                })
+            };
+
+            // Agregar capa por defecto (OpenStreetMap)
+            baseLayers["🗺️ OpenStreetMap"].addTo(this.map);
+
+            // Guardar las capas base para el control
+            this.baseLayers = baseLayers;
 
             // Crear capas organizadas
             this.setupLayers();
@@ -69,7 +81,7 @@ class MapService {
             "⚡ Transacciones": this.layers.connections
         };
 
-        L.control.layers(null, overlays, { 
+        L.control.layers(this.baseLayers, overlays, { 
             position: 'topright',
             collapsed: false 
         }).addTo(this.map);
@@ -142,7 +154,7 @@ class MapService {
             iconAnchor: [20, 20]
         });
 
-        const marker = L.marker([bodega.ubicacion.lat, bodega.ubicacion.lng], { icon })
+        const marker = L.marker([bodega.location.lat, bodega.location.lng], { icon })
             .bindPopup(this.createBodegaPopup(bodega))
             .addTo(this.layers.bodegas);
 
@@ -160,10 +172,10 @@ class MapService {
     createBodegaPopup(bodega) {
         return `
             <div class="bodega-popup">
-                <h3>${bodega.nombre}</h3>
+                <h3>${bodega.name}</h3>
                 <p><strong>Región:</strong> ${bodega.region}</p>
                 <p><strong>Blockchain:</strong> ${bodega.blockchain?.status || 'Desconocido'}</p>
-                <p><strong>Inventario:</strong> ${bodega.inventario?.botellas || 0} botellas</p>
+                <p><strong>Inventario:</strong> ${bodega.inventory?.stockCustodiado || 0} botellas</p>
                 <div class="bodega-actions">
                     <button onclick="mapService.viewBodegaDetails('${bodega.id}')">
                         Ver Detalles
@@ -382,7 +394,7 @@ class MapService {
         console.log('🍷 Bodega seleccionada:', bodega);
         
         // Centrar mapa en la bodega
-        this.map.setView([bodega.ubicacion.lat, bodega.ubicacion.lng], 10);
+        this.map.setView([bodega.location.lat, bodega.location.lng], 10);
         
         // Disparar evento
         const event = new CustomEvent('bodega:selected', { detail: bodega });

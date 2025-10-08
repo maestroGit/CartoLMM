@@ -115,8 +115,8 @@ class DashboardService {
             
             return {
                 ...node,
-                lat: bodega ? bodega.ubicacion.lat + (Math.random() - 0.5) * 0.1 : 40.4168 + (Math.random() - 0.5) * 2,
-                lng: bodega ? bodega.ubicacion.lng + (Math.random() - 0.5) * 0.1 : -3.7038 + (Math.random() - 0.5) * 2,
+                lat: bodega ? bodega.location.lat + (Math.random() - 0.5) * 0.1 : 40.4168 + (Math.random() - 0.5) * 2,
+                lng: bodega ? bodega.location.lng + (Math.random() - 0.5) * 0.1 : -3.7038 + (Math.random() - 0.5) * 2,
                 port: 3001 + index,
                 status: 'active'
             };
