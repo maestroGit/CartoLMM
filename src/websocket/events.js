@@ -66,12 +66,20 @@ async function initializeClientConnection(socket) {
 
         // Enviar datos iniciales si magnusmmaster está disponible
         if (magnusmasterAPI) {
-            const dashboardData = await magnusmasterAPI.getDashboardMetrics();
-            if (dashboardData.success) {
+            // Obtener bloques y transacciones directamente
+            const blocksRes = await magnusmasterAPI.getBlocks();
+            const txRes = await magnusmasterAPI.getTransactionsPool();
+            if (blocksRes.success && txRes.success) {
                 socket.emit('blockchain:initial-data', {
-                    data: dashboardData.data,
+                    data: {
+                        blocks: Array.isArray(blocksRes.data) ? blocksRes.data : [],
+                        transactions: Array.isArray(txRes.data) ? txRes.data : []
+                    },
                     timestamp: new Date().toISOString()
                 });
+                console.log(`[WS] Enviado blockchain:initial-data a ${socket.id} - Bloques: ${blocksRes.data.length}, TX: ${txRes.data.length}`);
+            } else {
+                console.warn(`[WS] No se pudieron obtener datos iniciales para ${socket.id}`);
             }
         }
 

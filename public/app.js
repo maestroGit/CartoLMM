@@ -19,6 +19,32 @@ class CartoLMMWebSocket {
     }
     
     /**
+                // Logs de seguimiento para depuración
+                console.log('[DEBUG] Datos iniciales recibidos:', data);
+                if (data.data && data.data.blocks) {
+                    console.log(`[DEBUG] Número de bloques recibidos: ${data.data.blocks.length}`);
+                    const blocksCounter = document.getElementById('blocks-counter');
+                    if (blocksCounter) {
+                        console.log(`[DEBUG] Actualizando blocks-counter a: ${data.data.blocks.length}`);
+                        blocksCounter.textContent = data.data.blocks.length;
+                    } else {
+                        console.warn('[DEBUG] No se encontró el elemento blocks-counter');
+                    }
+                } else {
+                    console.warn('[DEBUG] No se recibieron datos de bloques');
+                }
+                if (data.data && data.data.transactions) {
+                    console.log(`[DEBUG] Número de transacciones recibidas: ${data.data.transactions.length}`);
+                    const txCounter = document.getElementById('transactions-counter');
+                    if (txCounter) {
+                        console.log(`[DEBUG] Actualizando transactions-counter a: ${data.data.transactions.length}`);
+                        txCounter.textContent = data.data.transactions.length;
+                    } else {
+                        console.warn('[DEBUG] No se encontró el elemento transactions-counter');
+                    }
+                } else {
+                    console.warn('[DEBUG] No se recibieron datos de transacciones');
+                }
      * 🚀 Inicializar conexión WebSocket
      */
     init() {
@@ -113,7 +139,29 @@ class CartoLMMWebSocket {
         
         // Blockchain: Datos iniciales
         this.socket.on('blockchain:initial-data', (data) => {
-            console.log('📊 Datos iniciales blockchain:', data);
+            console.log('[DEBUG] Evento blockchain:initial-data recibido:', data);
+            if (data && data.data) {
+                const blocks = Array.isArray(data.data.blocks) ? data.data.blocks : [];
+                const transactions = Array.isArray(data.data.transactions) ? data.data.transactions : [];
+                console.log(`[DEBUG] Bloques recibidos: ${blocks.length}`);
+                console.log(`[DEBUG] Transacciones recibidas: ${transactions.length}`);
+                const blocksCounter = document.getElementById('blocks-counter');
+                if (blocksCounter) {
+                    blocksCounter.textContent = blocks.length;
+                    console.log(`[DEBUG] blocks-counter actualizado a: ${blocks.length}`);
+                } else {
+                    console.warn('[DEBUG] No se encontró el elemento blocks-counter');
+                }
+                const txCounter = document.getElementById('transactions-counter');
+                if (txCounter) {
+                    txCounter.textContent = transactions.length;
+                    console.log(`[DEBUG] transactions-counter actualizado a: ${transactions.length}`);
+                } else {
+                    console.warn('[DEBUG] No se encontró el elemento transactions-counter');
+                }
+            } else {
+                console.warn('[DEBUG] No se recibieron datos válidos en blockchain:initial-data');
+            }
             this.handleInitialData(data);
         });
         
@@ -346,6 +394,19 @@ class CartoLMMWebSocket {
         if (data.data && typeof window.updateDashboard === 'function') {
             window.updateDashboard(data.data);
         }
+            // Inicializar contador de bloques y transacciones
+            if (data.data && data.data.blocks) {
+                const blocksCounter = document.getElementById('blocks-counter');
+                if (blocksCounter) {
+                    blocksCounter.textContent = data.data.blocks.length;
+                }
+            }
+            if (data.data && data.data.transactions) {
+                const txCounter = document.getElementById('transactions-counter');
+                if (txCounter) {
+                    txCounter.textContent = data.data.transactions.length;
+                }
+            }
     }
     
     /**
