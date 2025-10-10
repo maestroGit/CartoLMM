@@ -52,7 +52,7 @@
                     </div>
                     
                     <!-- WebSocket Metrics Display -->
-                    <div id="metrics-display" class="metrics-display" style="display: none;">
+                    <div id="metrics-display" class="metrics-display">
                         <!-- Se llenará dinámicamente vía WebSocket -->
                     </div>
                     
@@ -147,27 +147,7 @@
         </main>
 
         <!-- Bottom Timeline Control -->
-        <footer class="timeline-control">
-            <div class="timeline-container">
-                <button id="play-pause" class="timeline-btn">⏯️</button>
-                <input type="range" id="timeline-slider" min="0" max="100" value="100" class="timeline-slider">
-                <span id="timeline-time" class="timeline-time">Tiempo Real</span>
-            </div>
-            <div class="timeline-filters">
-                <select id="region-filter" class="filter-select">
-                    <option value="">Todas las Regiones</option>
-                    <option value="ribera">Ribera del Duero</option>
-                    <option value="rioja">La Rioja</option>
-                    <option value="priorat">Priorat</option>
-                </select>
-                <select id="wine-type-filter" class="filter-select">
-                    <option value="">Todos los Vinos</option>
-                    <option value="tinto">Tinto</option>
-                    <option value="blanco">Blanco</option>
-                    <option value="rosado">Rosado</option>
-                </select>
-            </div>
-        </footer>
+        <!-- Footer de timeline y filtros eliminado temporalmente -->
     </div>
 
     <!-- Bodega Detail Modal -->

@@ -11,9 +11,10 @@ class CartoLMMWebSocket {
         this.maxReconnectAttempts = 5;
         this.reconnectDelay = 1000;
         
-        // Elementos DOM para feedback visual
-        this.connectionStatus = document.getElementById('connection-status');
-        this.metricsDisplay = document.getElementById('metrics-display');
+    // Elementos DOM para feedback visual
+    this.connectionStatus = document.getElementById('connection-status');
+    this.metricsDisplay = document.getElementById('metrics-display');
+    // Eliminados: controles de timeline y filtros
         
         this.init();
     }
@@ -72,6 +73,7 @@ class CartoLMMWebSocket {
     
     /**
      * 📡 Configurar handlers de eventos
+     * (Eliminados: listeners de controles de timeline y filtros)
      */
     setupEventHandlers() {
         // Conexión establecida
@@ -195,6 +197,7 @@ class CartoLMMWebSocket {
     
     /**
      * 🔄 Manejo de reconexión
+     * (Eliminados: funciones de play/pause, slider, filtros)
      */
     handleReconnection() {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
@@ -414,7 +417,9 @@ class CartoLMMWebSocket {
      */
     updateMetrics(metrics) {
         if (!this.metricsDisplay) return;
-        
+        // Mostrar el panel si está oculto
+        this.metricsDisplay.style.display = '';
+        // Actualizar el panel de métricas
         const metricsHTML = `
             <div class="metrics-grid">
                 <div class="metric-card">
@@ -436,8 +441,18 @@ class CartoLMMWebSocket {
                 </div>
             </div>
         `;
-        
         this.metricsDisplay.innerHTML = metricsHTML;
+
+        // Actualizar el valor de nodos activos en el panel principal (sidebar)
+        function setActiveNodesValue(val, retries = 5) {
+            const el = document.getElementById('active-nodes');
+            if (el) {
+                el.textContent = val;
+            } else if (retries > 0) {
+                setTimeout(() => setActiveNodesValue(val, retries - 1), 100);
+            }
+        }
+        setActiveNodesValue(metrics.network.activeNodes);
     }
     
     /**

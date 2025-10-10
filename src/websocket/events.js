@@ -225,13 +225,13 @@ function startRealTimeUpdates(socket) {
         }
     }, 30000);
 
-    // SIMULACIÓN DESHABILITADA: Comentado para evitar inicio automático
-    // const mockDataInterval = startMockDataSimulation(socket);
+    // Activar simulación de métricas para el cliente
+    const mockDataInterval = startMockDataSimulation(socket);
     
-    // Guardar referencias para limpieza (sin mock data)
+    // Guardar referencias para limpieza (con mock data)
     activeIntervals.set(socket.id, {
-        ping: pingInterval
-        // mockData: mockDataInterval
+        ping: pingInterval,
+        mockData: mockDataInterval
     });
 }
 
@@ -424,29 +424,58 @@ function emitPeerEvent(socket) {
  * Emitir métricas del sistema
  */
 function emitSystemMetrics(socket) {
-    const metrics = {
-        timestamp: new Date().toISOString(),
-        network: {
-            activeNodes: Math.floor(Math.random() * 5) + 3,
-            totalTransactions: Math.floor(Math.random() * 1000) + 5000,
-            pendingTransactions: Math.floor(Math.random() * 20),
-            blockHeight: Math.floor(Math.random() * 1000) + 2000,
-            hashRate: Math.floor(Math.random() * 100) + 50
-        },
-        bodegas: {
-            total: 5,
-            active: Math.floor(Math.random() * 2) + 4,
-            totalProduction: Math.floor(Math.random() * 10000) + 50000,
-            verifiedBottles: Math.floor(Math.random() * 5000) + 25000
-        },
-        system: {
-            uptime: process.uptime(),
-            memory: process.memoryUsage(),
-            cpu: Math.random() * 100
+    magnusmasterAPI.getSystemInfo().then((result) => {
+        let activeNodes = '-';
+        if (result.success && result.data && result.data.blockchain && result.data.blockchain.network) {
+            activeNodes = result.data.blockchain.network.p2pConnections;
         }
-    };
-    
-    socket.emit('system:metrics', metrics);
+        const metrics = {
+            timestamp: new Date().toISOString(),
+            network: {
+                activeNodes,
+                totalTransactions: Math.floor(Math.random() * 1000) + 5000,
+                pendingTransactions: Math.floor(Math.random() * 20),
+                blockHeight: Math.floor(Math.random() * 1000) + 2000,
+                hashRate: Math.floor(Math.random() * 100) + 50
+            },
+            bodegas: {
+                total: 5,
+                active: Math.floor(Math.random() * 2) + 4,
+                totalProduction: Math.floor(Math.random() * 10000) + 50000,
+                verifiedBottles: Math.floor(Math.random() * 5000) + 25000
+            },
+            system: {
+                uptime: process.uptime(),
+                memory: process.memoryUsage(),
+                cpu: Math.random() * 100
+            }
+        };
+        socket.emit('system:metrics', metrics);
+    }).catch(() => {
+        // Si falla, enviar métrica simulada
+        const metrics = {
+            timestamp: new Date().toISOString(),
+            network: {
+                activeNodes: '-',
+                totalTransactions: Math.floor(Math.random() * 1000) + 5000,
+                pendingTransactions: Math.floor(Math.random() * 20),
+                blockHeight: Math.floor(Math.random() * 1000) + 2000,
+                hashRate: Math.floor(Math.random() * 100) + 50
+            },
+            bodegas: {
+                total: 5,
+                active: Math.floor(Math.random() * 2) + 4,
+                totalProduction: Math.floor(Math.random() * 10000) + 50000,
+                verifiedBottles: Math.floor(Math.random() * 5000) + 25000
+            },
+            system: {
+                uptime: process.uptime(),
+                memory: process.memoryUsage(),
+                cpu: Math.random() * 100
+            }
+        };
+        socket.emit('system:metrics', metrics);
+    });
 }
 
 /**
