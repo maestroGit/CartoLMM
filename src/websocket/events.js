@@ -31,7 +31,13 @@ export function setupWebSocket(io) {
         
         // Iniciar actualizaciones en tiempo real para este cliente
         startRealTimeUpdates(socket);
-        
+
+        // --- SIMULACIÓN DE TRANSACCIONES MOCK ---
+        // La siguiente línea activa la simulación de transacciones y bloques mock en el frontend.
+        // Si se descomenta, el servidor emitirá transacciones y bloques simulados cada 10 segundos.
+        // Útil para pruebas sin backend real, pero genera actividad ficticia en la interfaz.
+        // startSimulationMode();
+
         // Cleanup al desconectar
         socket.on('disconnect', () => {
             console.log('❌ Cliente desconectado:', socket.id);
@@ -109,12 +115,12 @@ async function initializeMagnusmasterIntegration() {
             startGlobalBlockchainMonitoring();
         } else {
             console.log('⚠️ WebSocket en modo standalone (sin magnumsmaster)');
-            startSimulationMode();
+            // startSimulationMode(); // Simulación desactivada
         }
         
     } catch (error) {
         console.warn('⚠️ No se pudo integrar magnumsmaster, usando simulación:', error.message);
-        startSimulationMode();
+        // startSimulationMode(); // Simulación desactivada
     }
 }
 
@@ -164,13 +170,12 @@ function startGlobalBlockchainMonitoring() {
     const systemMonitor = setInterval(async () => {
         try {
             if (connectedClients.size === 0) return;
-            
-            const systemData = await magnusmasterAPI.getSystemInfo();
-            if (systemData.success) {
-                broadcastToAllClients('blockchain:system-update', {
-                    system: systemData.data,
-                    timestamp: new Date().toISOString()
-                });
+            // Emitir system:metrics a cada cliente conectado
+            for (const socketId of connectedClients) {
+                const socket = globalIO.sockets.sockets.get(socketId);
+                if (socket) {
+                    emitSystemMetrics(socket);
+                }
             }
         } catch (error) {
             console.error('Error monitoreando sistema:', error);
@@ -226,12 +231,12 @@ function startRealTimeUpdates(socket) {
     }, 30000);
 
     // Activar simulación de métricas para el cliente
-    const mockDataInterval = startMockDataSimulation(socket);
+    // const mockDataInterval = startMockDataSimulation(socket);
     
     // Guardar referencias para limpieza (con mock data)
     activeIntervals.set(socket.id, {
         ping: pingInterval,
-        mockData: mockDataInterval
+        // mockData: mockDataInterval
     });
 }
 
@@ -426,23 +431,43 @@ function emitPeerEvent(socket) {
 function emitSystemMetrics(socket) {
     magnusmasterAPI.getSystemInfo().then((result) => {
         let activeNodes = '-';
-        if (result.success && result.data && result.data.blockchain && result.data.blockchain.network) {
-            activeNodes = result.data.blockchain.network.p2pConnections;
+        let totalTransactions = '-';
+        let pendingTransactions = '-';
+        let blockHeight = '-';
+        let hashRate = '-';
+        let bodegasTotal = '-';
+        let bodegasActive = '-';
+        let bodegasTotalProduction = '-';
+        let bodegasVerifiedBottles = '-';
+        if (result.success && result.data && result.data.blockchain) {
+            const net = result.data.blockchain.network;
+            activeNodes = net?.p2pConnections ?? '-';
+            blockHeight = result.data.blockchain.height ?? '-';
+            hashRate = result.data.blockchain.hashRate ?? '-';
+            totalTransactions = result.data.blockchain.totalTransactions ?? '-';
+            // Usar el valor enviado por el backend
+            pendingTransactions = net?.pendingTransactions ?? '-';
+        }
+        if (result.success && result.data && result.data.bodegas) {
+            bodegasTotal = result.data.bodegas.total ?? '-';
+            bodegasActive = result.data.bodegas.active ?? '-';
+            bodegasTotalProduction = result.data.bodegas.totalProduction ?? '-';
+            bodegasVerifiedBottles = result.data.bodegas.verifiedBottles ?? '-';
         }
         const metrics = {
             timestamp: new Date().toISOString(),
             network: {
                 activeNodes,
-                totalTransactions: Math.floor(Math.random() * 1000) + 5000,
-                pendingTransactions: Math.floor(Math.random() * 20),
-                blockHeight: Math.floor(Math.random() * 1000) + 2000,
-                hashRate: Math.floor(Math.random() * 100) + 50
+                totalTransactions,
+                pendingTransactions,
+                blockHeight,
+                hashRate
             },
             bodegas: {
-                total: 5,
-                active: Math.floor(Math.random() * 2) + 4,
-                totalProduction: Math.floor(Math.random() * 10000) + 50000,
-                verifiedBottles: Math.floor(Math.random() * 5000) + 25000
+                total: bodegasTotal,
+                active: bodegasActive,
+                totalProduction: bodegasTotalProduction,
+                verifiedBottles: bodegasVerifiedBottles
             },
             system: {
                 uptime: process.uptime(),

@@ -172,6 +172,25 @@ class CartoLMMWebSocket {
             console.log('📈 Métricas del sistema:', metrics);
             this.updateMetrics(metrics);
         });
+        // Actualizar contador de bloques en tiempo real
+        this.socket.on('blockchain:blocks-update', (data) => {
+            if (data && Array.isArray(data.blocks)) {
+                const blocksCounter = document.getElementById('blocks-counter');
+                if (blocksCounter) {
+                    blocksCounter.textContent = data.blocks.length;
+                }
+            }
+        });
+
+        // Actualizar contador de transacciones en tiempo real
+        this.socket.on('blockchain:transactions-update', (data) => {
+            if (data && Array.isArray(data.transactions)) {
+                const txCounter = document.getElementById('transactions-counter');
+                if (txCounter) {
+                    txCounter.textContent = data.transactions.length;
+                }
+            }
+        });
         
         // Respuesta a solicitudes de datos
         this.socket.on('data:bodegas', (data) => {
@@ -444,15 +463,32 @@ class CartoLMMWebSocket {
         this.metricsDisplay.innerHTML = metricsHTML;
 
         // Actualizar el valor de nodos activos en el panel principal (sidebar)
-        function setActiveNodesValue(val, retries = 5) {
+        // Aumentar reintentos y delay para asegurar sincronización con el DOM
+        function setActiveNodesValue(val, retries = 15) {
             const el = document.getElementById('active-nodes');
             if (el) {
                 el.textContent = val;
             } else if (retries > 0) {
-                setTimeout(() => setActiveNodesValue(val, retries - 1), 100);
+                setTimeout(() => setActiveNodesValue(val, retries - 1), 200);
             }
         }
         setActiveNodesValue(metrics.network.activeNodes);
+        // Actualizar modal de bodega si está abierto
+        const bodegaModal = document.getElementById('bodega-modal');
+        if (bodegaModal && !bodegaModal.classList.contains('hidden')) {
+            // Actualizar campos básicos
+            document.getElementById('modal-region').textContent = metrics.bodegas.region ?? '-';
+            document.getElementById('modal-stock').textContent = metrics.bodegas.totalProduction?.toLocaleString() ?? '-';
+            document.getElementById('modal-node-status').textContent = metrics.network.activeNodes > 0 ? 'Activo' : 'Inactivo';
+            document.getElementById('modal-last-activity').textContent = metrics.timestamp;
+            // Actualizar transacciones recientes
+            const txList = document.getElementById('modal-transactions');
+            if (txList && Array.isArray(metrics.bodegas.recentTransactions)) {
+                txList.innerHTML = metrics.bodegas.recentTransactions.map(tx =>
+                    `<div class="tx-item"><strong>${tx.type}</strong> <span>${tx.amount}</span> <small>${new Date(tx.timestamp).toLocaleTimeString()}</small></div>`
+                ).join('');
+            }
+        }
     }
     
     /**
