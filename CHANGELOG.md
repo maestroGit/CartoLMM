@@ -33,3 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RESTful API endpoints
 - WebSocket real-time communication
 - Modern frontend technologies
+
+## 🔀 Merge realizado: `feature/txid-hash` → `main`
+**Fecha:** 2025-10-14  
+**Tipo:** Fast-forward  
+**Archivos modificados:** `app.js`, `index.html`, `styles.css`, `events.js`  
+**Resumen:** Se integran mejoras en lógica de eventos WebSocket, estilos y estructura de la app.

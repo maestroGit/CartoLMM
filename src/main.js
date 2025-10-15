@@ -513,10 +513,29 @@ function handleBodegaSelected(bodega) {
         modalStock.textContent = `${bodega.inventory?.stockCustodiado || 0} botellas`;
         modalNodeStatus.textContent = bodega.blockchain?.status || 'Desconocido';
         modalLastActivity.textContent = bodega.inventory?.ultimaActividad || 'No disponible';
-        
+
+        // Imagen de la botella
+        let img = document.getElementById('modal-bottle-img');
+        if (!img) {
+            img = document.createElement('img');
+            img.id = 'modal-bottle-img';
+            img.style.width = '120px';
+            img.style.height = 'auto';
+            img.style.display = 'block';
+            img.style.margin = '16px auto';
+            // Insertar la imagen justo después del título
+            modalName.parentNode.insertBefore(img, modalName.nextSibling);
+        }
+        img.src = bodega.imageUrl || '';
+        img.alt = 'Botella de vino';
+        img.onerror = function() {
+            this.onerror = null;
+            this.src = bodega.fallbackImage || '/public/images/IconoMagnum.png';
+        };
+
         // Mostrar el modal
         modal.classList.remove('hidden');
-        
+
         // Cerrar modal al hacer click en el botón de cerrar
         const closeBtn = document.getElementById('modal-close');
         if (closeBtn) {

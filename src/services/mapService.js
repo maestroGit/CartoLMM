@@ -77,8 +77,7 @@ class MapService {
         // Control de capas
         const overlays = {
             "🍷 Bodegas": this.layers.bodegas,
-            "⛓️ Red Blockchain": this.layers.blockchain,
-            "⚡ Transacciones": this.layers.connections
+            "⛓️ Red Blockchain": this.layers.blockchain
         };
 
         L.control.layers(this.baseLayers, overlays, { 
@@ -175,7 +174,6 @@ class MapService {
                 <h3>${bodega.name}</h3>
                 <p><strong>Región:</strong> ${bodega.region}</p>
                 <p><strong>Blockchain:</strong> ${bodega.blockchain?.status || 'Desconocido'}</p>
-                <p><strong>Inventario:</strong> ${bodega.inventory?.stockCustodiado || 0} botellas</p>
                 <div class="bodega-actions">
                     <button onclick="mapService.viewBodegaDetails('${bodega.id}')">
                         Ver Detalles

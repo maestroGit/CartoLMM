@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+        <style>
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                min-height: 100vh;
+                width: 100vw;
+                overflow-x: hidden;
+            }
+        </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CartoLMM - Large Magnum Master | Del Terruño al Ciberespacio</title>
@@ -23,13 +36,21 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'>🍷</svg>">
 </head>
 <body>
+            <!-- Botón menú hamburguesa por encima del header -->
+
+                <!-- Título y subtítulo centrados -->
     <div id="cartolmm-app">
         <!-- Header -->
         <header class="cartolmm-header">
-            <div class="header-left">
-                <h1>🍷 Large Magnum Master</h1>
-                <span class="subtitle">Del Terruño al Ciberespacio</span>
-            </div>
+                        <div class="header-left" style="display:flex;align-items:center;gap:16px;margin-top:0;">
+                                <button id="toggle-metrics" style="background:rgba(0,140,69,0.85);border:none;border-radius:8px;padding:8px 12px;cursor:pointer;color:#fff;font-size:1.5em;box-shadow:0 2px 8px rgba(0,0,0,0.12);margin-right:8px;">
+                                    &#9776;
+                                </button>
+                                <div style="display:flex;flex-direction:column;justify-content:center;min-height:48px;">
+                                    <h1 style="margin:0;line-height:1.1;vertical-align:middle;padding-top:2px;">🍷 Large Magnum Master</h1>
+                                    <span class="subtitle" style="margin-top:2px;">Del Terruño al Ciberespacio</span>
+                                </div>
+                        </div>
             <div class="header-controls">
                 <button id="toggle-layers" class="control-btn">📋 Capas</button>
                 <button id="toggle-3d" class="control-btn">🔄 Vista</button>
@@ -40,19 +61,19 @@
 
         <!-- Main Content -->
         <main class="cartolmm-main">
+    <div id="connection-status" class="connection-status" style="font-size:1em; padding:6px 18px; border-radius:8px; background-color:rgb(76,175,80); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.10); margin:40px auto 16px auto; max-width:320px; text-align:center;">
+            🟢 Conectado en tiempo real
+        </div>
             <!-- Map Container -->
             <div class="map-container">
                 <div id="map" class="leaflet-map"></div>
                 
                 <!-- Map Overlays -->
                 <div class="map-overlays">
-                    <!-- Connection Status -->
-                    <div id="connection-status" class="connection-status">
-                        🔄 Conectando...
-                    </div>
                     
                     <!-- WebSocket Metrics Display -->
                     <div id="metrics-display" class="metrics-display">
+    <!-- Panel de métricas principal -->
                         <!-- Se llenará dinámicamente vía WebSocket -->
                     </div>
                     
@@ -67,6 +88,7 @@
 
             <!-- Sidebar Panel -->
             <aside class="sidebar-panel">
+    <!-- Panel lateral de métricas -->
                 <!-- Blockchain Metrics -->
                 <section class="metrics-section">
                     <h3>📊 Red Blockchain</h3>
@@ -138,10 +160,6 @@
 
                 <!-- Recent Activity -->
                 <section class="activity-section">
-                    <h3>⚡ Actividad Reciente</h3>
-                    <div id="recent-activities" class="activity-feed">
-                        <!-- Activities will be populated by JavaScript -->
-                    </div>
                 </section>
             </aside>
         </main>
@@ -152,12 +170,17 @@
 
     <!-- Bodega Detail Modal -->
     <div id="bodega-modal" class="modal hidden">
-        <div class="modal-content">
+    <div class="modal-content" style="margin-top:80px; max-width:800px;">
             <div class="modal-header">
                 <h2 id="modal-bodega-name">Bodega</h2>
                 <button id="modal-close" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
+                <div style="display:flex; gap:24px; margin-bottom:24px; justify-content:center;">
+                    <button style="background:#8B0000;color:#fff;padding:12px 32px;border:none;border-radius:8px;font-size:1.2em;cursor:pointer;" onclick="console.log('Consulta existencias')">Custodiado</button>
+                    <button style="background:#FFA500;color:#fff;padding:12px 32px;border:none;border-radius:8px;font-size:1.2em;cursor:pointer;" onclick="console.log('Consulta existencias')">Disponible</button>
+                </div>
+                <img id="modal-bottle-img" src="/public/images/IconoMagnum.png" alt="Botella de vino" style="width: 96px; height: auto; display: block; margin: 16px auto;">
                 <div class="bodega-info">
                     <div class="info-grid">
                         <div class="info-item">
@@ -250,5 +273,18 @@
         });
     </script>
     -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const toggleBtn = document.getElementById('toggle-metrics');
+                    const metricsDisplay = document.getElementById('metrics-display');
+                    const sidebarPanel = document.querySelector('.sidebar-panel');
+                    let metricsVisible = true;
+                    toggleBtn.addEventListener('click', () => {
+                        metricsVisible = !metricsVisible;
+                        metricsDisplay.style.display = metricsVisible ? '' : 'none';
+                        sidebarPanel.style.display = metricsVisible ? '' : 'none';
+                    });
+                });
+            </script>
 </body>
 </html>

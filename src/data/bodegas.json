@@ -176,6 +176,8 @@
         "ultimaActividad": "2025-10-07T08:30:00Z",
         "valorCustodia": "17,100 €"
       },
+      "imageUrl": "https://www.lavinia.es/media/catalog/product/cache/1/image/1200x/040ec09b1e35df139433887a97daa66f/8/4/8437007216017_1.jpg",
+      "fallbackImage": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Wine_bottle_icon.png",
       "visual": {
         "icon": "🍷",
         "color": "#4A0E4E",
