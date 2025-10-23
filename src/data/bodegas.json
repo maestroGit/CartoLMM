@@ -60,13 +60,13 @@
     
     {
       "id": "bodega_vina_laguardia_007",
-      "name": "Bodegas Viña Laguardia",
+      "name": "Bodegas Fernandez de Pierola",
       "type": "winery",
       "region": "País Vasco",
       "denomination": "D.O.Ca. Rioja Alavesa",
       "location": {
-        "lat": 42.5447,
-        "lng": -2.6252,
+        "lat": 42.52071161774152, 
+        "lng": -2.414122896586811,
         "elevation": 635
       },
       "blockchain": {
@@ -86,6 +86,8 @@
         "ultimaActividad": "2025-10-07T10:15:00Z",
         "valorCustodia": "27,900 €"
       },
+  "imageUrl": "/public/images/pierola-reserva.jpg",
+  "fallbackImage": "/public/images/IconoMagnum.png",
       "visual": {
         "icon": "🏰",
         "color": "#4B0082",
@@ -288,6 +290,26 @@
         "dataFlow": "bidirectional",
         "lastSync": "2025-10-07T11:26:00Z"
       }
+    ],
+    "nodes": [
+      {
+        "nodeId": "node_tenerife_010",
+        "lat": 44.8378,
+        "lng": -0.5792,
+        "region": "Bordeaux, France",
+        "status": "idle",
+        "httpPort": 3010,
+        "p2pPort": 5011
+      },
+      {
+        "nodeId": "node_mallorca_011",
+        "lat": 39.5696,
+        "lng": 2.6502,
+        "region": "Mallorca",
+        "status": "idle",
+        "httpPort": 3011,
+        "p2pPort": 5012
+      }
     ]
   },
   "regions": [
@@ -347,7 +369,7 @@
     "totalBodegas": 9,
     "totalStock": 1215,
     "totalValue": "186,900 €",
-    "activeNodes": 8,
+    "activeNodes": 10,
     "networkStatus": "healthy"
   }
 }

@@ -1,4 +1,10 @@
 /* Estilos adicionales para componentes JavaScript de CartoLMM */
+/*
+    Este archivo contiene estilos específicos de componentes (popups, markers,
+    notificaciones y widgets reutilizables). Los selectores suelen aplicarse a
+    elementos insertados por JavaScript: marcadores del mapa, popups modales y
+    overlays pequeños.
+*/
 
 /* Markers del mapa */
 .bodega-marker, .node-marker {
@@ -653,18 +659,25 @@ kbd {
     color: #666;
 }
 
-/* Metrics Display */
-.metrics-display {
-    position: fixed;
-    bottom: 20px;
+/* (removed .metrics-display - replaced by .simple-bottom-section placeholder) */
+
+/* Simplified bottom placeholder used instead of the old metrics & timeline overlays */
+.simple-bottom-section {
+    position: absolute;
     left: 20px;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    max-width: 400px;
+    right: 20px;
+    bottom: 20px;
     z-index: 1000;
+    display: flex;
+    justify-content: center;
+}
+.simple-bottom-section .footer-content {
+    background: rgba(255,255,255,0.9);
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    color: #333;
+    font-size: 13px;
 }
 
 .metrics-grid {
@@ -805,6 +818,66 @@ kbd {
     padding-bottom: 8px;
 }
 
+/* Compact bodega modal info to reduce vertical space and scrolling */
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal-body img#modal-bottle-img {
+    /* keep image size as currently set inline but ensure it doesn't force extra layout */
+    max-height: 52vh;
+    object-fit: contain;
+}
+
+.bodega-info {
+    width: 100%;
+    max-width: 760px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 12px;
+    align-items: start;
+}
+
+.info-item {
+    padding: 6px 8px;
+    background: transparent;
+}
+
+.info-item strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #444;
+}
+
+.info-item span {
+    display: block;
+    font-size: 13px;
+    color: #222;
+    margin-top: 4px;
+}
+
+.recent-transactions {
+    width: 100%;
+    max-width: 760px;
+    margin-top: 8px;
+}
+
+.recent-transactions .transaction-list {
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 6px;
+    border-radius: 6px;
+    background: rgba(250,250,250,0.9);
+}
+
 .bodega-info p, .inventory-info p, .genesis-info p {
     margin: 5px 0;
     font-size: 13px;
@@ -938,12 +1011,7 @@ kbd {
         transform: translateY(-50%);
     }
     
-    .metrics-display {
-        left: 10px;
-        right: 10px;
-        max-width: none;
-    }
-    
+    /* responsive adjustments */
     .metrics-grid {
         grid-template-columns: 1fr;
     }
@@ -957,3 +1025,11 @@ kbd {
         font-size: 14px;
     }
 }
+
+/* ------------------------------------------------------------------
+    Notifications, loaders y pequeños widgets que aparecen sobre el mapa
+    - .notification: toasts y mensajes rápidos
+    - .loader: pantalla de carga global
+    Estas reglas se aplican a elementos posicionados fixed o absolute
+    dentro de `public/index.html` o creados dinámicamente por JS.
+------------------------------------------------------------------ */

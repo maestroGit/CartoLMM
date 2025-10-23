@@ -63,6 +63,15 @@ class MapService {
             // Crear capas organizadas
             this.setupLayers();
 
+            // Intentar cargar nodos adicionales definidos en el JSON local (por ejemplo
+            // ubicaciones en islas) para que MapService los muestre en la capa de blockchain.
+            // No bloqueamos la inicialización si falla.
+            try {
+                this.loadNetworkNodesFromData();
+            } catch (err) {
+                console.warn('MapService: loadNetworkNodesFromData failed:', err);
+            }
+
             // Configurar eventos
             this.setupEventListeners();
 
@@ -71,6 +80,51 @@ class MapService {
         } catch (error) {
             console.error('❌ Error inicializando mapa:', error);
             return false;
+        }
+    }
+
+    /**
+     * Carga nodos definidos en `src/data/bodegas.json` (campo network.nodes)
+     * y los pasa a `loadBlockchainNodes` para renderizar markers.
+     */
+    async loadNetworkNodesFromData() {
+        try {
+            const resp = await fetch('/src/data/bodegas.json');
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (!data.network || !Array.isArray(data.network.nodes)) return;
+
+            const mapped = data.network.nodes
+                .filter(n => typeof n.lat === 'number' && typeof n.lng === 'number')
+                .map(n => ({
+                    id: n.nodeId || n.node || n.id,
+                    lat: n.lat,
+                    lng: n.lng,
+                    status: n.status || 'inactive',
+                    port: n.httpPort || n.port || null,
+                    peers: Array.isArray(n.peers) ? n.peers.length : (n.peers || 0),
+                    lastBlock: n.lastBlock || null
+                }));
+
+            if (mapped.length > 0) {
+                console.log(`MapService: cargando ${mapped.length} nodos desde bodega.json`);
+                this.loadBlockchainNodes(mapped);
+
+                // Intentar ajustar la vista para mostrar los nodos cargados (útil para islas)
+                try {
+                    const latLngs = mapped.map(n => [n.lat, n.lng]);
+                    if (latLngs.length > 0 && this.map) {
+                        const bounds = L.latLngBounds(latLngs);
+                        console.log('MapService: fitBounds para nodos con bounds:', bounds.toBBoxString());
+                        // Hacer un fitBounds suave
+                        this.map.fitBounds(bounds.pad(0.3));
+                    }
+                } catch (fbErr) {
+                    console.warn('MapService: fitBounds falló para nodos:', fbErr);
+                }
+            }
+        } catch (err) {
+            console.warn('MapService: error leyendo bodega.json para nodos:', err);
         }
     }
 
@@ -319,18 +373,50 @@ class MapService {
      */
     loadBlockchainNodes(nodesData) {
         try {
-            this.layers.blockchain.clearLayers();
-
             if (!Array.isArray(nodesData)) {
                 console.warn('⚠️ Datos de nodos no válidos');
                 return;
             }
 
+            // Merge mode: update existing markers and add new ones, but do not
+            // blindly clear the entire blockchain layer to avoid removing nodes
+            // coming from other sources (e.g., network JSON vs. live peers).
+            const incomingIds = new Set();
+
             nodesData.forEach(node => {
-                this.createNodeMarker(node);
+                const id = node.id || node.nodeId || node.node || String(Math.random()).slice(2);
+                incomingIds.add(id);
+
+                const key = `node_${id}`;
+                const existing = this.markers[key];
+
+                if (existing) {
+                    try {
+                        // update position
+                        if (typeof node.lat === 'number' && typeof node.lng === 'number') {
+                            existing.setLatLng([node.lat, node.lng]);
+                        }
+
+                        // update popup content
+                        existing.unbindPopup();
+                        existing.bindPopup(this.createNodePopup(Object.assign({}, node, { id })));
+
+                        // update icon status classes if possible
+                        if (existing._icon) {
+                            existing._icon.className = existing._icon.className.replace(/\b(active|inactive|online|offline)\b/g, '');
+                            existing._icon.classList.add((node.status === 'online' || node.status === 'active') ? 'active' : 'inactive');
+                        }
+                    } catch (err) {
+                        console.warn('MapService: error actualizando marker existente', key, err);
+                    }
+                } else {
+                    // create a new marker
+                    const newNode = Object.assign({}, node, { id });
+                    this.createNodeMarker(newNode);
+                }
             });
 
-            console.log(`⛓️ ${nodesData.length} nodos blockchain cargados`);
+            console.log(`⛓️ ${nodesData.length} nodos blockchain cargados (merge)`);
         } catch (error) {
             console.error('❌ Error cargando nodos:', error);
         }
@@ -357,8 +443,15 @@ class MapService {
         const marker = L.marker([node.lat, node.lng], { icon })
             .bindPopup(this.createNodePopup(node))
             .addTo(this.layers.blockchain);
+        const key = `node_${node.id}`;
+        this.markers[key] = marker;
 
-        this.markers[`node_${node.id}`] = marker;
+        // Debug: log creation so we can trace which nodes were actually added
+        try {
+            console.log('MapService.createNodeMarker: added', { key, id: node.id, lat: node.lat, lng: node.lng });
+        } catch (e) {
+            // ignore
+        }
     }
 
     /**

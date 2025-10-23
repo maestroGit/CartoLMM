@@ -292,6 +292,31 @@ class CartoLMMMap {
             bodegas.forEach((bodega, index) => {
                 this.createBodegaMarker(bodega, index);
             });
+
+            // Además, si el JSON contiene definición de nodos de red, renderizarlos
+            // Esto permite que nodos que no estén asociados a una bodega (por ejemplo
+            // ubicaciones en islas) se muestren en el mapa.
+            if (data.network && Array.isArray(data.network.nodes) && data.network.nodes.length > 0) {
+                try {
+                    const nodes = data.network.nodes
+                        .filter(n => typeof n.lat === 'number' && typeof n.lng === 'number')
+                        .map(n => ({
+                            lat: n.lat,
+                            lng: n.lng,
+                            name: n.nodeId || n.nodeId || n.node || 'Nodo',
+                            status: n.status === 'idle' ? 'offline' : (n.status || 'offline'),
+                            city: n.region || n.city || '',
+                            lastSeen: n.lastSeen || new Date().toISOString()
+                        }));
+
+                    if (nodes.length > 0) {
+                        console.log(`✅ Renderizando ${nodes.length} nodos desde JSON de red`);
+                        this.renderNodes(nodes);
+                    }
+                } catch (err) {
+                    console.warn('⚠️ Error procesando data.network.nodes:', err);
+                }
+            }
             
         } catch (error) {
             console.error('❌ Error cargando datos de bodegas:', error);

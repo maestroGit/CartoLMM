@@ -419,29 +419,22 @@ class CartoLMMWebSocket {
         if (!this.metricsDisplay) return;
         // Mostrar el panel si está oculto
         this.metricsDisplay.style.display = '';
-        // Actualizar el panel de métricas
-        const metricsHTML = `
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <h4>🌐 Red</h4>
-                    <p>Nodos: ${metrics.network.activeNodes}</p>
-                    <p>Altura: ${metrics.network.blockHeight}</p>
-                    <p>Hash Rate: ${metrics.network.hashRate}</p>
-                </div>
-                <div class="metric-card">
-                    <h4>🍷 Bodegas</h4>
-                    <p>Total: ${metrics.bodegas.total}</p>
-                    <p>Activas: ${metrics.bodegas.active}</p>
-                    <p>Producción: ${metrics.bodegas.totalProduction.toLocaleString()}</p>
-                </div>
-                <div class="metric-card">
-                    <h4>💰 Transacciones</h4>
-                    <p>Total: ${metrics.network.totalTransactions.toLocaleString()}</p>
-                    <p>Pendientes: ${metrics.network.pendingTransactions}</p>
-                </div>
-            </div>
-        `;
-        this.metricsDisplay.innerHTML = metricsHTML;
+        // Update individual values in the overlay instead of injecting full cards
+        // Keep the overlay element present so other scripts can reference it.
+        // If specific sub-elements are present, update them; otherwise keep the panel visible.
+        try {
+            // Example: if there are elements for quick display, update them.
+            const overlayNodesEl = this.metricsDisplay.querySelector('.overlay-nodes');
+            if (overlayNodesEl) overlayNodesEl.textContent = metrics.network.activeNodes;
+
+            const overlayBlocksEl = this.metricsDisplay.querySelector('.overlay-blocks');
+            if (overlayBlocksEl) overlayBlocksEl.textContent = metrics.network.blockHeight;
+
+            const overlayTxEl = this.metricsDisplay.querySelector('.overlay-tx');
+            if (overlayTxEl) overlayTxEl.textContent = metrics.network.totalTransactions;
+        } catch (err) {
+            console.warn('Error updating overlay metric elements:', err);
+        }
 
         // Actualizar el valor de nodos activos en el panel principal (sidebar)
         // Aumentar reintentos y delay para asegurar sincronización con el DOM

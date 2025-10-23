@@ -24,6 +24,14 @@
    📊 OVERLAYS Y CONTROLES DEL MAPA
    ============================================ */
 
+/*
+    Reglas en este archivo apuntan a elementos visuales que se colocan
+    sobre el mapa (posición absolute dentro de .map-overlays), por ejemplo:
+    - indicadores de estado (top-right)
+    - overlays flotantes (placeholders, timeline)
+    - estilos específicos de popups/markers si se necesitan aquí
+*/
+
 .map-overlays {
     position: absolute;
     top: 0;
@@ -78,77 +86,7 @@
     100% { opacity: 1; }
 }
 
-/* Control de Timeline */
-.timeline-overlay {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 25px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    min-width: 400px;
-}
-
-.timeline-btn {
-    background: #FFD700;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.timeline-btn:hover {
-    background: #FFA500;
-    transform: scale(1.1);
-}
-
-.timeline-slider {
-    flex: 1;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-    outline: none;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.timeline-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #FFD700;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.timeline-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: #FFD700;
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.timeline-time {
-    font-size: 12px;
-    color: #ccc;
-    min-width: 80px;
-    text-align: right;
-}
+/* (removed timeline-overlay and related controls - no longer used) */
 
 /* ============================================
    🍷 MARCADORES DE BODEGAS
@@ -373,14 +311,7 @@
         font-size: 12px;
     }
     
-    .timeline-overlay {
-        bottom: 20px;
-        left: 10px;
-        right: 10px;
-        transform: none;
-        min-width: auto;
-        padding: 10px 15px;
-    }
+    /* timeline overlay removed */
     
     .marker-bodega .marker-label {
         display: none;
@@ -396,18 +327,7 @@
     }
 }
 
-@media (max-width: 480px) {
-    .timeline-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 14px;
-    }
-    
-    .timeline-time {
-        font-size: 10px;
-        min-width: 60px;
-    }
-}
+/* small-screen timeline rules removed */
 
 /* ============================================
    🎨 ANIMACIONES Y TRANSICIONES

@@ -37,8 +37,8 @@
                                         &#9776;
                                     </button>
                                     <div class="dropdown-menu" id="toggle-metrics-menu" role="menu">
-                                        <button id="metrics-action" class="dropdown-item">📊 Switch</button>
-                                        <button id="wallet-demo-action" class="dropdown-item">👛 Demo Wallet</button>
+                                    <button id="metrics-action" class="dropdown-item">📊 Switch</button>
+                                    <button id="wallet-demo-action" class="dropdown-item">👛 Demo Wallet</button>
                                     </div>
                                 </div>
                                 <div style="display:flex;flex-direction:column;justify-content:center;min-height:48px;">
@@ -85,8 +85,8 @@
             })();
         </script>
 
-        <!-- Main Content -->
-        <main class="cartolmm-main">
+    <!-- Main Content -->
+    <main class="cartolmm-main">
     <div id="connection-status" class="connection-status" style="font-size:1em; padding:6px 18px; border-radius:8px; background-color:rgb(76,175,80); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.10); margin:40px auto 16px auto; max-width:320px; text-align:center;">
             🟢 Conectado en tiempo real
         </div>
@@ -96,18 +96,9 @@
                 
                 <!-- Map Overlays -->
                 <div class="map-overlays">
-                    
-                    <!-- WebSocket Metrics Display -->
-                    <div id="metrics-display" class="metrics-display">
-    <!-- Panel de métricas principal -->
-                        <!-- Se llenará dinámicamente vía WebSocket -->
-                    </div>
-                    
-                    <!-- Timeline Control -->
-                    <div id="timeline-control" class="timeline-overlay">
-                        <button id="play-pause" class="timeline-btn">▶️</button>
-                        <input type="range" id="timeline-slider" min="0" max="100" value="100" class="timeline-slider">
-                        <span id="timeline-time" class="timeline-time">Tiempo real</span>
+                    <!-- Simplified bottom section: placeholder for future metrics / controls -->
+                    <div class="simple-bottom-section" id="app-footer">
+                        <div class="footer-content">Resumen rápido — personaliza aquí más tarde</div>
                     </div>
                 </div>
             </div>
@@ -140,19 +131,23 @@
 
                 <!-- Bodegas Metrics -->
                 <section class="metrics-section">
-                    <h3>🍇 Bodegas Conectadas</h3>
+                    <h3>🍇 Users BlocskWine</h3>
                     <div class="metric-grid">
                         <div class="metric-card">
-                            <span class="metric-value" id="total-bodegas">-</span>
-                            <span class="metric-label">Total</span>
+                            <span class="metric-value" id="total-bodegas">8</span>
+                            <span class="metric-label">Bodegas</span>
                         </div>
                         <div class="metric-card">
-                            <span class="metric-value" id="stock-custodiado">-</span>
-                            <span class="metric-label">Stock</span>
+                            <span class="metric-value" id="stock-custodiado">89</span>
+                            <span class="metric-label">NºBotellas</span>
                         </div>
                         <div class="metric-card">
-                            <span class="metric-value" id="regiones-activas">-</span>
-                            <span class="metric-label">Regiones</span>
+                            <span class="metric-value" id="regiones-activas">104</span>
+                            <span class="metric-label">Wine Lovers</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="regiones-activas">4</span>
+                            <span class="metric-label">Regiones D.O</span>
                         </div>
                     </div>
                 </section>
@@ -202,11 +197,8 @@
                 <button id="modal-close" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <div style="display:flex; gap:24px; margin-bottom:24px; justify-content:center;">
-                    <button style="background:#8B0000;color:#fff;padding:12px 32px;border:none;border-radius:8px;font-size:1.2em;cursor:pointer;" onclick="console.log('Consulta existencias')">Custodiado</button>
-                    <button style="background:#FFA500;color:#fff;padding:12px 32px;border:none;border-radius:8px;font-size:1.2em;cursor:pointer;" onclick="console.log('Consulta existencias')">Disponible</button>
-                </div>
-                        <img id="modal-bottle-img" src="https://www.lavinia.com/media/catalog/product/cache/ad72991f53b91b689717df43818bf2ce/z/o/zorzal-garnacha.jpeg" alt="Botella de vino" style="width: 94px; height: auto; display: block; margin: 16px auto;">
+                        <img id="modal-bottle-img" src="https://www.lavinia.com/media/catalog/product/cache/ad72991f53b91b689717df43818bf2ce/z/o/zorzal-garnacha.jpeg" alt="Botella de vino" style="width: 752px; max-width:90%; height: auto; display: block; margin: 16px auto;">
+                <!-- Bodega details (restored) -->
                 <div class="bodega-info">
                     <div class="info-grid">
                         <div class="info-item">
@@ -233,6 +225,8 @@
                         <!-- Transactions will be populated -->
                     </div>
                 </div>
+                <!-- Actions container (left empty for programmatic buttons) -->
+                <div id="bodega-modal-actions" style="display: flex; gap: 24px; margin-top: 16px; justify-content: center;"></div>
             </div>
         </div>
     </div>
@@ -362,18 +356,13 @@
                     });
 
                     // First action: existing metrics toggle
+                    const mainGrid = document.querySelector('.cartolmm-main');
                     if (metricsAction) {
                         metricsAction.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            // keep the existing behavior
-                            metricsVisible = !metricsVisible;
-                            metricsDisplay.style.display = metricsVisible ? '' : 'none';
-                            sidebarPanel.style.display = metricsVisible ? '' : 'none';
-                            // set active state when metrics are hidden
-                            if (!metricsVisible) {
-                                toggleBtn.classList.add('active');
-                            } else {
-                                toggleBtn.classList.remove('active');
+                            // Toggle sidebar-open class on main grid
+                            if (mainGrid) {
+                                mainGrid.classList.toggle('sidebar-open');
                             }
                             closeMenu();
                         });

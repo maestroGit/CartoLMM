@@ -521,7 +521,8 @@ function handleBodegaSelected(bodega) {
         if (!img) {
             img = document.createElement('img');
             img.id = 'modal-bottle-img';
-            img.style.width = '120px';
+            img.style.width = '752px';
+            img.style.maxWidth = '90%';
             img.style.height = 'auto';
             img.style.display = 'block';
             img.style.margin = '16px auto';
@@ -534,6 +535,47 @@ function handleBodegaSelected(bodega) {
             this.onerror = null;
             this.src = bodega.fallbackImage || '/public/images/IconoMagnum.png';
         };
+
+        // Action buttons container (Custodiado / Disponible) under the image
+        let actions = document.getElementById('bodega-modal-actions');
+        if (!actions) {
+            actions = document.createElement('div');
+            actions.id = 'bodega-modal-actions';
+            actions.style.display = 'flex';
+            actions.style.gap = '24px';
+            actions.style.marginBottom = '24px';
+            actions.style.justifyContent = 'center';
+            // Insert after the image
+            img.parentNode.insertBefore(actions, img.nextSibling);
+        }
+
+        // Clear previous actions
+        actions.innerHTML = '';
+
+        const btnCustodiado = document.createElement('button');
+        btnCustodiado.textContent = 'Custodiado';
+        btnCustodiado.style.background = '#8B0000';
+        btnCustodiado.style.color = '#fff';
+        btnCustodiado.style.padding = '12px 32px';
+        btnCustodiado.style.border = 'none';
+        btnCustodiado.style.borderRadius = '8px';
+        btnCustodiado.style.fontSize = '1.2em';
+        btnCustodiado.style.cursor = 'pointer';
+        btnCustodiado.onclick = () => console.log('Consulta existencias');
+
+        const btnDisponible = document.createElement('button');
+        btnDisponible.textContent = 'Disponible';
+        btnDisponible.style.background = '#FFA500';
+        btnDisponible.style.color = '#fff';
+        btnDisponible.style.padding = '12px 32px';
+        btnDisponible.style.border = 'none';
+        btnDisponible.style.borderRadius = '8px';
+        btnDisponible.style.fontSize = '1.2em';
+        btnDisponible.style.cursor = 'pointer';
+        btnDisponible.onclick = () => console.log('Consulta disponibilidad');
+
+        actions.appendChild(btnCustodiado);
+        actions.appendChild(btnDisponible);
 
         // Mostrar el modal
         modal.classList.remove('hidden');
