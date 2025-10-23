@@ -390,13 +390,42 @@ class DashboardService {
         }
 
         if (blockchainData) {
-            this.metrics.totalBlocks = blockchainData.blocks?.length || 0;
-            this.metrics.activeNodes = blockchainData.peers?.length || 0;
-            this.metrics.pendingTransactions = blockchainData.transactions?.length || 0;
+            // blockchainData can come in several shapes:
+            // - full payload { blocks: [], peers: [], transactions: [] }
+            // - metrics object { totalBlocks, activeNodes, network: { activeNodes } }
+            // - compact { network: { activeNodes, blockHeight, totalTransactions } }
+            if (typeof blockchainData.activeNodes === 'number') {
+                this.metrics.activeNodes = blockchainData.activeNodes;
+            } else if (Array.isArray(blockchainData.peers)) {
+                this.metrics.activeNodes = blockchainData.peers.length;
+            } else if (blockchainData.network && typeof blockchainData.network.activeNodes === 'number') {
+                this.metrics.activeNodes = blockchainData.network.activeNodes;
+            }
+
+            if (Array.isArray(blockchainData.blocks)) {
+                this.metrics.totalBlocks = blockchainData.blocks.length;
+            } else if (typeof blockchainData.totalBlocks === 'number') {
+                this.metrics.totalBlocks = blockchainData.totalBlocks;
+            }
+
+            if (Array.isArray(blockchainData.transactions)) {
+                this.metrics.pendingTransactions = blockchainData.transactions.length;
+            } else if (typeof blockchainData.pendingTransactions === 'number') {
+                this.metrics.pendingTransactions = blockchainData.pendingTransactions;
+            } else if (blockchainData.network && typeof blockchainData.network.totalTransactions === 'number') {
+                this.metrics.pendingTransactions = blockchainData.network.totalTransactions;
+            }
         }
 
         this.metrics.networkStatus = window.blockchainService.isConnected ? 'connected' : 'disconnected';
-        
+
+        // Set last updated timestamp
+        try {
+            this.metrics.lastUpdated = new Date().toISOString();
+        } catch (e) {
+            this.metrics.lastUpdated = Date.now();
+        }
+
         this.updateMetricsDisplay();
     }
 
@@ -405,17 +434,65 @@ class DashboardService {
      */
     updateMetricsDisplay() {
         // Actualizar contadores en sidebar
-        this.updateCounter('.total-bodegas .metric-value', this.metrics.totalBodegas);
-        this.updateCounter('.active-bodegas .metric-value', this.metrics.activeBodegas);
-        this.updateCounter('.total-blocks .metric-value', this.metrics.totalBlocks);
-        this.updateCounter('.active-nodes .metric-value', this.metrics.activeNodes);
-        this.updateCounter('.pending-transactions .metric-value', this.metrics.pendingTransactions);
+        // Preferir elementos por ID si existen (más robusto frente a cambios de markup)
+        const blocksEl = document.getElementById('blocks-counter');
+        if (blocksEl) blocksEl.textContent = this.metrics.totalBlocks ?? blocksEl.textContent;
+        else this.updateCounter('.total-blocks .metric-value', this.metrics.totalBlocks);
+
+        const txEl = document.getElementById('transactions-counter');
+        if (txEl) txEl.textContent = this.metrics.pendingTransactions ?? txEl.textContent;
+        else this.updateCounter('.pending-transactions .metric-value', this.metrics.pendingTransactions);
+
+        const activeNodesEl = document.getElementById('active-nodes');
+        if (activeNodesEl) activeNodesEl.textContent = this.metrics.activeNodes ?? activeNodesEl.textContent;
+        else this.updateCounter('.active-nodes .metric-value', this.metrics.activeNodes);
+
+        const totalBodegasEl = document.getElementById('total-bodegas');
+        if (totalBodegasEl) totalBodegasEl.textContent = this.metrics.totalBodegas ?? totalBodegasEl.textContent;
+        else this.updateCounter('.total-bodegas .metric-value', this.metrics.totalBodegas);
+
+        const activeBodegasEl = document.querySelector('.active-bodegas .metric-value');
+        if (activeBodegasEl) activeBodegasEl.textContent = this.metrics.activeBodegas ?? activeBodegasEl.textContent;
+        else this.updateCounter('.active-bodegas .metric-value', this.metrics.activeBodegas);
 
         // Actualizar estado de conexión
         const statusElement = document.querySelector('.network-status .metric-value');
         if (statusElement) {
             statusElement.textContent = this.metrics.networkStatus;
             statusElement.className = `metric-value ${this.metrics.networkStatus}`;
+        }
+
+        // Mostrar última actualización en formato legible
+        const lastUpdatedEl = document.getElementById('metrics-last-updated');
+        if (lastUpdatedEl) {
+            const ts = this.metrics.lastUpdated;
+            if (!ts) {
+                lastUpdatedEl.textContent = '-';
+            } else {
+                // formatear a tiempo relativo simple y añadir la hora exacta
+                const when = (function format(ts) {
+                    try {
+                        const d = new Date(ts);
+                        const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+                        let rel;
+                        if (diff < 5) rel = 'ahora';
+                        else if (diff < 60) rel = `hace ${diff}s`;
+                        else if (diff < 3600) rel = `hace ${Math.floor(diff/60)}m`;
+                        else if (diff < 86400) rel = `hace ${Math.floor(diff/3600)}h`;
+                        else rel = `hace ${Math.floor(diff/86400)}d`;
+
+                        // Formatear hora exacta YYYY-MM-DD HH:MM
+                        const pad = (n) => String(n).padStart(2, '0');
+                        const exact = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+                        return `${rel} — ${exact}`;
+                    } catch (e) {
+                        return String(ts);
+                    }
+                })(ts);
+
+                lastUpdatedEl.textContent = when;
+            }
         }
     }
 
