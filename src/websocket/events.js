@@ -14,48 +14,31 @@ let connectedClients = new Set();
 /**
  * Configurar WebSocket events con integración magnumsmaster
  */
-export function setupWebSocket(io) {
+export const setupWebSocket = (io) => {
     console.log('🔌 Configurando WebSocket con integración blockchain...');
-    
     globalIO = io;
-    
     io.on('connection', (socket) => {
         console.log('🔗 Cliente conectado:', socket.id);
         connectedClients.add(socket.id);
-        
-        // Inicializar conexión del cliente
         initializeClientConnection(socket);
-        
-        // Configurar handlers de eventos del cliente
         setupClientEventHandlers(socket);
-        
-        // Iniciar actualizaciones en tiempo real para este cliente
         startRealTimeUpdates(socket);
-
         // --- SIMULACIÓN DE TRANSACCIONES MOCK ---
-        // La siguiente línea activa la simulación de transacciones y bloques mock en el frontend.
-        // Si se descomenta, el servidor emitirá transacciones y bloques simulados cada 10 segundos.
-        // Útil para pruebas sin backend real, pero genera actividad ficticia en la interfaz.
         // startSimulationMode();
-
-        // Cleanup al desconectar
         socket.on('disconnect', () => {
             console.log('❌ Cliente desconectado:', socket.id);
             cleanupClient(socket.id);
         });
     });
-    
-    // Inicializar integración con magnumsmaster
     initializeMagnusmasterIntegration();
-    
     console.log('✅ WebSocket configurado con integración blockchain');
     return io;
-}
+};
 
 /**
  * 🚀 Inicializar conexión del cliente
  */
-async function initializeClientConnection(socket) {
+const initializeClientConnection = async (socket) => {
     try {
         // Enviar estado inicial
         socket.emit('system:connected', {
@@ -104,7 +87,7 @@ async function initializeClientConnection(socket) {
 /**
  * 🔄 Inicializar integración con magnumsmaster
  */
-async function initializeMagnusmasterIntegration() {
+const initializeMagnusmasterIntegration = async () => {
     try {
         const { default: MagnusmasterAPI } = await import('../api/magnusmasterAPI.js');
         magnusmasterAPI = new MagnusmasterAPI();
@@ -127,7 +110,7 @@ async function initializeMagnusmasterIntegration() {
 /**
  * 🌐 Iniciar monitoreo global de blockchain
  */
-function startGlobalBlockchainMonitoring() {
+const startGlobalBlockchainMonitoring = () => {
     console.log('📡 Iniciando monitoreo blockchain global...');
     
     // Monitorear cambios en bloques cada 5 segundos
@@ -191,7 +174,7 @@ function startGlobalBlockchainMonitoring() {
 /**
  * 🎭 Iniciar modo simulación (sin magnumsmaster)
  */
-function startSimulationMode() {
+const startSimulationMode = () => {
     console.log('🎬 Iniciando modo simulación blockchain...');
     
     const simulationInterval = setInterval(() => {
@@ -217,7 +200,7 @@ function startSimulationMode() {
 /**
  * ⏰ Iniciar actualizaciones individuales para un cliente
  */
-function startRealTimeUpdates(socket) {
+const startRealTimeUpdates = (socket) => {
     // Ping cada 30 segundos para mantener conexión
     const pingInterval = setInterval(() => {
         if (socket.connected) {
@@ -243,7 +226,7 @@ function startRealTimeUpdates(socket) {
 /**
  * 📢 Broadcast a todos los clientes conectados
  */
-function broadcastToAllClients(eventName, data) {
+const broadcastToAllClients = (eventName, data) => {
     if (globalIO && connectedClients.size > 0) {
         globalIO.emit(eventName, data);
         console.log(`📡 ${eventName} enviado a ${connectedClients.size} clientes`);
@@ -253,7 +236,7 @@ function broadcastToAllClients(eventName, data) {
 /**
  * 🎲 Generar transacción mock
  */
-function generateMockTransaction() {
+const generateMockTransaction = () => {
     const addresses = [
         '0x123...abc', '0x456...def', '0x789...ghi', '0xabc...123', '0xdef...456'
     ];
@@ -274,7 +257,7 @@ function generateMockTransaction() {
 /**
  * 🧱 Generar bloque mock
  */
-function generateMockBlock() {
+const generateMockBlock = () => {
     return {
         index: Math.floor(Math.random() * 1000),
         timestamp: new Date().toISOString(),
@@ -289,7 +272,7 @@ function generateMockBlock() {
 /**
  * 🧹 Limpiar cliente desconectado
  */
-function cleanupClient(clientId) {
+const cleanupClient = (clientId) => {
     connectedClients.delete(clientId);
     
     if (activeIntervals.has(clientId)) {
@@ -313,7 +296,7 @@ function cleanupClient(clientId) {
 /**
  * 🔄 Iniciar simulación de datos mock
  */
-function startMockDataSimulation(socket) {
+const startMockDataSimulation = (socket) => {
     console.log(`🎲 Iniciando simulación mock para cliente ${socket.id} - Intervalo: ${config.mockDataInterval}ms`);
     
     const intervalId = setInterval(() => {
@@ -354,7 +337,7 @@ function startMockDataSimulation(socket) {
 /**
  * Emitir nueva transacción
  */
-function emitNewTransaction(socket) {
+const emitNewTransaction = (socket) => {
     const bodegas = ['ribera_001', 'rioja_002', 'navarra_003', 'jerez_004', 'rias_005'];
     const wines = [
         'Ribera del Duero Reserva 2020',
@@ -386,7 +369,7 @@ function emitNewTransaction(socket) {
 /**
  * Emitir nuevo bloque
  */
-function emitNewBlock(socket) {
+const emitNewBlock = (socket) => {
     const newBlock = {
         index: Math.floor(Math.random() * 1000) + 100,
         timestamp: new Date().toISOString(),
@@ -406,7 +389,7 @@ function emitNewBlock(socket) {
 /**
  * Emitir evento de peer
  */
-function emitPeerEvent(socket) {
+const emitPeerEvent = (socket) => {
     const eventTypes = ['connected', 'disconnected', 'sync_started', 'sync_completed'];
     const peers = ['node_ribera_001', 'node_rioja_002', 'node_navarra_003'];
     
@@ -428,7 +411,7 @@ function emitPeerEvent(socket) {
 /**
  * Emitir métricas del sistema
  */
-function emitSystemMetrics(socket) {
+const emitSystemMetrics = (socket) => {
     magnusmasterAPI.getSystemInfo().then((result) => {
         let activeNodes = '-';
         let totalTransactions = '-';
@@ -506,7 +489,7 @@ function emitSystemMetrics(socket) {
 /**
  * Configurar handlers para eventos del cliente
  */
-function setupClientEventHandlers(socket) {
+const setupClientEventHandlers = (socket) => {
     // Cliente solicita datos específicos
     socket.on('client:requestData', (data) => {
         console.log('📥 Cliente solicita datos:', data);
@@ -547,7 +530,7 @@ function setupClientEventHandlers(socket) {
 /**
  * Generar datos de bodegas
  */
-function generateBodegasData() {
+const generateBodegasData = () => {
     return {
         timestamp: new Date().toISOString(),
         bodegas: [
@@ -561,7 +544,7 @@ function generateBodegasData() {
 /**
  * Generar datos de transacciones
  */
-function generateTransactionsData() {
+const generateTransactionsData = () => {
     const transactions = [];
     for (let i = 0; i < 5; i++) {
         transactions.push({
@@ -576,7 +559,7 @@ function generateTransactionsData() {
 /**
  * Generar datos de bloques
  */
-function generateBlocksData() {
+const generateBlocksData = () => {
     const blocks = [];
     for (let i = 0; i < 3; i++) {
         blocks.push({

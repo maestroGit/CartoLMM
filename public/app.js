@@ -112,32 +112,13 @@ class CartoLMMWebSocket {
         // Sistema: Estado inicial
         this.socket.on('system:connected', (data) => {
             console.log('🎉 Sistema conectado:', data);
-            this.displayWelcomeMessage(data);
+            // Mensaje de bienvenida eliminado
         });
-        
-        // Sistema: Error
-        this.socket.on('system:error', (data) => {
-            console.error('⚠️ Error del sistema:', data);
-            this.displayError(data);
-        });
-        
-        // Blockchain: Nueva transacción
-        this.socket.on('blockchain:newTransaction', (transaction) => {
-            console.log('💰 Nueva transacción:', transaction);
-            this.handleNewTransaction(transaction);
-        });
-        
-        // Blockchain: Nuevo bloque
-        this.socket.on('blockchain:newBlock', (block) => {
-            console.log('🔗 Nuevo bloque:', block);
-            this.handleNewBlock(block);
-        });
-        
-        // Blockchain: Evento de peer
-        this.socket.on('blockchain:peerEvent', (peerEvent) => {
-            console.log('🌐 Evento peer:', peerEvent);
-            this.handlePeerEvent(peerEvent);
-        });
+
+    /**
+     * 🎉 Mostrar mensaje de bienvenida
+     */
+    // displayWelcomeMessage eliminado
         
         // Blockchain: Datos iniciales
         this.socket.on('blockchain:initial-data', (data) => {

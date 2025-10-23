@@ -196,13 +196,15 @@ function showWelcomeMessage() {
     `;
     
     document.body.appendChild(notification);
-    
-    // Auto-remover después de 5 segundos
+    console.log('[Welcome] Mensaje mostrado:', new Date().toISOString());
+    // Mostrar 0.5s, luego fade-out 1s, luego remover
     setTimeout(() => {
         if (notification.parentNode) {
+            console.log('[Welcome] DOM antes de eliminar:', document.querySelectorAll('.welcome-message'));
             notification.remove();
+            console.log('[Welcome] Mensaje eliminado:', new Date().toISOString());
         }
-    }, 5000);
+    }, 3000); // visible duration 3 segundos
 }
 
 /**

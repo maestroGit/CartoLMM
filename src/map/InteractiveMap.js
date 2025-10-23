@@ -115,11 +115,15 @@ class CartoLMMMap {
             "⛰️ Topográfico": topoLayer
         };
 
+        // Guardar en la instancia para uso posterior (toggle, creación del control)
+        this.baseMaps = baseMaps;
+
         // Añadir capa por defecto
         osmLayer.addTo(this.map);
 
-        // Control de capas
-        L.control.layers(baseMaps).addTo(this.map);
+    // Reservar el lugar para el control; lo crearemos en setupLayers donde
+    // también conocemos las capas de overlay. De momento lo dejamos null.
+    this.layersControl = null;
 
         // Control de escala
         L.control.scale({
@@ -215,10 +219,25 @@ class CartoLMMMap {
         // Capa de nodos blockchain
         this.layers.nodes = L.layerGroup();
         
-        // Añadir capas al mapa
-        this.layers.bodegas.addTo(this.map);
-        this.layers.transactions.addTo(this.map);
-        this.layers.nodes.addTo(this.map);
+        // NOTA: no añadimos las capas overlay al mapa por defecto. Queremos que
+        // el mapa se cargue 'limpio' y que el usuario elija qué overlays activar
+        // mediante el control que se mostrará al pulsar el botón.
+
+        // Crear objeto overlays para el control de capas
+        const overlays = {
+            '🍷 Bodegas': this.layers.bodegas,
+            '💸 Transacciones': this.layers.transactions,
+            '🔗 Nodos': this.layers.nodes
+        };
+
+    // Crear el control de capas (no lo añadimos al mapa todavía)
+    this.layersControl = L.control.layers(this.baseMaps || null, overlays, { collapsed: false });
+
+    // NOTE: do NOT add the control to the map here. The control should be
+    // displayed only when the user explicitly toggles it via the UI button.
+    // Previously this file added the control automatically which caused
+    // race conditions with the global MapService. Leaving it un-attached
+    // prevents unexpected auto-display.
 
         console.log('✅ Capas configuradas');
     }
@@ -375,8 +394,8 @@ class CartoLMMMap {
             const popupContent = this.generateBodegaPopup(bodega);
             marker.bindPopup(popupContent);
             
-            // Añadir al mapa y arrays
-            marker.addTo(this.map);
+            // Añadir a la capa correspondiente (no al mapa directamente) y arrays
+            this.layers.bodegas.addLayer(marker);
             this.markers.bodegas.push(marker);
             
             console.log(`✅ Marcador creado: ${bodega.name} (${lat}, ${lng})`);
@@ -609,7 +628,60 @@ class CartoLMMMap {
             });
         }
 
+        // Toggle layers control via UI button (starts hidden)
+        const toggleLayersBtn = document.getElementById('toggle-layers');
+        if (toggleLayersBtn) {
+            // If another script already wired the button, skip to avoid duplicate handlers
+            try {
+                if (toggleLayersBtn.dataset && toggleLayersBtn.dataset.toggleWired === 'true') {
+                    console.log('InteractiveMap: toggle-layers already wired by another script, skipping');
+                } else {
+                    toggleLayersBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleLayersControl();
+                    });
+                }
+            } catch (err) {
+                // Fallback: attach listener if dataset access fails
+                toggleLayersBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.toggleLayersControl();
+                });
+            }
+        }
+
         console.log('✅ Event handlers configurados');
+    }
+
+    /**
+     * Mostrar / ocultar el control de capas
+     */
+    toggleLayersControl() {
+        try {
+            if (!this.layersControl) {
+                // Si por alguna razón no está creado aún, crear un control basado
+                // en las capas que tenemos configuradas.
+                const overlays = {
+                    '🍷 Bodegas': this.layers.bodegas,
+                    '💸 Transacciones': this.layers.transactions,
+                    '🔗 Nodos': this.layers.nodes
+                };
+                this.layersControl = L.control.layers(this.baseMaps || null, overlays, { collapsed: false });
+            }
+
+            // Si el control está en el DOM (tiene map asociado), lo quitamos
+            if (this.layersControl._map) {
+                this.map.removeControl(this.layersControl);
+                // También cerrar cualquier panel expandido (si aplica)
+                const container = this.layersControl.getContainer && this.layersControl.getContainer();
+                if (container) container.classList.remove('leaflet-control-layers-expanded');
+            } else {
+                // Añadir control al mapa (se abrirá con las opciones)
+                this.layersControl.addTo(this.map);
+            }
+        } catch (err) {
+            console.error('Error toggling layers control:', err);
+        }
     }
 
     /**
@@ -772,13 +844,17 @@ class CartoLMMMap {
                 </div>
             `).openPopup();
             
-            // Agregar al mapa
-            marker.addTo(this.map);
+            // Añadir a la capa de transacciones (overlay)
+            this.layers.transactions.addLayer(marker);
             this.markers.transactions.push(marker);
-            
+
             // Auto-remover después de 30 segundos
             setTimeout(() => {
-                this.map.removeLayer(marker);
+                try {
+                    this.layers.transactions.removeLayer(marker);
+                } catch (e) {
+                    // ignore
+                }
                 const index = this.markers.transactions.indexOf(marker);
                 if (index > -1) {
                     this.markers.transactions.splice(index, 1);
@@ -835,12 +911,17 @@ class CartoLMMMap {
                 </div>
             `);
             
-            marker.addTo(this.map);
+            // Añadir a la capa de nodos (overlay)
+            this.layers.nodes.addLayer(marker);
             this.markers.nodes.push(marker);
-            
+
             // Auto-remover después de 60 segundos
             setTimeout(() => {
-                this.map.removeLayer(marker);
+                try {
+                    this.layers.nodes.removeLayer(marker);
+                } catch (e) {
+                    // ignore
+                }
                 const index = this.markers.nodes.indexOf(marker);
                 if (index > -1) {
                     this.markers.nodes.splice(index, 1);

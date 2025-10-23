@@ -38,8 +38,24 @@ class MapService {
                 })
             };
 
-            // Agregar capa por defecto (OpenStreetMap)
-            baseLayers["🗺️ OpenStreetMap"].addTo(this.map);
+            // Agregar capa por defecto: preferimos la capa 'Satélite' si existe,
+            // de lo contrario caer a OpenStreetMap.
+            try {
+                const satKey = Object.keys(baseLayers).find(k => /sat(elite|élite|élite|élite|é|í)/i.test(k) || /satelite|satellite|⛰️|🛰️/i.test(k));
+                if (satKey && baseLayers[satKey]) {
+                    baseLayers[satKey].addTo(this.map);
+                } else if (baseLayers["🗺️ OpenStreetMap"]) {
+                    baseLayers["🗺️ OpenStreetMap"].addTo(this.map);
+                } else {
+                    // Fallback to the first layer
+                    const first = Object.values(baseLayers)[0];
+                    if (first) first.addTo(this.map);
+                }
+            } catch (err) {
+                console.warn('MapService: could not set default base layer, falling back', err);
+                const first = Object.values(baseLayers)[0];
+                if (first) first.addTo(this.map);
+            }
 
             // Guardar las capas base para el control
             this.baseLayers = baseLayers;
@@ -62,28 +78,60 @@ class MapService {
      * Configura las capas del mapa
      */
     setupLayers() {
-        // Capa de bodegas
-        this.layers.bodegas = L.layerGroup().addTo(this.map);
+        // Capa de bodegas (no añadimos a this.map por defecto)
+    this.layers.bodegas = L.layerGroup();
         
         // Capa de nodos blockchain
-        this.layers.blockchain = L.layerGroup().addTo(this.map);
+    this.layers.blockchain = L.layerGroup();
         
         // Capa de conexiones/transacciones
-        this.layers.connections = L.layerGroup().addTo(this.map);
+        this.layers.connections = L.layerGroup();
         
         // Capa de animaciones
-        this.layers.animations = L.layerGroup().addTo(this.map);
+        this.layers.animations = L.layerGroup();
 
-        // Control de capas
+        // Control de capas: lo creamos pero no lo añadimos al mapa por defecto.
         const overlays = {
             "🍷 Bodegas": this.layers.bodegas,
             "⛓️ Red Blockchain": this.layers.blockchain
         };
 
-        L.control.layers(this.baseLayers, overlays, { 
+        this.layersControl = L.control.layers(this.baseLayers, overlays, { 
             position: 'topright',
             collapsed: false 
-        }).addTo(this.map);
+        });
+
+        // Add requested overlays to the map by default
+        try {
+            this.layers.bodegas.addTo(this.map);
+            this.layers.blockchain.addTo(this.map);
+            console.log('MapService: Default overlays added -> Bodegas, Red Blockchain');
+        } catch (err) {
+            console.warn('MapService: could not add default overlays at setup time', err);
+        }
+
+        // Wire toggle button in the UI (button exists in public/index.html)
+        const toggleBtn = document.getElementById('toggle-layers');
+        if (toggleBtn) {
+            // If the hosting page already marked the button as wired, skip adding
+            // a second listener to avoid double-invocation races.
+            try {
+                if (toggleBtn.dataset && toggleBtn.dataset.toggleWired === 'true') {
+                    console.log('MapService.setupLayers: toggle-layers already wired by host page, skipping attach');
+                } else {
+                    toggleBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleLayersControl();
+                    });
+                }
+            } catch (err) {
+                // Fallback: attach listener if any error reading dataset
+                toggleBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.toggleLayersControl();
+                });
+            }
+        }
     }
 
     /**
@@ -111,6 +159,91 @@ class MapService {
         window.addEventListener('blockchain:peerEvent', (event) => {
             this.handlePeerEvent(event.detail);
         });
+    }
+
+    /**
+     * Mostrar/ocultar el control de capas
+     */
+    toggleLayersControl() {
+        try {
+            console.log('MapService.toggleLayersControl called', {
+                hasLayersControl: !!this.layersControl,
+                layersControlMapAttached: !!(this.layersControl && this.layersControl._map),
+                mapExists: !!this.map
+            });
+
+            if (!this.layersControl) {
+                console.warn('toggleLayersControl: no layersControl present yet');
+                return;
+            }
+
+            if (this.layersControl._map) {
+                // Ya está añadido, quitar
+                this.map.removeControl(this.layersControl);
+                const container = this.layersControl.getContainer && this.layersControl.getContainer();
+                if (container) container.classList.remove('leaflet-control-layers-expanded');
+                console.log('MapService.toggleLayersControl: layers control removed from map');
+            } else {
+                // Añadir control al mapa
+                // Set a global temporary flag so defensive MutationObservers know this
+                // addition is intentional and should not be removed.
+                try {
+                    window.__allowLeafletControl = true;
+                } catch (e) {
+                    // ignore (non-browser env)
+                }
+
+                this.layersControl.addTo(this.map);
+
+                // Expand the control so users see options immediately
+                try {
+                    const container = this.layersControl.getContainer && this.layersControl.getContainer();
+                    if (container) {
+                        container.classList.add('leaflet-control-layers-expanded');
+
+                        // Log debugging info about the container so we can see why it's not visible
+                        try {
+                            const parent = container.parentNode;
+                            const rect = container.getBoundingClientRect && container.getBoundingClientRect();
+                            console.log('MapService: layersControl container added', {
+                                containerTag: container.tagName,
+                                parentTag: parent && parent.tagName,
+                                inDocument: document.contains(container),
+                                rect: rect || null,
+                                outerHTML_snippet: (container.outerHTML || '').slice(0, 200)
+                            });
+                        } catch (inner) {
+                            console.warn('MapService: could not inspect layersControl container', inner);
+                        }
+
+                        // After a short delay, log again to detect if something removed or hid it
+                        setTimeout(() => {
+                            try {
+                                const stillInDoc = document.contains(container);
+                                const rect2 = container.getBoundingClientRect && container.getBoundingClientRect();
+                                console.log('MapService: layersControl container after 800ms', {
+                                    inDocument: stillInDoc,
+                                    rect: rect2 || null
+                                });
+                            } catch (inner2) {
+                                console.warn('MapService: post-check failed', inner2);
+                            }
+                        }, 800);
+                    }
+                } catch (err) {
+                    console.warn('Could not expand layers control container:', err);
+                }
+
+                // Clear the global flag shortly after
+                setTimeout(() => {
+                    try { window.__allowLeafletControl = false; } catch (e) {}
+                }, 1200);
+
+                console.log('MapService.toggleLayersControl: layers control added to map');
+            }
+        } catch (err) {
+            console.error('Error toggling layers control:', err);
+        }
     }
 
     /**
@@ -154,10 +287,10 @@ class MapService {
         });
 
         const marker = L.marker([bodega.location.lat, bodega.location.lng], { icon })
-            .bindPopup(this.createBodegaPopup(bodega))
+            .bindPopup(this.createBodegaPopup(bodega), { offset: [0, -10] }) // popup casi tocando el icono
             .addTo(this.layers.bodegas);
 
-        // Eventos del marker
+        // Evento original: seleccionar bodega con click
         marker.on('click', () => {
             this.selectBodega(bodega);
         });
@@ -172,14 +305,9 @@ class MapService {
         return `
             <div class="bodega-popup">
                 <h3>${bodega.name}</h3>
-                <p><strong>Región:</strong> ${bodega.region}</p>
-                <p><strong>Blockchain:</strong> ${bodega.blockchain?.status || 'Desconocido'}</p>
                 <div class="bodega-actions">
                     <button onclick="mapService.viewBodegaDetails('${bodega.id}')">
                         Ver Detalles
-                    </button>
-                    <button onclick="mapService.viewBodegaTransactions('${bodega.id}')">
-                        Transacciones
                     </button>
                 </div>
             </div>
@@ -239,7 +367,7 @@ class MapService {
     createNodePopup(node) {
         return `
             <div class="node-popup">
-                <h3>Nodo: ${node.id}</h3>
+                <h3>${node.id === 'genesis_node' ? 'winelover_2' : `Nodo: ${node.id}`}</h3>
                 <p><strong>Estado:</strong> <span class="status ${node.status}">${node.status}</span></p>
                 <p><strong>Puerto:</strong> ${node.port || 'N/A'}</p>
                 <p><strong>Peers:</strong> ${node.peers || 0}</p>
@@ -380,7 +508,7 @@ class MapService {
                 marker._icon.classList.add('new-block-pulse');
                 setTimeout(() => {
                     marker._icon.classList.remove('new-block-pulse');
-                }, 1000);
+                }, 2000);
             }
         });
     }

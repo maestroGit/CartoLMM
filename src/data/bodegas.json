@@ -1,158 +1,8 @@
 {
   "bodegas": [
+  
     {
-      "id": "bodega_genesis_madrid",
-      "name": "Genesis Node Madrid",
-      "type": "genesis",
-      "region": "Madrid",
-      "denomination": "Vinos de Madrid",
-      "location": {
-        "lat": 40.4168,
-        "lng": -3.7038,
-        "elevation": 650
-      },
-      "blockchain": {
-        "nodeId": "genesis_node",
-        "status": "active",
-        "httpPort": 3000,
-        "p2pPort": 5001,
-        "peers": ["node_ribera_001", "node_rioja_002", "node_priorat_003"],
-        "isGenesis": true
-      },
-      "inventory": {
-        "stockCustodiado": 0,
-        "transaccionesActivas": 12,
-        "ultimaActividad": "2025-10-07T10:30:00Z",
-        "valorCustodia": "0 €"
-      },
-      "visual": {
-        "icon": "⛓️",
-        "color": "#10B981",
-        "size": "large",
-        "priority": 1
-      },
-      "contact": {
-        "establecido": 2025,
-        "terroir": "Nodo central de la red",
-        "descripcion": "Nodo génesis de la red Large Magnum Master"
-      }
-    },
-    {
-      "id": "bodega_ribera_001",
-      "name": "Bodegas Hermanos del Duero",
-      "type": "winery",
-      "region": "Ribera del Duero",
-      "denomination": "D.O. Ribera del Duero",
-      "location": {
-        "lat": 41.6518,
-        "lng": -4.7245,
-        "elevation": 850
-      },
-      "blockchain": {
-        "nodeId": "node_ribera_001",
-        "status": "active",
-        "httpPort": 3001,
-        "p2pPort": 5002,
-        "peers": ["genesis_node", "node_rioja_002"],
-        "isGenesis": false
-      },
-      "inventory": {
-        "stockCustodiado": 150,
-        "transaccionesActivas": 5,
-        "ultimaActividad": "2025-10-07T09:45:00Z",
-        "valorCustodia": "18,750 €"
-      },
-      "visual": {
-        "icon": "🍷",
-        "color": "#722F37",
-        "size": "large",
-        "priority": 2
-      },
-      "contact": {
-        "establecido": 1995,
-        "terroir": "Arcilloso-calcáreo",
-        "descripcion": "Bodega familiar especializada en Tempranillo premium"
-      },
-      "wines": [
-        {
-          "nombre": "Reserva Especial 2019",
-          "tipo": "Tinto",
-          "stock": 85,
-          "precio": "125 €"
-        },
-        {
-          "nombre": "Gran Reserva 2017",
-          "tipo": "Tinto", 
-          "stock": 45,
-          "precio": "180 €"
-        },
-        {
-          "nombre": "Crianza 2021",
-          "tipo": "Tinto",
-          "stock": 20,
-          "precio": "85 €"
-        }
-      ]
-    },
-    {
-      "id": "bodega_rioja_002",
-      "name": "Viñedos de La Rioja Alta",
-      "type": "winery",
-      "region": "La Rioja",
-      "denomination": "D.O.Ca. Rioja",
-      "location": {
-        "lat": 42.5191,
-        "lng": -2.4946,
-        "elevation": 485
-      },
-      "blockchain": {
-        "nodeId": "node_rioja_002",
-        "status": "active",
-        "httpPort": 3002,
-        "p2pPort": 5003,
-        "peers": ["genesis_node", "node_ribera_001", "node_priorat_003"],
-        "isGenesis": false
-      },
-      "inventory": {
-        "stockCustodiado": 220,
-        "transaccionesActivas": 8,
-        "ultimaActividad": "2025-10-07T11:15:00Z",
-        "valorCustodia": "31,900 €"
-      },
-      "visual": {
-        "icon": "🍷",
-        "color": "#8B0000",
-        "size": "large",
-        "priority": 3
-      },
-      "contact": {
-        "establecido": 1890,
-        "terroir": "Franco-arcilloso con cantos rodados",
-        "descripcion": "Centenaria bodega riojana con tradición familiar"
-      },
-      "wines": [
-        {
-          "nombre": "Gran Reserva 1996",
-          "tipo": "Tinto",
-          "stock": 95,
-          "precio": "220 €"
-        },
-        {
-          "nombre": "Reserva Selección 2018",
-          "tipo": "Tinto",
-          "stock": 75,
-          "precio": "145 €"
-        },
-        {
-          "nombre": "Blanco Fermentado 2022",
-          "tipo": "Blanco",
-          "stock": 50,
-          "precio": "95 €"
-        }
-      ]
-    },
-    {
-      "id": "bodega_priorat_003", 
+      "id": "bodega_priorat_003",
       "name": "Celler Mas del Priorat",
       "type": "winery",
       "region": "Priorat",
@@ -167,7 +17,10 @@
         "status": "active",
         "httpPort": 3003,
         "p2pPort": 5004,
-        "peers": ["genesis_node", "node_rioja_002"],
+        "peers": [
+          "node",
+          "node_rioja_002"
+        ],
         "isGenesis": false
       },
       "inventory": {
@@ -176,8 +29,8 @@
         "ultimaActividad": "2025-10-07T08:30:00Z",
         "valorCustodia": "17,100 €"
       },
-      "imageUrl": "https://www.lavinia.es/media/catalog/product/cache/1/image/1200x/040ec09b1e35df139433887a97daa66f/8/4/8437007216017_1.jpg",
-      "fallbackImage": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Wine_bottle_icon.png",
+      "imageUrl": "https://www.lavinia.com/media/catalog/product/cache/ad72991f53b91b689717df43818bf2ce/z/o/zorzal-garnacha.jpeg",
+      "fallbackImage": "/public/images/IconoMagnum.png",
       "visual": {
         "icon": "🍷",
         "color": "#4A0E4E",
@@ -204,120 +57,7 @@
         }
       ]
     },
-    {
-      "id": "bodega_penedes_004",
-      "name": "Cava y Vinos del Penedès",
-      "type": "winery",
-      "region": "Penedès",
-      "denomination": "D.O. Penedès",
-      "location": {
-        "lat": 41.3888,
-        "lng": 1.8264,
-        "elevation": 320
-      },
-      "blockchain": {
-        "nodeId": "node_penedes_004",
-        "status": "syncing",
-        "httpPort": 3004,
-        "p2pPort": 5005,
-        "peers": ["genesis_node"],
-        "isGenesis": false
-      },
-      "inventory": {
-        "stockCustodiado": 180,
-        "transaccionesActivas": 6,
-        "ultimaActividad": "2025-10-07T07:20:00Z",
-        "valorCustodia": "21,600 €"
-      },
-      "visual": {
-        "icon": "🍷",
-        "color": "#C4787C",
-        "size": "medium",
-        "priority": 5
-      },
-      "contact": {
-        "establecido": 1972,
-        "terroir": "Franco-calcáreo mediterráneo",
-        "descripcion": "Especialistas en cava y vinos blancos mediterráneos"
-      },
-      "wines": [
-        {
-          "nombre": "Cava Gran Reserva Brut",
-          "tipo": "Espumoso",
-          "stock": 120,
-          "precio": "95 €"
-        },
-        {
-          "nombre": "Chardonnay Barrica 2022",
-          "tipo": "Blanco",
-          "stock": 40,
-          "precio": "110 €"
-        },
-        {
-          "nombre": "Pinot Noir Rosé 2023",
-          "tipo": "Rosado",
-          "stock": 20,
-          "precio": "125 €"
-        }
-      ]
-    },
-    {
-      "id": "bodega_fernandez_pierola_006",
-      "name": "Bodega Fernández de Piérola",
-      "type": "winery",
-      "region": "País Vasco",
-      "denomination": "D.O.Ca. Rioja Alavesa",
-      "location": {
-        "lat": 42.5191,
-        "lng": -2.4946,
-        "elevation": 520
-      },
-      "blockchain": {
-        "nodeId": "node_alava_006",
-        "status": "active",
-        "httpPort": 3006,
-        "p2pPort": 5007,
-        "peers": ["genesis_node", "node_rioja_002"],
-        "isGenesis": false
-      },
-      "inventory": {
-        "stockCustodiado": 95,
-        "transaccionesActivas": 3,
-        "ultimaActividad": "2025-10-07T08:20:00Z",
-        "valorCustodia": "14,250 €"
-      },
-      "visual": {
-        "icon": "🍇",
-        "color": "#8B4513",
-        "size": "medium",
-        "priority": 6
-      },
-      "contact": {
-        "establecido": 1987,
-        "terroir": "Arcillo-calizo con influencia atlántica",
-        "descripcion": "Bodega familiar alavesa con tradición en Rioja Alavesa"
-      },
-      "wines": [
-        {
-          "nombre": "Rioja Alavesa Crianza 2020",
-          "tipo": "Tinto",
-          "stock": 45,
-          "precio": "95 €"
-        },
-        {
-          "nombre": "Tempranillo Joven 2022",
-          "tipo": "Tinto",
-          "stock": 35,
-          "precio": "65 €"
-        },
-        {
-          "nombre": "Reserva Especial 2018",
-          "tipo": "Tinto",
-          "stock": 15,
-          "precio": "145 €"
-        }
-      ]
-    },
+    
     {
       "id": "bodega_vina_laguardia_007",
       "name": "Bodegas Viña Laguardia",
@@ -334,7 +74,10 @@
         "status": "active",
         "httpPort": 3007,
         "p2pPort": 5008,
-        "peers": ["genesis_node", "node_alava_006"],
+        "peers": [
+          "genesis_node",
+          "node_alava_006"
+        ],
         "isGenesis": false
       },
       "inventory": {
@@ -391,7 +134,9 @@
         "status": "active",
         "httpPort": 3008,
         "p2pPort": 5009,
-        "peers": ["genesis_node"],
+        "peers": [
+          "genesis_node"
+        ],
         "isGenesis": false
       },
       "inventory": {
@@ -448,7 +193,10 @@
         "status": "active",
         "httpPort": 3009,
         "p2pPort": 5010,
-        "peers": ["genesis_node", "node_ribera_001"],
+        "peers": [
+          "genesis_node",
+          "node_ribera_001"
+        ],
         "isGenesis": false
       },
       "inventory": {
@@ -501,7 +249,7 @@
         "lastSync": "2025-10-07T11:30:00Z"
       },
       {
-        "from": "genesis_node", 
+        "from": "genesis_node",
         "to": "node_rioja_002",
         "latency": 52,
         "status": "connected",
@@ -510,14 +258,14 @@
       },
       {
         "from": "genesis_node",
-        "to": "node_priorat_003", 
+        "to": "node_priorat_003",
         "latency": 38,
         "status": "connected",
         "dataFlow": "bidirectional",
         "lastSync": "2025-10-07T11:28:00Z"
       },
       {
-        "from": "genesis_node",
+        "from": "winelover_node",
         "to": "node_penedes_004",
         "latency": 67,
         "status": "syncing",
@@ -528,7 +276,7 @@
         "from": "node_ribera_001",
         "to": "node_rioja_002",
         "latency": 78,
-        "status": "connected", 
+        "status": "connected",
         "dataFlow": "bidirectional",
         "lastSync": "2025-10-07T11:27:00Z"
       },
@@ -537,7 +285,7 @@
         "to": "node_priorat_003",
         "latency": 95,
         "status": "connected",
-        "dataFlow": "bidirectional", 
+        "dataFlow": "bidirectional",
         "lastSync": "2025-10-07T11:26:00Z"
       }
     ]
@@ -545,35 +293,50 @@
   "regions": [
     {
       "name": "Madrid",
-      "center": [40.4168, -3.7038],
+      "center": [
+        40.4168,
+        -3.7038
+      ],
       "zoom": 10,
       "color": "#10B981",
       "type": "tech_hub"
     },
     {
       "name": "Ribera del Duero",
-      "center": [41.6518, -4.7245],
+      "center": [
+        41.6518,
+        -4.7245
+      ],
       "zoom": 11,
       "color": "#722F37",
       "type": "wine_region"
     },
     {
       "name": "La Rioja",
-      "center": [42.4627, -2.4449],
+      "center": [
+        42.4627,
+        -2.4449
+      ],
       "zoom": 11,
-      "color": "#8B0000", 
+      "color": "#8B0000",
       "type": "wine_region"
     },
     {
       "name": "Priorat",
-      "center": [41.1593, 0.7394],
+      "center": [
+        41.1593,
+        0.7394
+      ],
       "zoom": 12,
       "color": "#4A0E4E",
       "type": "wine_region"
     },
     {
       "name": "Penedès",
-      "center": [41.3888, 1.8264],
+      "center": [
+        41.3888,
+        1.8264
+      ],
       "zoom": 11,
       "color": "#C4787C",
       "type": "wine_region"

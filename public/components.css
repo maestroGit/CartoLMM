@@ -5,6 +5,14 @@
     transition: all 0.3s ease;
 }
 
+/* Header compact helper */
+.header-left--compact {
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-top:0;
+}
+
 .bodega-marker .marker-container {
     position: relative;
     display: flex;
@@ -171,7 +179,7 @@
 }
 
 .notification.welcome {
-    background: linear-gradient(45deg, #722F37, #4A0E4E);
+    background: linear-gradient(45deg, var(--wine-purple, #722F37), #4A0E4E);
     max-width: 350px;
 }
 
@@ -399,6 +407,84 @@
     overflow-y: auto;
 }
 
+/* Dropdown / header controls */
+.dropdown {
+    display: inline-block;
+    position: relative;
+    margin-right: 8px;
+}
+
+.dropdown-toggle {
+    /* Match header gradient so the button visually belongs to the header */
+    background: linear-gradient(135deg, var(--wine-red), var(--wine-purple));
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 1.5em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.dropdown-toggle:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+.dropdown-toggle.active {
+    /* visible active state when metrics are hidden */
+    outline: 2px solid rgba(255,255,255,0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+}
+
+.dropdown-menu {
+    display: none; /* shown via JS */
+    position: fixed; /* positioned by JS to avoid clipping */
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    min-width: 180px;
+    padding: 8px;
+    z-index: 12000;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.dropdown-menu.dropdown-open {
+    display: block;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 6px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.dropdown-item:hover {
+    background: #f3f4f6;
+}
+
+.dropdown-item:active {
+    background: #eef2ff;
+}
+
+.dropdown-item .icon {
+    width: 20px;
+    text-align: center;
+}
+
 .help-section {
     margin: 20px 0;
 }
@@ -468,7 +554,7 @@ kbd {
 }
 
 .welcome-message.fade-out {
-    animation: welcome-exit 3s ease forwards;
+    animation: welcome-exit 1s ease forwards;
 }
 
 @keyframes welcome-enter {
@@ -478,7 +564,7 @@ kbd {
 
 @keyframes welcome-exit {
     0% { opacity: 1; }
-    80% { opacity: 1; }
+    50% { opacity: 0.5; }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
 }
 
