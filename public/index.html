@@ -51,7 +51,9 @@
                 <button id="toggle-layers" class="control-btn" data-toggle-wired="true">📋 Capas</button>
                 <button id="toggle-3d" class="control-btn">🔄 Vista</button>
                 <button id="search-btn" class="control-btn">🔍 Buscar</button>
-                <button id="settings-btn" class="control-btn">⚙️</button>
+                <button id="settings-btn" class="control-btn" title="Settings" style="padding:0; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;">
+                    <img src="images/iconoBWwhite.png" alt="Settings" style="width:100%; height:100%; object-fit:contain; display:block;">
+                </button>
             </div>
         </header>
         <!-- Quick debug: capture header clicks and log them so we can see if events reach DOM -->
@@ -82,13 +84,30 @@
                 window.addEventListener('error', function(ev) {
                     console.error('Global error caught:', ev.error || ev.message, ev.filename, ev.lineno);
                 });
+
+                window.showSettingsPlaceholder = function() {
+                    const existing = document.getElementById('settingsPlaceholderModal'); if (existing) existing.remove();
+                    const modal = document.createElement('div'); modal.id = 'settingsPlaceholderModal'; modal.className = 'modal'; modal.style.display = 'block';
+                    modal.innerHTML = `
+                        <div class="modal-content" style="max-width:520px; margin-top:60px; text-align:center;">
+                            <span class="close">&times;</span>
+                            <h2>⚙️ Settings</h2>
+                            <p>Settings page not found. This is a placeholder.</p>
+                            <div style="margin-top:12px;"><button class="dashboard-btn primary modal-close-btn">Close</button></div>
+                        </div>`;
+                    document.body.appendChild(modal);
+                    const remove = () => modal.remove();
+                    modal.querySelector('.close')?.addEventListener('click', remove);
+                    modal.querySelector('.modal-close-btn')?.addEventListener('click', remove);
+                    modal.addEventListener('click', (e) => { if (e.target === modal) remove(); });
+                };
             })();
         </script>
 
     <!-- Main Content -->
     <main class="cartolmm-main">
     <div id="connection-status" class="connection-status" style="font-size:1em; padding:6px 18px; border-radius:8px; background-color:rgb(76,175,80); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.10); margin:40px auto 16px auto; max-width:320px; text-align:center;">
-            🟢 Conectado en tiempo real
+            Connected
         </div>
             <!-- Map Container -->
             <div class="map-container">
@@ -389,6 +408,22 @@
                         });
                     }
 
+                    // Settings button: navigate to settings page or show placeholder modal
+                    const settingsBtn = document.getElementById('settings-btn');
+                    if (settingsBtn) {
+                        settingsBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            // Navigate to local test URL with #features anchor (local testing)
+                            try {
+                                // Direct navigation to the local dev server anchor
+                                window.location.href = 'http://127.0.0.1:5500/public/index.html';
+                            } catch (err) {
+                                // Fallback to placeholder modal if navigation fails
+                                showSettingsPlaceholder();
+                            }
+                        });
+                    }
+
                     // Close menu when clicking outside
                     document.addEventListener('click', (e) => {
                         if (!menu) return;
@@ -428,6 +463,8 @@
                                             node.remove();
                                         } else {
                                             console.log('MutationObserver: allowing leaflet-control-layers node (allowed by flag)');
+                                            // If allowed, ensure it's positioned under the header button
+                                            try { positionLeafletLayersControl(node); } catch (e) { console.warn('position on add failed', e); }
                                         }
                                     }
                                 } catch (err) {
@@ -470,6 +507,10 @@
                             setTimeout(() => { allowAddControls = false; }, 1000);
                             console.log('Calling window.mapService.toggleLayersControl() (allowAddControls=true)');
                             window.mapService.toggleLayersControl();
+                            // After asking mapService to toggle, attempt to position the control when it appears
+                            setTimeout(() => {
+                                positionLeafletLayersControl();
+                            }, 220);
                         } else {
                             console.log('mapService not ready, starting retry to call toggleLayersControl');
                             const retry = setInterval(() => {
@@ -480,6 +521,7 @@
                                     setTimeout(() => { allowAddControls = false; }, 1000);
                                     console.log('mapService available, calling toggleLayersControl (allowAddControls=true)');
                                     window.mapService.toggleLayersControl();
+                                    setTimeout(() => { positionLeafletLayersControl(); }, 240);
                                 }
                             }, 200);
                         }
@@ -488,6 +530,58 @@
                     // Mark the button as wired so other modules (InteractiveMap) don't add a duplicate listener
                     try { btn.dataset.toggleWired = 'true'; } catch (e) {}
                 });
+
+                // Helper: position the Leaflet layers control directly below the header 'Capas' button
+                // Accepts an optional node (the control element) to position. Uses fixed positioning so it stays
+                // visually pinned even if Leaflet tries to reparent it.
+                (function() {
+                    // Keep a reference to the current control and handlers so we can avoid duplicates
+                    let currentControl = null;
+                    let handlersInstalled = false;
+
+                    function installHandlers(btn, control, gap) {
+                        if (handlersInstalled) return;
+                        handlersInstalled = true;
+                        const reposition = () => {
+                            try {
+                                const r = btn.getBoundingClientRect();
+                                const left = Math.max(8, Math.round(r.left + (r.width / 2) - (control.offsetWidth / 2)));
+                                control.style.left = `${left}px`;
+                                control.style.top = `${Math.round(r.bottom + gap)}px`;
+                            } catch (e) { /* ignore */ }
+                        };
+                        window.addEventListener('resize', reposition);
+                        window.addEventListener('scroll', reposition);
+                        // Also reposition when focus/blur might change layout
+                        window.addEventListener('orientationchange', reposition);
+                    }
+
+                    window.positionLeafletLayersControl = function(node) {
+                        try {
+                            const btn = document.getElementById('toggle-layers');
+                            if (!btn) return;
+                            const control = node || document.querySelector('.leaflet-control-layers.leaflet-control');
+                            if (!control) return;
+                            // If we already positioned a different control before, remove marker class
+                            if (currentControl && currentControl !== control) {
+                                try { currentControl.classList.remove('positioned-under-header'); } catch (e) {}
+                            }
+                            currentControl = control;
+                            control.style.position = 'fixed';
+                            control.style.zIndex = 12001;
+                            // Use a small gap from the bottom of the button
+                            const gap = 8;
+                            // compute initial placement
+                            const rect = btn.getBoundingClientRect();
+                            const left = Math.max(8, Math.round(rect.left + (rect.width / 2) - (control.offsetWidth / 2)));
+                            const top = Math.round(rect.bottom + gap);
+                            control.style.left = `${left}px`;
+                            control.style.top = `${top}px`;
+                            control.classList.add('positioned-under-header');
+                            installHandlers(btn, control, gap);
+                        } catch (err) { console.warn('positionLeafletLayersControl failed', err); }
+                    };
+                })();
             })();
         </script>
 </body>

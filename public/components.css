@@ -1033,3 +1033,38 @@ kbd {
     Estas reglas se aplican a elementos posicionados fixed o absolute
     dentro de `public/index.html` o creados dinámicamente por JS.
 ------------------------------------------------------------------ */
+
+/* Ensure settings icon is visible on the header by providing a dark circular
+   backdrop and shadow for white/transparent PNGs or SVGs. */
+#settings-btn {
+    padding: 6px; /* keep clickable area comfortable */
+}
+#settings-btn picture img,
+#settings-btn picture svg,
+.control-btn img {
+    background: rgba(0,0,0,0.6);
+    padding: 4px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+    display: inline-block;
+    vertical-align: middle;
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+#settings-btn picture svg {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+/* Override for when we want the PNG to fill the button and have no background */
+#settings-btn img {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+}

@@ -90,22 +90,22 @@ class CartoLMMMap {
             minZoom: this.config.minZoom,
             maxZoom: this.config.maxZoom,
             zoomControl: this.config.zoomControl,
-            attributionControl: false
+            attributionControl: true
         });
 
         // Capa base - OpenStreetMap
         const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
         });
 
         // Capa satelital
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '© Esri'
+            attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a>'
         });
 
         // Capa topográfica
         const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenTopoMap contributors'
+            attribution: '&copy; <a href="https://opentopomap.org/">OpenTopoMap</a> contributors'
         });
 
         // Control de capas base

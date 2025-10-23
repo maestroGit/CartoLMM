@@ -82,7 +82,7 @@ class CartoLMMWebSocket {
             console.log('🔗 URL conectada:', this.socket.io.engine.hostname + ':' + this.socket.io.engine.port);
             this.connected = true;
             this.reconnectAttempts = 0;
-            this.updateConnectionStatus('connected', 'Conectado en tiempo real');
+            this.updateConnectionStatus('connected', 'Connected');
             
             // Solicitar datos iniciales
             this.requestInitialData();
