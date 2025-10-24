@@ -18,6 +18,11 @@ class MapService {
      */
     initialize(containerId = 'map') {
         try {
+            // If we've already initialized the map, don't recreate it.
+            if (this.map) {
+                console.log('MapService.initialize: map already initialized, skipping re-init');
+                return true;
+            }
             // Crear el mapa
             this.map = L.map(containerId, {
                 center: this.defaultCenter,
@@ -38,23 +43,59 @@ class MapService {
                 })
             };
 
+            // Instrumentar los tileLayers para diagnosticar problemas de carga
+            try {
+                Object.entries(baseLayers).forEach(([name, layer]) => {
+                    if (layer && typeof layer.on === 'function') {
+                        layer.on('tileloadstart', () => {
+                            // logging mínimo para identificar actividad de tiles
+                            console.log(`MapService: tileloadstart for base layer ${name}`);
+                        });
+                        layer.on('tileerror', (err) => {
+                            console.error(`MapService: tileerror on base layer ${name}`, err);
+                        });
+                        layer.on('tileload', () => {
+                            console.log(`MapService: tileload for base layer ${name}`);
+                        });
+                    }
+                });
+            } catch (diagErr) {
+                console.warn('MapService: could not instrument tile layers for diagnostics', diagErr);
+            }
+
             // Agregar capa por defecto: preferimos la capa 'Satélite' si existe,
             // de lo contrario caer a OpenStreetMap.
+            let baseAdded = false;
             try {
                 const satKey = Object.keys(baseLayers).find(k => /sat(elite|élite|élite|élite|é|í)/i.test(k) || /satelite|satellite|⛰️|🛰️/i.test(k));
                 if (satKey && baseLayers[satKey]) {
                     baseLayers[satKey].addTo(this.map);
+                    baseAdded = true;
+                    console.log('MapService: default base layer (satellite) added:', satKey);
                 } else if (baseLayers["🗺️ OpenStreetMap"]) {
                     baseLayers["🗺️ OpenStreetMap"].addTo(this.map);
+                    baseAdded = true;
+                    console.log('MapService: default base layer (OSM) added');
                 } else {
-                    // Fallback to the first layer
                     const first = Object.values(baseLayers)[0];
-                    if (first) first.addTo(this.map);
+                    if (first) {
+                        first.addTo(this.map);
+                        baseAdded = true;
+                        console.log('MapService: default base layer (first) added as fallback');
+                    }
                 }
             } catch (err) {
                 console.warn('MapService: could not set default base layer, falling back', err);
                 const first = Object.values(baseLayers)[0];
-                if (first) first.addTo(this.map);
+                if (first) {
+                    first.addTo(this.map);
+                    baseAdded = true;
+                    console.log('MapService: fallback base layer added after exception');
+                }
+            }
+
+            if (!baseAdded) {
+                console.warn('MapService: no base layer could be added — the map may appear blank');
             }
 
             // Guardar las capas base para el control
@@ -74,6 +115,131 @@ class MapService {
 
             // Configurar eventos
             this.setupEventListeners();
+            // Ensure the map layout is recalculated after it is added to the DOM
+            try {
+                this.map.whenReady(() => {
+                    try { this.map.invalidateSize(); } catch (e) { /* ignore */ }
+                    // A couple more attempts after layout settles
+                    setTimeout(() => { try { this.map.invalidateSize(); } catch (e) {} }, 120);
+                    setTimeout(() => { try { this.map.invalidateSize(); } catch (e) {} }, 600);
+                    // Ensure map is centered correctly after layout changes
+                    try {
+                        this.map.setView(this.defaultCenter, this.defaultZoom, { animate: false });
+                    } catch (e) { /* ignore */ }
+                    setTimeout(() => { try { this.map.setView(this.defaultCenter, this.defaultZoom, { animate: false }); } catch (e) {} }, 200);
+                    // Diagnostic: check whether tile images are present in the tile pane after a short delay
+                    setTimeout(() => {
+                        try {
+                            const container = this.map.getContainer && this.map.getContainer();
+                            const tilePane = container && container.querySelector && container.querySelector('.leaflet-tile-pane');
+                            const imgs = tilePane ? tilePane.querySelectorAll('img.leaflet-tile') : [];
+                            console.log('MapService: tilePane image count =', imgs.length);
+                            if (!imgs || imgs.length === 0) {
+                                console.warn('MapService: no tiles detected in tilePane — attempting fallback to OpenStreetMap');
+                                try {
+                                    if (baseLayers && baseLayers['🗺️ OpenStreetMap']) {
+                                        baseLayers['🗺️ OpenStreetMap'].addTo(this.map);
+                                        console.log('MapService: fallback OSM layer added');
+                                    } else {
+                                        // If baseLayers is not in scope for some reason, create a new OSM layer and add it
+                                        const fallback = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 });
+                                        fallback.addTo(this.map);
+                                        console.log('MapService: fallback OSM layer (new instance) added');
+                                    }
+                                } catch (addErr) {
+                                    console.error('MapService: failed to add fallback OSM layer', addErr);
+                                }
+                            }
+                        } catch (diagErr) {
+                            console.warn('MapService: tile diagnostic check failed', diagErr);
+                        }
+                    }, 1500);
+                    // Visual debug: outline the map container and tile pane so user can see bounds
+                    setTimeout(() => {
+                        try {
+                            const container = this.map.getContainer && this.map.getContainer();
+                            if (container) {
+                                container.style.outline = '2px dashed rgba(255,0,0,0.9)';
+                            }
+                            const tilePane = container && container.querySelector && container.querySelector('.leaflet-tile-pane');
+                            if (tilePane) {
+                                tilePane.style.outline = '2px solid rgba(0,255,0,0.9)';
+                            }
+
+                            // Detect potential overlays covering the map: find elements with z-index > 1000 that overlap map rect
+                            try {
+                                const mapRect = container.getBoundingClientRect();
+                                const candidates = [];
+                                document.querySelectorAll('body *').forEach(el => {
+                                    try {
+                                        const cs = window.getComputedStyle(el);
+                                        const z = parseInt(cs.zIndex, 10);
+                                        if (!isNaN(z) && z > 1000) {
+                                            const r = el.getBoundingClientRect();
+                                            const intersects = !(r.right < mapRect.left || r.left > mapRect.right || r.bottom < mapRect.top || r.top > mapRect.bottom);
+                                            if (intersects) {
+                                                candidates.push({ tag: el.tagName, cls: el.className, zIndex: z, rect: r });
+                                            }
+                                        }
+                                    } catch (inner) { /* skip */ }
+                                });
+                                if (candidates.length) {
+                                    console.warn('MapService: detected elements with z-index>1000 overlapping map:', candidates.slice(0,10));
+
+                                    // Conservative auto-fix: for elements that overlap the map and
+                                    // have very large z-indexes, lower their stacking order and
+                                    // make them non-interactive so they don't block the map.
+                                    // This is only applied when the global opt-out flag is not set.
+                                    try {
+                                        if (!window.__cartolmm_disable_overlay_autofix) {
+                                            // Only autofix elements that match a small whitelist of
+                                            // overlay classes typically used for welcome/notification
+                                            // UI so we don't interfere with normal interactive controls
+                                            const whitelist = ['welcome-message', 'notification', 'initialization-error', 'loader', 'modal', 'modal-backdrop'];
+                                            candidates.slice(0, 10).forEach(c => {
+                                                try {
+                                                    const cls = String(c.cls || '').toLowerCase();
+                                                    const matches = whitelist.some(w => cls.indexOf(w) !== -1);
+                                                    if (!matches) {
+                                                        console.log('MapService: skipping autofix for candidate (not whitelisted)', c.tag, c.cls);
+                                                        return;
+                                                    }
+
+                                                    const el = document.elementFromPoint((c.rect.left + c.rect.right)/2, (c.rect.top + c.rect.bottom)/2);
+                                                    if (el) {
+                                                        // apply minimal non-destructive styles
+                                                        el.__cartolmm_orig_zindex = el.style.zIndex || '';
+                                                        el.__cartolmm_orig_pointer = el.style.pointerEvents || '';
+                                                        el.style.zIndex = '999';
+                                                        el.style.pointerEvents = 'none';
+                                                        el.style.opacity = el.style.opacity || '0.98';
+                                                        console.log('MapService: applied overlay autofix to', el.tagName, el.className);
+                                                    }
+                                                } catch (innerFixErr) {
+                                                    /* ignore per-element failures */
+                                                }
+                                            });
+                                        } else {
+                                            console.log('MapService: overlay autofix disabled by window.__cartolmm_disable_overlay_autofix');
+                                        }
+                                    } catch (autoFixErr) {
+                                        console.warn('MapService: overlay autofix failed', autoFixErr);
+                                    }
+                                } else {
+                                    console.log('MapService: no high-zIndex overlays detected overlapping map');
+                                }
+                            } catch (overlayErr) {
+                                console.warn('MapService: overlay detection failed', overlayErr);
+                            }
+                        } catch (vizErr) {
+                            console.warn('MapService: visual debug failed', vizErr);
+                        }
+                    }, 1700);
+                });
+            } catch (e) {
+                // older Leaflet versions may not have whenReady - fallback
+                try { this.map.invalidateSize(); } catch (err) { /* ignore */ }
+            }
 
             console.log('🗺️ Mapa CartoLMM inicializado');
             return true;
@@ -253,6 +419,23 @@ class MapService {
                 try {
                     const container = this.layersControl.getContainer && this.layersControl.getContainer();
                     if (container) {
+                        // Ensure the container is visible and interactive
+                        try {
+                            container.style.display = 'block';
+                            container.style.opacity = '';
+                            container.style.pointerEvents = '';
+                        } catch (e) {}
+
+                        // Ask header controls helper to position the control under the header button
+                        try {
+                            // small delay to allow browser to render the control
+                            setTimeout(() => {
+                                if (window.positionLeafletLayersControl) {
+                                    try { window.positionLeafletLayersControl(container); } catch (e) { /* ignore */ }
+                                }
+                            }, 40);
+                        } catch (e) {}
+
                         container.classList.add('leaflet-control-layers-expanded');
 
                         // Log debugging info about the container so we can see why it's not visible
@@ -340,7 +523,16 @@ class MapService {
             iconAnchor: [20, 20]
         });
 
-        const marker = L.marker([bodega.location.lat, bodega.location.lng], { icon })
+        // Defensive: accept either bodega.location.{lat,lng} or top-level bodega.lat/bodega.lng
+        const lat = (bodega && bodega.location && typeof bodega.location.lat === 'number') ? bodega.location.lat : (typeof bodega.lat === 'number' ? bodega.lat : undefined);
+        const lng = (bodega && bodega.location && typeof bodega.location.lng === 'number') ? bodega.location.lng : (typeof bodega.lng === 'number' ? bodega.lng : undefined);
+
+        if (typeof lat !== 'number' || typeof lng !== 'number') {
+            console.warn('MapService.createBodegaMarker: coordenadas faltantes o inválidas para bodega, omitiendo marker', { id: bodega && bodega.id, name: bodega && bodega.name });
+            return;
+        }
+
+        const marker = L.marker([lat, lng], { icon })
             .bindPopup(this.createBodegaPopup(bodega), { offset: [0, -10] }) // popup casi tocando el icono
             .addTo(this.layers.bodegas);
 
@@ -613,7 +805,17 @@ class MapService {
         console.log('🍷 Bodega seleccionada:', bodega);
         
         // Centrar mapa en la bodega
-        this.map.setView([bodega.location.lat, bodega.location.lng], 10);
+        try {
+            const lat = bodega && bodega.location && typeof bodega.location.lat === 'number' ? bodega.location.lat : (typeof bodega.lat === 'number' ? bodega.lat : undefined);
+            const lng = bodega && bodega.location && typeof bodega.location.lng === 'number' ? bodega.location.lng : (typeof bodega.lng === 'number' ? bodega.lng : undefined);
+            if (typeof lat === 'number' && typeof lng === 'number') {
+                this.map.setView([lat, lng], 10);
+            } else {
+                console.warn('MapService.selectBodega: coordenadas no disponibles para centrar mapa', { id: bodega && bodega.id });
+            }
+        } catch (err) {
+            console.warn('MapService.selectBodega: error al centrar mapa (ignorando)', err);
+        }
         
         // Disparar evento
         const event = new CustomEvent('bodega:selected', { detail: bodega });

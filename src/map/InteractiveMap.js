@@ -387,8 +387,13 @@ class CartoLMMMap {
      */
     createBodegaMarker(bodega, index) {
         try {
-            const lat = bodega.location.lat;
-            const lng = bodega.location.lng;
+            const lat = (bodega && bodega.location && typeof bodega.location.lat === 'number') ? bodega.location.lat : (typeof bodega.lat === 'number' ? bodega.lat : undefined);
+            const lng = (bodega && bodega.location && typeof bodega.location.lng === 'number') ? bodega.location.lng : (typeof bodega.lng === 'number' ? bodega.lng : undefined);
+
+            if (typeof lat !== 'number' || typeof lng !== 'number') {
+                console.warn('InteractiveMap.createBodegaMarker: coordenadas faltantes, omitiendo marker', { id: bodega && bodega.id, name: bodega && bodega.name });
+                return;
+            }
             
             // Determinar icono y color según el tipo
             const icon = bodega.visual?.icon || '🍷';
@@ -507,8 +512,17 @@ class CartoLMMMap {
                 iconAnchor: [60, 40]
             });
 
+            // Validate coordinates (some data shapes use bodega.location)
+            const lat = (bodega && bodega.location && typeof bodega.location.lat === 'number') ? bodega.location.lat : (typeof bodega.lat === 'number' ? bodega.lat : undefined);
+            const lng = (bodega && bodega.location && typeof bodega.location.lng === 'number') ? bodega.location.lng : (typeof bodega.lng === 'number' ? bodega.lng : undefined);
+
+            if (typeof lat !== 'number' || typeof lng !== 'number') {
+                console.warn('InteractiveMap.renderBodegas: bodega sin coordenadas válidas, omitiendo', { id: bodega && bodega.id, name: bodega && bodega.name });
+                return;
+            }
+
             // Crear marcador
-            const marker = L.marker([bodega.lat, bodega.lng], {
+            const marker = L.marker([lat, lng], {
                 icon: bodegaIcon
             });
 
@@ -558,6 +572,12 @@ class CartoLMMMap {
                 iconSize: [30, 30],
                 iconAnchor: [15, 15]
             });
+
+            // Validate node coords
+            if (typeof node.lat !== 'number' || typeof node.lng !== 'number') {
+                console.warn('InteractiveMap.renderNodes: nodo sin coordenadas válidas, omitiendo', { id: node && node.id });
+                return;
+            }
 
             // Crear marcador
             const marker = L.marker([node.lat, node.lng], {

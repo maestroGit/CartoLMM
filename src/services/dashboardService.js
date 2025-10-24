@@ -211,9 +211,11 @@ class DashboardService {
      * Configura modal de bodega
      */
     setupBodegaModal() {
-        const modal = document.getElementById('bodegaModal');
-        const closeBtn = modal?.querySelector('.close');
-        
+        // Support both id forms: legacy `bodegaModal` and `bodega-modal`
+        const modal = document.getElementById('bodegaModal') || document.getElementById('bodega-modal');
+        // Close button can be referenced by several selectors depending on markup
+        const closeBtn = modal?.querySelector('#modal-close, .close, .modal-close');
+
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
                 this.closeBodegaModal();
@@ -248,7 +250,8 @@ class DashboardService {
      * Muestra detalles de bodega en modal
      */
     showBodegaDetails(bodega) {
-        const modal = document.getElementById('bodegaModal');
+        // Support both id variants: legacy `bodegaModal` and `bodega-modal` (index.html uses hyphen)
+        const modal = document.getElementById('bodegaModal') || document.getElementById('bodega-modal');
         const content = modal?.querySelector('.modal-content');
         
         if (content) {
@@ -308,7 +311,8 @@ class DashboardService {
         }
         
         if (modal) {
-            modal.style.display = 'block';
+            // Use the 'hidden' class to show/hide consistently with other code
+            modal.classList.remove('hidden');
         }
     }
 
@@ -316,9 +320,9 @@ class DashboardService {
      * Cierra modal de bodega
      */
     closeBodegaModal() {
-        const modal = document.getElementById('bodegaModal');
+        const modal = document.getElementById('bodegaModal') || document.getElementById('bodega-modal');
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.add('hidden');
         }
     }
 

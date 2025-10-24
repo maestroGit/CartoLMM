@@ -421,8 +421,8 @@
 }
 
 .dropdown-toggle {
-    /* Match header gradient so the button visually belongs to the header */
-    background: linear-gradient(135deg, var(--wine-red), var(--wine-purple));
+    /* Use a single solid color (no gradient) so the control is uniform with header */
+    background: var(--wine-red);
     border: none;
     border-radius: 8px;
     padding: 8px 12px;
@@ -544,19 +544,22 @@ kbd {
 }
 
 /* Welcome Message */
+
 .welcome-message {
+    /* Move welcome to a small top-right banner to avoid covering the map */
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 20px;
+    right: 20px;
+    left: auto;
+    transform: none;
     background: linear-gradient(135deg, #8B0000, #A52A2A);
     color: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    z-index: 2000;
-    max-width: 500px;
-    animation: welcome-enter 0.5s ease;
+    padding: 12px 16px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    z-index: 1400;
+    max-width: 340px;
+    animation: welcome-enter 0.35s ease;
 }
 
 .welcome-message.fade-out {

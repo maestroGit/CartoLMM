@@ -363,6 +363,39 @@
     }
 }
 
+/* =================================================================== */
+/* Safety/visibility guard for Leaflet tiles and panes (non-invasive)   */
+/* Ensures map tiles are visible when other UI overlays exist.         */
+/* =================================================================== */
+.map-container, .leaflet-map {
+    /* Ensure the map container is laid out and above background layers */
+    position: relative;
+    z-index: 1;
+}
+
+.leaflet-tile-pane,
+.leaflet-overlay-pane,
+.leaflet-marker-pane {
+    z-index: 1 !important;
+}
+
+img.leaflet-tile {
+    /* Force tiles to be visible if some global CSS accidentally hides them */
+    opacity: 1 !important;
+    visibility: visible !important;
+    filter: none !important;
+}
+
+/* Keep controls above map but below modals/notifications */
+.leaflet-control-container {
+    z-index: 12002 !important;
+}
+
+/* If a developer helper was used to reveal the map, ensure it can be reverted safely */
+#debug-reveal-map-style {
+    display: none;
+}
+
 /* ============================================
    🔧 UTILIDADES
    ============================================ */

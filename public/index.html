@@ -7,9 +7,9 @@
     <title>CartoBW</title>
     
     <!-- Estilos -->
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="components.css">
-    <link rel="stylesheet" href="map-styles.css">
+    <link rel="stylesheet" href="/public/styles.css">
+    <link rel="stylesheet" href="/public/components.css">
+    <link rel="stylesheet" href="/public/map-styles.css">
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -30,99 +30,54 @@
     <div id="cartolmm-app">
         <!-- Header -->
         <header class="cartolmm-header">
-                        <div class="header-left header-left--compact">
-                                <!-- Dropdown trigger: metrics + wallet demo actions -->
-                                <div class="dropdown">
-                                    <button id="toggle-metrics" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-                                        &#9776;
-                                    </button>
-                                    <div class="dropdown-menu" id="toggle-metrics-menu" role="menu">
-                                    <button id="metrics-action" class="dropdown-item">📊 Switch</button>
-                                    <button id="wallet-demo-action" class="dropdown-item">👛 Demo Wallet</button>
-                                    </div>
-                                </div>
-                                <div style="display:flex;flex-direction:column;justify-content:center;min-height:48px;">
-                                    <h1 style="margin:0;line-height:1.1;vertical-align:middle;padding-top:2px;">BlocksWine Map </h1>
-                                    <span class="subtitle" style="margin-top:2px;">Del Terruño al Ciberespacio</span>
-                                </div>
-                        </div>
-                <div class="header-controls">
-                <!-- Marked wired by default so scripts that run early can detect and skip attaching duplicate listeners -->
-                <button id="toggle-layers" class="control-btn" data-toggle-wired="true">📋 Capas</button>
-                <button id="toggle-3d" class="control-btn">🔄 Vista</button>
-                <button id="search-btn" class="control-btn">🔍 Buscar</button>
-                <button id="settings-btn" class="control-btn" title="Settings" style="padding:0; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;">
-                    <img src="images/iconoBWwhite.png" alt="Settings" style="width:100%; height:100%; object-fit:contain; display:block;">
-                </button>
-            </div>
-        </header>
-        <!-- Quick debug: capture header clicks and log them so we can see if events reach DOM -->
-        <script>
-            (function() {
-                try {
-                    const header = document.querySelector('.cartolmm-header');
-                    if (!header) return;
-                    header.addEventListener('click', (e) => {
-                        try {
-                            console.log('Header click:', e.target && (e.target.id || e.target.className || e.target.tagName));
-                        } catch (inner) {
-                            console.log('Header click (error reading target)');
-                        }
-                    }, { capture: true });
-
-                    // Also attach a direct listener to the toggle button as a backup
-                    const btn = document.getElementById('toggle-layers');
-                    if (btn) {
-                        btn.addEventListener('click', (e) => {
-                            console.log('Direct listener: toggle-layers clicked', { defaultPrevented: e.defaultPrevented });
-                        }, { capture: true });
-                    }
-                } catch (err) {
-                    console.error('Error setting up header click debug:', err);
-                }
-                // Global error handler to ensure any JS errors are visible
-                window.addEventListener('error', function(ev) {
-                    console.error('Global error caught:', ev.error || ev.message, ev.filename, ev.lineno);
-                });
-
-                window.showSettingsPlaceholder = function() {
-                    const existing = document.getElementById('settingsPlaceholderModal'); if (existing) existing.remove();
-                    const modal = document.createElement('div'); modal.id = 'settingsPlaceholderModal'; modal.className = 'modal'; modal.style.display = 'block';
-                    modal.innerHTML = `
-                        <div class="modal-content" style="max-width:520px; margin-top:60px; text-align:center;">
-                            <span class="close">&times;</span>
-                            <h2>⚙️ Settings</h2>
-                            <p>Settings page not found. This is a placeholder.</p>
-                            <div style="margin-top:12px;"><button class="dashboard-btn primary modal-close-btn">Close</button></div>
-                        </div>`;
-                    document.body.appendChild(modal);
-                    const remove = () => modal.remove();
-                    modal.querySelector('.close')?.addEventListener('click', remove);
-                    modal.querySelector('.modal-close-btn')?.addEventListener('click', remove);
-                    modal.addEventListener('click', (e) => { if (e.target === modal) remove(); });
-                };
-            })();
-        </script>
-
-    <!-- Main Content -->
-    <main class="cartolmm-main">
-    <div id="connection-status" class="connection-status" style="font-size:1em; padding:6px 18px; border-radius:8px; background-color:rgb(76,175,80); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.10); margin:40px auto 16px auto; max-width:320px; text-align:center;">
-            Connected
-        </div>
-            <!-- Map Container -->
-            <div class="map-container">
-                <div id="map" class="leaflet-map"></div>
-                
-                <!-- Map Overlays -->
-                <div class="map-overlays">
-                    <!-- Simplified bottom section: placeholder for future metrics / controls -->
-                    <div class="simple-bottom-section" id="app-footer">
-                        <div class="footer-content">Resumen rápido — personaliza aquí más tarde</div>
+            <div class="header-left">
+                <!-- Dropdown trigger: metrics + wallet demo actions -->
+                <div class="dropdown" style="margin-left:12px; display:inline-block;">
+                    <button id="toggle-metrics" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                        &#9776;
+                    </button>
+                    <div class="dropdown-menu" id="toggle-metrics-menu" role="menu">
+                        <button id="metrics-action" class="dropdown-item">📊 Switch</button>
+                        <button id="wallet-demo-action" class="dropdown-item">👛 Demo Wallet</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Sidebar Panel -->
+            <!-- Centered brand/logo -->
+            <div class="header-center">
+                <div class="brand" style="display:flex; align-items:center; gap:8px;">
+                    <h1 class="logo" style="font-size:2rem; margin:0; display:inline-flex; align-items:center; gap:8px;">BlocksWine
+                        <img src="/public/images/iconoBWwhite.png" alt="BlocksWine" class="logo-icon">
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Right-side controls (keeps header layout: space-between) -->
+            <div class="header-right header-left--compact">
+                <div class="header-controls">
+                    <!-- Layer toggle and other header buttons -->
+                    <button id="toggle-layers" class="control-btn">🗺️
+</button>
+                    <button id="toggle-3d" class="control-btn">👁️
+</button>
+                    <button id="search-btn" class="control-btn">🔍</button>
+                    <a id="settings-btn" class="control-btn" title="Settings" href="http://127.0.0.1:5500/public/index.html" target="_blank" rel="noopener" style="padding:0; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;">
+                        <img src="/public/images/iconoBWwhite.png" alt="Settings" style="width:100%; height:100%; object-fit:contain; display:block;">
+                    </a>
+                </div>
+            </div>
+        </header>
+                <!-- Main Content: connection status, map container and sidebar -->
+                <main class="cartolmm-main">
+                    <div style="display:flex; gap:12px; align-items:center; justify-content:center; max-width:360px;">
+                        <div id="connection-status" class="connection-status" style="font-size:1em; padding:6px 18px; border-radius:8px; background-color:rgb(76,175,80); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.10); text-align:center;">Connected</div>
+                    </div>
+
+                    <div class="map-container">
+                        <div id="map" class="leaflet-map"></div>
+                    </div>
+
+                    <!-- Sidebar Panel -->
             <aside class="sidebar-panel">
     <!-- Panel lateral de métricas -->
                 <!-- Blockchain Metrics -->
@@ -192,7 +147,7 @@
 
                 <!-- Last Block Info -->
                 <section class="metrics-section">
-                    <h3>🔗 Último Bloque</h3>
+                    <h3>� Último Bloque</h3>
                     <div id="last-block" class="last-block-info">
                         <p>Conectando a blockchain...</p>
                     </div>
@@ -209,21 +164,27 @@
                 </section>
             </aside>
         </main>
+                </main>
 
-        <!-- Bottom Timeline Control -->
-        <!-- Footer de timeline y filtros eliminado temporalmente -->
-    </div>
+    <!-- External scripts: app, Leaflet, services, main, and header controls -->
+    <script src="/public/app.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/src/services/blockchainService.js"></script>
+    <script src="/src/services/mapService.js"></script>
+    <script src="/src/services/dashboardService.js"></script>
+    <script src="/src/main.js"></script>
+    <script src="/public/js/header-controls.js"></script>
 
     <!-- Bodega Detail Modal -->
     <div id="bodega-modal" class="modal hidden">
-    <div class="modal-content" style="margin-top:80px; max-width:800px;">
+        <div class="modal-content" style="margin-top:80px; max-width:800px;">
             <div class="modal-header">
                 <h2 id="modal-bodega-name">Bodega</h2>
                 <button id="modal-close" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                        <img id="modal-bottle-img" src="https://www.lavinia.com/media/catalog/product/cache/ad72991f53b91b689717df43818bf2ce/z/o/zorzal-garnacha.jpeg" alt="Botella de vino" style="width: 752px; max-width:90%; height: auto; display: block; margin: 16px auto;">
-                <!-- Bodega details (restored) -->
+                <img id="modal-bottle-img" src="https://www.lavinia.com/media/catalog/product/cache/ad72991f53b91b689717df43818bf2ce/z/o/zorzal-garnacha.jpeg" alt="Botella de vino" style="width: 752px; max-width:90%; height: auto; display: block; margin: 16px auto;">
+                <!-- Bodega details -->
                 <div class="bodega-info">
                     <div class="info-grid">
                         <div class="info-item">
@@ -256,333 +217,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="app.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Servicios CartoLMM -->
-    <script src="../src/services/blockchainService.js"></script>
-    <script src="../src/services/mapService.js"></script>
-    <script src="../src/services/dashboardService.js"></script>
-    
-    <!-- Main App -->
-    <script src="../src/main.js"></script>
-    
-    <!-- Loader inicial -->
-    <div class="loader" style="display: flex;">
-        <div>Iniciando LMM...</div>
-    </div>
-    
-    <!-- Leaflet.js -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Inicialización del mapa -->
-    <!-- 
-    <script type="module">
-        import CartoLMMMap from '../src/map/InteractiveMap.js';
-        
-        // Inicializar cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                console.log('🚀 Inicializando CartoLMM...');
-                
-                // Ocultar loader
-                const loader = document.querySelector('.loader');
-                if (loader) loader.style.display = 'none';
-                
-                // Crear instancia del mapa
-                window.cartoLMMMap = new CartoLMMMap('map');
-                
-                // Inicializar
-                await window.cartoLMMMap.initialize();
-                
-                console.log('✅ CartoLMM inicializado exitosamente');
-                
-            } catch (error) {
-                console.error('❌ Error inicializando CartoLMM:', error);
-                
-                // Mostrar error al usuario
-                const mapContainer = document.getElementById('map');
-                if (mapContainer) {
-                    mapContainer.innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; background: #f0f0f0;">
-                            <h2 style="color: #d32f2f;">❌ Error cargando CartoLMM</h2>
-                            <p style="color: #666;">${error.message}</p>
-                            <button onclick="location.reload()" style="padding: 10px 20px; background: #8B0000; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                                🔄 Reintentar
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-        });
-    </script>
-    -->
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const toggleBtn = document.getElementById('toggle-metrics');
-                    const menu = document.getElementById('toggle-metrics-menu');
-                    const metricsAction = document.getElementById('metrics-action');
-                    const walletAction = document.getElementById('wallet-demo-action');
-                    const metricsDisplay = document.getElementById('metrics-display');
-                    const sidebarPanel = document.querySelector('.sidebar-panel');
-                    let metricsVisible = true;
-
-                    if (!toggleBtn) return;
-
-                    // Toggle dropdown menu visibility
-                    function openMenu() {
-                        if (!menu) return;
-                        try {
-                            const rect = toggleBtn.getBoundingClientRect();
-                            menu.style.position = 'fixed';
-                            menu.style.zIndex = 12000;
-                            menu.style.maxWidth = '320px';
-
-                            const spacing = 8; // px gap between button and menu
-                            // Measure an approximate width (if not yet rendered, assume 200)
-                            const estimatedWidth = Math.min(menu.offsetWidth || 200, 320);
-
-                            let left = rect.left;
-                            if (left + estimatedWidth + 8 > window.innerWidth) {
-                                left = Math.max(8, window.innerWidth - estimatedWidth - 8);
-                            }
-                            const top = rect.bottom + spacing;
-
-                            menu.style.left = `${left}px`;
-                            menu.style.top = `${top}px`;
-
-                            // Use class to trigger CSS transition/visibility
-                            menu.classList.add('dropdown-open');
-                            toggleBtn.setAttribute('aria-expanded', 'true');
-                        } catch (err) {
-                            // Fallback: ensure visible
-                            menu.classList.add('dropdown-open');
-                            toggleBtn.setAttribute('aria-expanded', 'true');
-                        }
-                    }
-
-                    function closeMenu() {
-                        if (menu) {
-                            menu.classList.remove('dropdown-open');
-                            // clear fixed positioning to let CSS control when reopened
-                            menu.style.position = '';
-                            menu.style.left = '';
-                            menu.style.top = '';
-                            toggleBtn.setAttribute('aria-expanded', 'false');
-                        }
-                    }
-
-                    toggleBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (!menu) return;
-                        if (menu.classList.contains('dropdown-open')) closeMenu();
-                        else openMenu();
-                    });
-
-                    // First action: existing metrics toggle
-                    const mainGrid = document.querySelector('.cartolmm-main');
-                    if (metricsAction) {
-                        metricsAction.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            // Toggle sidebar-open class on main grid
-                            if (mainGrid) {
-                                mainGrid.classList.toggle('sidebar-open');
-                            }
-                            closeMenu();
-                        });
-                    }
-
-                    // Second action: open wallet demo URL in a new tab
-                    if (walletAction) {
-                        walletAction.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            // Open the wallet demo (explicit URL requested)
-                            try {
-                                window.open('http://127.0.0.1:5500/public/demo-wallet/wallet-demo.html', '_blank', 'noopener');
-                            } catch (err) {
-                                // Fallback: navigate
-                                window.location.href = 'http://127.0.0.1:5500/public/demo-wallet/wallet-demo.html';
-                            }
-                            closeMenu();
-                        });
-                    }
-
-                    // Settings button: navigate to settings page or show placeholder modal
-                    const settingsBtn = document.getElementById('settings-btn');
-                    if (settingsBtn) {
-                        settingsBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            // Navigate to local test URL with #features anchor (local testing)
-                            try {
-                                // Direct navigation to the local dev server anchor
-                                window.location.href = 'http://127.0.0.1:5500/public/index.html';
-                            } catch (err) {
-                                // Fallback to placeholder modal if navigation fails
-                                showSettingsPlaceholder();
-                            }
-                        });
-                    }
-
-                    // Close menu when clicking outside
-                    document.addEventListener('click', (e) => {
-                        if (!menu) return;
-                        if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== toggleBtn) {
-                            closeMenu();
-                        }
-                    });
-                });
-            </script>
-        <!-- MutationObserver: block auto-inserted leaflet layers control and wire toggle button -->
-        <script>
-            (function() {
-                // allowAddControls is briefly set to true when user triggers toggle so the control can be added
-                let allowAddControls = false;
-
-                function removeAutoAddedControls() {
-                    document.querySelectorAll('.leaflet-control-layers').forEach(el => {
-                        if (!allowAddControls) {
-                            console.log('Removing auto-added leaflet control');
-                            el.remove();
-                        }
-                    });
-                }
-
-                // Observe DOM mutations to catch any early additions of Leaflet controls
-                const observer = new MutationObserver((mutations) => {
-                    for (const m of mutations) {
-                        if (m.addedNodes && m.addedNodes.length) {
-                            // If a leaflet control node is added and not allowed, remove it
-                            m.addedNodes.forEach(node => {
-                                try {
-                                    if (node.nodeType === 1 && node.classList && node.classList.contains('leaflet-control-layers')) {
-                                        // Respect either local allowAddControls (user click) or the global flag
-                                        const globalAllow = !!(window.__allowLeafletControl);
-                                        if (!allowAddControls && !globalAllow) {
-                                            console.log('MutationObserver: removing early leaflet-control-layers node');
-                                            node.remove();
-                                        } else {
-                                            console.log('MutationObserver: allowing leaflet-control-layers node (allowed by flag)');
-                                            // If allowed, ensure it's positioned under the header button
-                                            try { positionLeafletLayersControl(node); } catch (e) { console.warn('position on add failed', e); }
-                                        }
-                                    }
-                                } catch (err) {
-                                    console.error('Error in MutationObserver handler:', err);
-                                }
-                            });
-                        }
-                    }
-                });
-
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Start observing body for nodes added to the DOM
-                    if (document.body) {
-                        observer.observe(document.body, { childList: true, subtree: true });
-                    }
-
-                    // Remove any that already exist
-                    removeAutoAddedControls();
-
-                    const btn = document.getElementById('toggle-layers');
-                    if (!btn) {
-                        console.warn('toggle-layers button not found in DOM');
-                        return;
-                    }
-
-                    console.log('Wiring toggle-layers button listener (MutationObserver active)');
-                    // Mark the button as wired so other modules (InteractiveMap / MapService)
-                    // can detect and avoid attaching duplicate handlers which cause a
-                    // double-invocation (add then immediate remove) race.
-                    try { btn.dataset.toggleWired = 'true'; } catch (e) { /* ignore */ }
-
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        console.log('toggle-layers clicked (user intent)');
-
-                        // If mapService exists, allow controls to be added briefly and call toggle
-                        if (window.mapService && typeof window.mapService.toggleLayersControl === 'function') {
-                            allowAddControls = true;
-                            // After 1s, disallow automatic additions again
-                            setTimeout(() => { allowAddControls = false; }, 1000);
-                            console.log('Calling window.mapService.toggleLayersControl() (allowAddControls=true)');
-                            window.mapService.toggleLayersControl();
-                            // After asking mapService to toggle, attempt to position the control when it appears
-                            setTimeout(() => {
-                                positionLeafletLayersControl();
-                            }, 220);
-                        } else {
-                            console.log('mapService not ready, starting retry to call toggleLayersControl');
-                            const retry = setInterval(() => {
-                                console.log('Retrying toggleLayersControl availability check');
-                                if (window.mapService && typeof window.mapService.toggleLayersControl === 'function') {
-                                    clearInterval(retry);
-                                    allowAddControls = true;
-                                    setTimeout(() => { allowAddControls = false; }, 1000);
-                                    console.log('mapService available, calling toggleLayersControl (allowAddControls=true)');
-                                    window.mapService.toggleLayersControl();
-                                    setTimeout(() => { positionLeafletLayersControl(); }, 240);
-                                }
-                            }, 200);
-                        }
-                    });
-
-                    // Mark the button as wired so other modules (InteractiveMap) don't add a duplicate listener
-                    try { btn.dataset.toggleWired = 'true'; } catch (e) {}
-                });
-
-                // Helper: position the Leaflet layers control directly below the header 'Capas' button
-                // Accepts an optional node (the control element) to position. Uses fixed positioning so it stays
-                // visually pinned even if Leaflet tries to reparent it.
-                (function() {
-                    // Keep a reference to the current control and handlers so we can avoid duplicates
-                    let currentControl = null;
-                    let handlersInstalled = false;
-
-                    function installHandlers(btn, control, gap) {
-                        if (handlersInstalled) return;
-                        handlersInstalled = true;
-                        const reposition = () => {
-                            try {
-                                const r = btn.getBoundingClientRect();
-                                const left = Math.max(8, Math.round(r.left + (r.width / 2) - (control.offsetWidth / 2)));
-                                control.style.left = `${left}px`;
-                                control.style.top = `${Math.round(r.bottom + gap)}px`;
-                            } catch (e) { /* ignore */ }
-                        };
-                        window.addEventListener('resize', reposition);
-                        window.addEventListener('scroll', reposition);
-                        // Also reposition when focus/blur might change layout
-                        window.addEventListener('orientationchange', reposition);
-                    }
-
-                    window.positionLeafletLayersControl = function(node) {
-                        try {
-                            const btn = document.getElementById('toggle-layers');
-                            if (!btn) return;
-                            const control = node || document.querySelector('.leaflet-control-layers.leaflet-control');
-                            if (!control) return;
-                            // If we already positioned a different control before, remove marker class
-                            if (currentControl && currentControl !== control) {
-                                try { currentControl.classList.remove('positioned-under-header'); } catch (e) {}
-                            }
-                            currentControl = control;
-                            control.style.position = 'fixed';
-                            control.style.zIndex = 12001;
-                            // Use a small gap from the bottom of the button
-                            const gap = 8;
-                            // compute initial placement
-                            const rect = btn.getBoundingClientRect();
-                            const left = Math.max(8, Math.round(rect.left + (rect.width / 2) - (control.offsetWidth / 2)));
-                            const top = Math.round(rect.bottom + gap);
-                            control.style.left = `${left}px`;
-                            control.style.top = `${top}px`;
-                            control.classList.add('positioned-under-header');
-                            installHandlers(btn, control, gap);
-                        } catch (err) { console.warn('positionLeafletLayersControl failed', err); }
-                    };
-                })();
-            })();
-        </script>
+    <!-- main.js will auto-initialize CartoLMM on DOMContentLoaded -->
 </body>
 </html>
