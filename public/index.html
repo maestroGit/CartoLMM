@@ -1,61 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CartoBW</title>
-    
+
     <!-- Estilos -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="components.css">
     <link rel="stylesheet" href="map-styles.css">
-    
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    
+
     <!-- Socket.io for realtime -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    
+
     <!-- Wine-Tech Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'>🍷</svg>">
 </head>
-<body>
-            <!-- Botón menú hamburguesa por encima del header -->
 
-                <!-- Título y subtítulo centrados -->
+<body>
+    <!-- Botón menú hamburguesa por encima del header -->
+
+    <!-- Título y subtítulo centrados -->
     <div id="cartolmm-app">
         <!-- Header -->
-                <header class="site-header">
-                    <div class="container">
-                            <img src="images/iconoBWred.png" alt="Logo" class="logo-icon white" />
-                            <h1 class="logo">BlocksWine Map</h1>
-                            <nav class="nav">
-                                <a href="#dashboard" class="btn" id="dashboard-btn" title="Dashboard">Dashboard</a>
-                            <a href="http://localhost:3000/demo-wallet/web-demo.html" target="_blank" rel="noopener" class="btn" id="bw-wallet-btn">BW-Wallet</a>
-                            <button id="toggle-layers" class="control-btn unified-btn" data-toggle-wired="true" type="button">Capas</button>
-                            <button id="toggle-3d" class="control-btn unified-btn" type="button">Vista</button>
-                 
-                            
-                            <!-- Hamburger button triggers sidebar toggle directly -->
-                            <button id="toggle-metrics" class="btn" aria-haspopup="true" aria-expanded="false" type="button">☰</button>
-                        </nav>
-                    </div>
-                </header>
-        
+        <header class="site-header">
+            <div class="container">
+                <img src="images/iconoBWred.png" alt="Logo" class="logo-icon white" />
+                <h1 class="logo">BlocksWine Map</h1>
+                <nav class="nav">
+                    <a href="#dashboard" class="btn" id="dashboard-btn" title="Dashboard">Dashboard</a>
+                    <a href="http://localhost:3000/demo-wallet/web-demo.html" target="_blank" rel="noopener" class="btn"
+                        id="bw-wallet-btn">BW-Wallet</a>
+                    <button id="toggle-layers" class="control-btn unified-btn" data-toggle-wired="true"
+                        type="button">Capas</button>
+                    <button id="toggle-3d" class="control-btn unified-btn" type="button">Vista</button>
 
-    <!-- Main Content -->
-    <main class="cartolmm-main">
-    <div id="connection-status" class="connection-status" >
-            🟢 Conectado en tiempo real
-        </div>
+
+                    <!-- Hamburger button triggers sidebar toggle directly -->
+                    <button id="toggle-metrics" class="btn" aria-haspopup="true" aria-expanded="false"
+                        type="button">☰</button>
+                </nav>
+            </div>
+        </header>
+
+
+        <!-- Main Content -->
+        <main class="cartolmm-main">
+            <div id="connection-status" class="connection-status">
+                🟢 Conectado en tiempo real
+            </div>
             <!-- Map Container -->
             <div class="map-container">
                 <div id="map" class="leaflet-map"></div>
-                
+
                 <!-- Map Overlays -->
                 <div class="map-overlays">
                     <!-- Simplified bottom section: placeholder for future metrics / controls -->
@@ -67,7 +72,7 @@
 
             <!-- Sidebar Panel -->
             <aside class="sidebar-panel">
-    <!-- Panel lateral de métricas -->
+                <!-- Panel lateral de métricas -->
                 <!-- Blockchain Metrics -->
                 <section class="metrics-section">
                     <h3>📊 Red Blockchain</h3>
@@ -90,7 +95,16 @@
                         </div>
                     </div>
                 </section>
-
+                <section class="metrics-section">
+                <h3>🌐 Nodos Blockchain conectados</h3>
+                <div class="metric-grid" id="peers-metric-grid">
+                    <!-- Los nodos se autocompletarán aquí por JS -->
+                    <div class="metric-card" id="no-peers-message" style="display:none;">
+                        <span class="metric-value" style="font-size:1.2em;">—</span>
+                        <span class="metric-label">No hay nodos conectados</span>
+                    </div>
+                </div>
+                </section>
                 <!-- Bodegas Metrics -->
                 <section class="metrics-section">
                     <h3>🍇 Users BlocskWine</h3>
@@ -114,42 +128,44 @@
                     </div>
                 </section>
 
-                <!-- Bitcoin Treasury -->
-                <section class="metrics-section">
-                    <h3>₿ Bitcoin Treasury</h3>
-                    <div class="metric-grid">
-                        <div class="metric-card">
-                            <span class="metric-value" id="btc-acumulado">-</span>
-                            <span class="metric-label">BTC</span>
-                        </div>
-                        <div class="metric-card">
-                            <span class="metric-value" id="valor-eur">-</span>
-                            <span class="metric-label">EUR</span>
-                        </div>
-                        <div class="metric-card bitcoin-change">
-                            <span class="metric-value" id="btc-change">-</span>
-                            <span class="metric-label">24h</span>
-                        </div>
-                    </div>
-                </section>
+                <section class="metrics-section" id="peers-metrics-section">
 
-                <!-- Last Block Info -->
-                <section class="metrics-section">
-                    <h3>🔗 Último Bloque</h3>
-                    <div id="last-block" class="last-block-info">
-                        <p>Conectando a blockchain...</p>
-                    </div>
-                </section>
+                    <!-- Bitcoin Treasury -->
+                    <section class="metrics-section">
+                        <h3>₿ Bitcoin Treasury</h3>
+                        <div class="metric-grid">
+                            <div class="metric-card">
+                                <span class="metric-value" id="btc-acumulado">-</span>
+                                <span class="metric-label">BTC</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-value" id="valor-eur">-</span>
+                                <span class="metric-label">EUR</span>
+                            </div>
+                            <div class="metric-card bitcoin-change">
+                                <span class="metric-value" id="btc-change">-</span>
+                                <span class="metric-label">24h</span>
+                            </div>
+                        </div>
+                    </section>
 
-                <!-- Last update timestamp -->
-                <section class="metrics-section">
-                    <h3>Última actualización</h3>
-                    <div id="metrics-last-updated" class="last-updated">-</div>
-                </section>
+                    <!-- Last Block Info -->
+                    <section class="metrics-section">
+                        <h3>🔗 Último Bloque</h3>
+                        <div id="last-block" class="last-block-info">
+                            <p>Conectando a blockchain...</p>
+                        </div>
+                    </section>
 
-                <!-- Recent Activity -->
-                <section class="activity-section">
-                </section>
+                    <!-- Last update timestamp -->
+                    <section class="metrics-section">
+                        <h3>Última actualización</h3>
+                        <div id="metrics-last-updated" class="last-updated">-</div>
+                    </section>
+
+                    <!-- Recent Activity -->
+                    <section class="activity-section">
+                    </section>
             </aside>
         </main>
 
@@ -159,13 +175,16 @@
 
     <!-- Bodega Detail Modal -->
     <div id="bodega-modal" class="modal hidden">
-    <div class="modal-content" style="margin-top:80px; max-width:800px;">
+        <div class="modal-content" style="margin-top:80px; max-width:800px;">
             <div class="modal-header">
                 <h2 id="modal-bodega-name">Bodega</h2>
                 <button id="modal-close" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                        <img id="modal-bottle-img" src="https://www.lavinia.com/media/catalog/product/cache/ad72991f53b91b689717df43818bf2ce/z/o/zorzal-garnacha.jpeg" alt="Botella de vino" style="width: 752px; max-width:90%; height: auto; display: block; margin: 16px auto;">
+                <img id="modal-bottle-img"
+                    src="https://www.lavinia.com/media/catalog/product/cache/ad72991f53b91b689717df43818bf2ce/z/o/zorzal-garnacha.jpeg"
+                    alt="Botella de vino"
+                    style="width: 752px; max-width:90%; height: auto; display: block; margin: 16px auto;">
                 <!-- Bodega details (restored) -->
                 <div class="bodega-info">
                     <div class="info-grid">
@@ -194,7 +213,8 @@
                     </div>
                 </div>
                 <!-- Actions container (left empty for programmatic buttons) -->
-                <div id="bodega-modal-actions" style="display: flex; gap: 24px; margin-top: 16px; justify-content: center;"></div>
+                <div id="bodega-modal-actions"
+                    style="display: flex; gap: 24px; margin-top: 16px; justify-content: center;"></div>
             </div>
         </div>
     </div>
@@ -207,13 +227,15 @@
     <script src="../src/services/mapService.js"></script>
     <script src="../src/services/dashboardService.js"></script>
     <script src="../src/main.js"></script>
-    
+    <script src="peersMetrics.js"></script>
+
     <!-- Loader inicial -->
     <div class="loader" style="display: flex;">
         <div>Iniciando LMM...</div>
     </div>
-    
-    
+
+
     <!-- Página minimalista: sin scripts inline -->
 </body>
+
 </html>

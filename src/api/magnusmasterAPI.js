@@ -249,11 +249,33 @@ class MagnusmasterAPI {
   }
 
     /**
-   * Obtener peers/nodos activos
+   * Obtener peers/nodos activos desde /system-info
    */
   async getPeers() {
     try {
-      return await this.makeRequest('/peers');
+      const response = await this.makeRequest('/system-info');
+      if (
+        response.success &&
+        response.data &&
+        response.data.blockchain &&
+        response.data.blockchain.network
+      ) {
+        const peersDetail = response.data.blockchain.network.p2pPeers || [];
+        const p2pConnections = response.data.blockchain.network.p2pConnections || 0;
+        return {
+          success: true,
+          peers: peersDetail,
+          count: peersDetail.length,
+          activeConnections: p2pConnections,
+          timestamp: response.timestamp || new Date().toISOString()
+        };
+      } else {
+        return {
+          success: false,
+          error: 'Estructura inesperada en /system-info',
+          timestamp: new Date().toISOString()
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -262,6 +284,7 @@ class MagnusmasterAPI {
       };
     }
   }
+  
 }
 
 // Exportar para uso en Node.js y navegador

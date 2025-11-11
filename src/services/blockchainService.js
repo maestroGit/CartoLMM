@@ -1,6 +1,15 @@
 /**
  * Blockchain Service para CartoLMM
  * Conecta con la API blockchain existente de Magnumsmaster
+ * clase es el “puente” entre tu frontend y tu backend de blockchain, 
+ * centralizando toda la comunicación, gestión de eventos en tiempo real 
+ * y acceso a los datos críticos de la blockchain 
+ * y la red P2P para tu aplicación CartoLMM.
+Peticiones “normales” (HTTP) para histórico/balance/etc.
+WebSockets para tiempo real.
+Facilidad para disparar eventos que otras partes de la UI pueden subscribir.
+Unifica el acceso, simplifica la UI.
+
  */
 
 class BlockchainService {

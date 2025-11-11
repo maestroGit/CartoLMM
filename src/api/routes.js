@@ -142,20 +142,23 @@ async function handleGetBlocks(req, res) {
 // y si no hay nodos, el array será vacío y el frontend mostrará “-”.
 async function handleGetPeers(req, res) {
   try {
-      const peersResult = await magnusmasterClient.getPeers(); // <-- usa el método real
-      let peers = [];
-      if (peersResult && peersResult.success && Array.isArray(peersResult.data)) {
-          peers = peersResult.data;
-      }
-      res.json({
-          success: true,
-          data: peers,
-          count: peers.length,
-          activeCount: peers.filter(p => p.status === 'active').length,
-          timestamp: new Date().toISOString()
+    const peersResult = await magnusmasterClient.getPeers();
+    if (!peersResult.success) {
+      return res.status(500).json({
+        success: false,
+        error: peersResult.error || "Error unknown",
+        timestamp: peersResult.timestamp || new Date().toISOString()
       });
+    }
+    res.json({
+      success: true,
+      data: peersResult.peers,
+      count: peersResult.count,
+      activeCount: peersResult.activeConnections,
+      timestamp: peersResult.timestamp
+    });
   } catch (error) {
-      handleAPIError(res, error, 'Error obteniendo peers reales');
+    handleAPIError(res, error, 'Error obteniendo peers reales');
   }
 }
 
@@ -386,9 +389,21 @@ async function handleGetStatus(req, res) {
  */
 async function handleGetDashboardMetrics(req, res) {
     try {
+        // 1. Obtenemos la info de sistema para capturar la IP/URL real
+        const systemInfoResponse = await magnusmasterClient.getSystemInfo();
+        const nodeHttpUrl = systemInfoResponse?.data?.blockchain?.server?.httpUrl || '';
+
+        // 2. Luego, obtenemos las métricas dashboard
         const metricsResponse = await magnusmasterClient.getDashboardMetrics();
-        
+
         if (metricsResponse.success) {
+            // 3. Nos aseguramos de que la estructura network exista
+            if (!metricsResponse.metrics.network) {
+                metricsResponse.metrics.network = {};
+            }
+            // 4. Añadimos el campo con la IP/URL detectada
+            metricsResponse.metrics.network.nodeHttpUrl = nodeHttpUrl;
+
             res.json({
                 success: true,
                 data: metricsResponse.metrics,
@@ -397,16 +412,17 @@ async function handleGetDashboardMetrics(req, res) {
                 timestamp: new Date().toISOString()
             });
         } else {
-            // Datos mock para métricas
+            // Fallback a métricas mock en caso de error
             const mockMetrics = {
                 blocks: { success: true, data: { length: 42 } },
                 transactions: { success: true, data: { length: 15 } },
                 systemInfo: { success: true, data: { status: 'mock' } },
                 balance: { success: true, data: { balance: 1000 } },
                 connectionStatus: false,
-                lastUpdate: new Date().toISOString()
+                lastUpdate: new Date().toISOString(),
+                network: { nodeHttpUrl: nodeHttpUrl } // Incluimos también la url en mocks
             };
-            
+
             res.json({
                 success: true,
                 data: mockMetrics,
