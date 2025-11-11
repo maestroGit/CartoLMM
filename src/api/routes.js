@@ -138,58 +138,82 @@ async function handleGetBlocks(req, res) {
     }
 }
 
+// el backend solo devolverá nodos activos reales (de lo que MagnusmasterAPI detecte), 
+// y si no hay nodos, el array será vacío y el frontend mostrará “-”.
+async function handleGetPeers(req, res) {
+  try {
+      const peersResult = await magnusmasterClient.getPeers(); // <-- usa el método real
+      let peers = [];
+      if (peersResult && peersResult.success && Array.isArray(peersResult.data)) {
+          peers = peersResult.data;
+      }
+      res.json({
+          success: true,
+          data: peers,
+          count: peers.length,
+          activeCount: peers.filter(p => p.status === 'active').length,
+          timestamp: new Date().toISOString()
+      });
+  } catch (error) {
+      handleAPIError(res, error, 'Error obteniendo peers reales');
+  }
+}
+
 /**
  * Handler: Obtener peers/nodos
+ * 
+ 
+ * El “3” proviene del mock hardcodeado en tu backend, no de nodos reales.
  */
-async function handleGetPeers(req, res) {
-    try {
-        const mockPeers = [
-            {
-                id: 'genesis_node',
-                status: 'active',
-                port: 3001,
-                host: 'localhost',
-                lastSeen: new Date().toISOString(),
-                blocks: 3,
-                peers: 2,
-                version: '1.0.0',
-                region: 'Madrid'
-            },
-            {
-                id: 'node_ribera_001',
-                status: 'active',
-                port: 3002,
-                host: '192.168.1.100',
-                lastSeen: new Date().toISOString(),
-                blocks: 3,
-                peers: 2,
-                version: '1.0.0',
-                region: 'Castilla y León'
-            },
-            {
-                id: 'node_rioja_002',
-                status: 'active',
-                port: 3003,
-                host: '192.168.1.101',
-                lastSeen: new Date(Date.now() - 30000).toISOString(),
-                blocks: 2,
-                peers: 1,
-                version: '1.0.0',
-                region: 'La Rioja'
-            }
-        ];
+// async function handleGetPeers(req, res) {
+//     try {
+//         const mockPeers = [
+//             {
+//                 id: 'genesis_node',
+//                 status: 'active',
+//                 port: 3001,
+//                 host: 'localhost',
+//                 lastSeen: new Date().toISOString(),
+//                 blocks: 3,
+//                 peers: 2,
+//                 version: '1.0.0',
+//                 region: 'Madrid'
+//             },
+//             {
+//                 id: 'node_ribera_001',
+//                 status: 'active',
+//                 port: 3002,
+//                 host: '192.168.1.100',
+//                 lastSeen: new Date().toISOString(),
+//                 blocks: 3,
+//                 peers: 2,
+//                 version: '1.0.0',
+//                 region: 'Castilla y León'
+//             },
+//             {
+//                 id: 'node_rioja_002',
+//                 status: 'active',
+//                 port: 3003,
+//                 host: '192.168.1.101',
+//                 lastSeen: new Date(Date.now() - 30000).toISOString(),
+//                 blocks: 2,
+//                 peers: 1,
+//                 version: '1.0.0',
+//                 region: 'La Rioja'
+//             }
+//         ];
         
-        res.json({
-            success: true,
-            data: mockPeers,
-            count: mockPeers.length,
-            activeCount: mockPeers.filter(p => p.status === 'active').length,
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        handleAPIError(res, error, 'Error obteniendo peers');
-    }
-}
+//         res.json({
+//             success: true,
+//             data: mockPeers,
+//             count: mockPeers.length,
+//             activeCount: mockPeers.filter(p => p.status === 'active').length,
+//             timestamp: new Date().toISOString()
+//         });
+//     } catch (error) {
+//         handleAPIError(res, error, 'Error obteniendo peers');
+//     }
+// }
 
 /**
  * Handler: Pool de transacciones

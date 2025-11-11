@@ -247,6 +247,21 @@ class MagnusmasterAPI {
       timestamp: new Date().toISOString()
     };
   }
+
+    /**
+   * Obtener peers/nodos activos
+   */
+  async getPeers() {
+    try {
+      return await this.makeRequest('/peers');
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
 }
 
 // Exportar para uso en Node.js y navegador
@@ -255,5 +270,7 @@ if (typeof module !== 'undefined' && module.exports) {
 } else if (typeof window !== 'undefined') {
   window.MagnusmasterAPI = MagnusmasterAPI;
 }
+
+
 
 export default MagnusmasterAPI;
