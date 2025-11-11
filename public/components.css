@@ -522,16 +522,19 @@ kbd {
 /* WebSocket & Real-time Elements */
 .connection-status {
     position: fixed;
-    top: 20px;
+    bottom: 20px;
     right: 20px;
-    padding: 8px 16px;
+    padding: 8px 8px;
     border-radius: 20px;
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
+    max-width:150px;
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     z-index: 1000;
     transition: all 0.3s ease;
+    font-size:0.60em; 
+     background-color:rgb(76,175,80); 
+     color:#fff; 
+     box-shadow:0 2px 8px rgba(0,0,0,0.10); 
+     text-align:center;
 }
 
 .connection-status.pulse {

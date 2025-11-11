@@ -58,11 +58,11 @@ class DashboardService {
             throw new Error('No se pudo inicializar el servicio de mapas');
         }
 
-        // Inicializar blockchain (puede fallar si no hay servidor)
+        // Inicializar blockchain (si falla, no usar datos mock)
         try {
             await window.blockchainService.initialize();
         } catch (error) {
-            console.warn('⚠️ Blockchain no disponible, usando datos mock');
+            console.warn('⚠️ Blockchain no disponible (mock deshabilitado)');
         }
 
         console.log('✅ Servicios inicializados');
@@ -73,25 +73,24 @@ class DashboardService {
      */
     async loadInitialData() {
         try {
-            // Cargar datos de bodegas
-            const bodegasResponse = await fetch('/src/data/bodegas.json');
-            const bodegasData = await bodegasResponse.json();
+            // Fuente legacy eliminada: '/src/data/bodegas.json'
+            // Sustituimos por dataset vacío (o futuro endpoint remoto)
+            const bodegasData = { bodegas: [] };
             
-            // Cargar bodegas en el mapa
-            await window.mapService.loadBodegas(bodegasData.bodegas);
+            // Capa de bodegas eliminada: no cargar en el mapa
 
-            // Cargar datos blockchain (real o mock)
-            let blockchainData;
+            // Cargar datos blockchain sólo si hay conexión real
+            let blockchainData = null;
             if (window.blockchainService.isConnected) {
                 blockchainData = await window.blockchainService.loadInitialData();
-            } else {
-                blockchainData = window.blockchainService.getMockData();
             }
 
-            // Cargar nodos en el mapa
-            if (blockchainData.peers) {
-                const nodesWithCoords = this.assignCoordinatesToNodes(blockchainData.peers, bodegasData.bodegas);
-                window.mapService.loadBlockchainNodes(nodesWithCoords);
+            // Cargar nodos en el mapa (solo si vienen con coordenadas reales)
+            if (blockchainData && Array.isArray(blockchainData.peers)) {
+                const peersWithCoords = blockchainData.peers.filter(p => typeof p.lat === 'number' && typeof p.lng === 'number');
+                if (peersWithCoords.length > 0) {
+                    window.mapService.loadBlockchainNodes(peersWithCoords);
+                }
             }
 
             // Actualizar métricas
@@ -108,20 +107,7 @@ class DashboardService {
     /**
      * Asigna coordenadas a nodos blockchain basándose en bodegas
      */
-    assignCoordinatesToNodes(nodes, bodegas) {
-        return nodes.map((node, index) => {
-            // Usar coordenadas de bodegas o generar aleatorias cerca
-            const bodega = bodegas[index % bodegas.length];
-            
-            return {
-                ...node,
-                lat: bodega ? bodega.location.lat + (Math.random() - 0.5) * 0.1 : 40.4168 + (Math.random() - 0.5) * 2,
-                lng: bodega ? bodega.location.lng + (Math.random() - 0.5) * 0.1 : -3.7038 + (Math.random() - 0.5) * 2,
-                port: 3001 + index,
-                status: 'active'
-            };
-        });
-    }
+    // Eliminado: assignCoordinatesToNodes (no se simulan coordenadas)
 
     /**
      * Configura la interfaz de usuario
@@ -616,26 +602,9 @@ class DashboardService {
      * Carga datos de respaldo en caso de error
      */
     async loadFallbackData() {
-        console.log('🔄 Cargando datos de respaldo...');
-        
-        // Datos de respaldo básicos
-        const fallbackBodegas = [
-            {
-                id: 'emergency_001',
-                nombre: 'Bodega Demo',
-                region: 'Sistema',
-                ubicacion: { lat: 40.4168, lng: -3.7038 },
-                blockchain: { status: 'demo' },
-                inventario: { botellas: 100, variedades: 5, valorTotal: 5000 }
-            }
-        ];
-
-        await window.mapService.loadBodegas(fallbackBodegas);
-        
-        this.updateMetrics(
-            { bodegas: fallbackBodegas },
-            window.blockchainService.getMockData()
-        );
+        // Simplificación: sin datos de respaldo ni mocks
+        console.warn('🔄 loadFallbackData: deshabilitado (sin mocks)');
+        this.updateMetrics({ bodegas: [] }, null);
     }
 
     /**

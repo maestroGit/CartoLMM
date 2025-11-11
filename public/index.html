@@ -29,65 +29,27 @@
                 <!-- Título y subtítulo centrados -->
     <div id="cartolmm-app">
         <!-- Header -->
-        <header class="cartolmm-header">
-                        <div class="header-left header-left--compact">
-                                <!-- Dropdown trigger: metrics + wallet demo actions -->
-                                <div class="dropdown">
-                                    <button id="toggle-metrics" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-                                        &#9776;
-                                    </button>
-                                    <div class="dropdown-menu" id="toggle-metrics-menu" role="menu">
-                                    <button id="metrics-action" class="dropdown-item">📊 Switch</button>
-                                    <button id="wallet-demo-action" class="dropdown-item">👛 Demo Wallet</button>
-                                    </div>
-                                </div>
-                                <div style="display:flex;flex-direction:column;justify-content:center;min-height:48px;">
-                                    <h1 style="margin:0;line-height:1.1;vertical-align:middle;padding-top:2px;">BlocksWine Map </h1>
-                                    <span class="subtitle" style="margin-top:2px;">Del Terruño al Ciberespacio</span>
-                                </div>
-                        </div>
-                <div class="header-controls">
-                <!-- Marked wired by default so scripts that run early can detect and skip attaching duplicate listeners -->
-                <button id="toggle-layers" class="control-btn" data-toggle-wired="true">📋 Capas</button>
-                <button id="toggle-3d" class="control-btn">🔄 Vista</button>
-                <button id="search-btn" class="control-btn">🔍 Buscar</button>
-                <button id="settings-btn" class="control-btn">⚙️</button>
-            </div>
-        </header>
-        <!-- Quick debug: capture header clicks and log them so we can see if events reach DOM -->
-        <script>
-            (function() {
-                try {
-                    const header = document.querySelector('.cartolmm-header');
-                    if (!header) return;
-                    header.addEventListener('click', (e) => {
-                        try {
-                            console.log('Header click:', e.target && (e.target.id || e.target.className || e.target.tagName));
-                        } catch (inner) {
-                            console.log('Header click (error reading target)');
-                        }
-                    }, { capture: true });
-
-                    // Also attach a direct listener to the toggle button as a backup
-                    const btn = document.getElementById('toggle-layers');
-                    if (btn) {
-                        btn.addEventListener('click', (e) => {
-                            console.log('Direct listener: toggle-layers clicked', { defaultPrevented: e.defaultPrevented });
-                        }, { capture: true });
-                    }
-                } catch (err) {
-                    console.error('Error setting up header click debug:', err);
-                }
-                // Global error handler to ensure any JS errors are visible
-                window.addEventListener('error', function(ev) {
-                    console.error('Global error caught:', ev.error || ev.message, ev.filename, ev.lineno);
-                });
-            })();
-        </script>
+                <header class="site-header">
+                    <div class="container">
+                            <img src="images/iconoBWred.png" alt="Logo" class="logo-icon white" />
+                            <h1 class="logo">BlocksWine Map</h1>
+                            <nav class="nav">
+                                <a href="#dashboard" class="btn" id="dashboard-btn" title="Dashboard">Dashboard</a>
+                            <a href="http://localhost:3000/demo-wallet/web-demo.html" target="_blank" rel="noopener" class="btn" id="bw-wallet-btn">BW-Wallet</a>
+                            <button id="toggle-layers" class="control-btn unified-btn" data-toggle-wired="true" type="button">Capas</button>
+                            <button id="toggle-3d" class="control-btn unified-btn" type="button">Vista</button>
+                 
+                            
+                            <!-- Hamburger button triggers sidebar toggle directly -->
+                            <button id="toggle-metrics" class="btn" aria-haspopup="true" aria-expanded="false" type="button">☰</button>
+                        </nav>
+                    </div>
+                </header>
+        
 
     <!-- Main Content -->
     <main class="cartolmm-main">
-    <div id="connection-status" class="connection-status" style="font-size:1em; padding:6px 18px; border-radius:8px; background-color:rgb(76,175,80); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.10); margin:40px auto 16px auto; max-width:320px; text-align:center;">
+    <div id="connection-status" class="connection-status" >
             🟢 Conectado en tiempo real
         </div>
             <!-- Map Container -->
@@ -237,16 +199,13 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="app.js"></script>
+    <!-- Scripts externos -->
+    <script src="CartoLMMWebSocket.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Servicios CartoLMM -->
+    <script src="app.js"></script>
     <script src="../src/services/blockchainService.js"></script>
     <script src="../src/services/mapService.js"></script>
     <script src="../src/services/dashboardService.js"></script>
-    
-    <!-- Main App -->
     <script src="../src/main.js"></script>
     
     <!-- Loader inicial -->
@@ -254,241 +213,7 @@
         <div>Iniciando LMM...</div>
     </div>
     
-    <!-- Leaflet.js -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
-    <!-- Inicialización del mapa -->
-    <!-- 
-    <script type="module">
-        import CartoLMMMap from '../src/map/InteractiveMap.js';
-        
-        // Inicializar cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                console.log('🚀 Inicializando CartoLMM...');
-                
-                // Ocultar loader
-                const loader = document.querySelector('.loader');
-                if (loader) loader.style.display = 'none';
-                
-                // Crear instancia del mapa
-                window.cartoLMMMap = new CartoLMMMap('map');
-                
-                // Inicializar
-                await window.cartoLMMMap.initialize();
-                
-                console.log('✅ CartoLMM inicializado exitosamente');
-                
-            } catch (error) {
-                console.error('❌ Error inicializando CartoLMM:', error);
-                
-                // Mostrar error al usuario
-                const mapContainer = document.getElementById('map');
-                if (mapContainer) {
-                    mapContainer.innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; background: #f0f0f0;">
-                            <h2 style="color: #d32f2f;">❌ Error cargando CartoLMM</h2>
-                            <p style="color: #666;">${error.message}</p>
-                            <button onclick="location.reload()" style="padding: 10px 20px; background: #8B0000; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                                🔄 Reintentar
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-        });
-    </script>
-    -->
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const toggleBtn = document.getElementById('toggle-metrics');
-                    const menu = document.getElementById('toggle-metrics-menu');
-                    const metricsAction = document.getElementById('metrics-action');
-                    const walletAction = document.getElementById('wallet-demo-action');
-                    const metricsDisplay = document.getElementById('metrics-display');
-                    const sidebarPanel = document.querySelector('.sidebar-panel');
-                    let metricsVisible = true;
-
-                    if (!toggleBtn) return;
-
-                    // Toggle dropdown menu visibility
-                    function openMenu() {
-                        if (!menu) return;
-                        try {
-                            const rect = toggleBtn.getBoundingClientRect();
-                            menu.style.position = 'fixed';
-                            menu.style.zIndex = 12000;
-                            menu.style.maxWidth = '320px';
-
-                            const spacing = 8; // px gap between button and menu
-                            // Measure an approximate width (if not yet rendered, assume 200)
-                            const estimatedWidth = Math.min(menu.offsetWidth || 200, 320);
-
-                            let left = rect.left;
-                            if (left + estimatedWidth + 8 > window.innerWidth) {
-                                left = Math.max(8, window.innerWidth - estimatedWidth - 8);
-                            }
-                            const top = rect.bottom + spacing;
-
-                            menu.style.left = `${left}px`;
-                            menu.style.top = `${top}px`;
-
-                            // Use class to trigger CSS transition/visibility
-                            menu.classList.add('dropdown-open');
-                            toggleBtn.setAttribute('aria-expanded', 'true');
-                        } catch (err) {
-                            // Fallback: ensure visible
-                            menu.classList.add('dropdown-open');
-                            toggleBtn.setAttribute('aria-expanded', 'true');
-                        }
-                    }
-
-                    function closeMenu() {
-                        if (menu) {
-                            menu.classList.remove('dropdown-open');
-                            // clear fixed positioning to let CSS control when reopened
-                            menu.style.position = '';
-                            menu.style.left = '';
-                            menu.style.top = '';
-                            toggleBtn.setAttribute('aria-expanded', 'false');
-                        }
-                    }
-
-                    toggleBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (!menu) return;
-                        if (menu.classList.contains('dropdown-open')) closeMenu();
-                        else openMenu();
-                    });
-
-                    // First action: existing metrics toggle
-                    const mainGrid = document.querySelector('.cartolmm-main');
-                    if (metricsAction) {
-                        metricsAction.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            // Toggle sidebar-open class on main grid
-                            if (mainGrid) {
-                                mainGrid.classList.toggle('sidebar-open');
-                            }
-                            closeMenu();
-                        });
-                    }
-
-                    // Second action: open wallet demo URL in a new tab
-                    if (walletAction) {
-                        walletAction.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            // Open the wallet demo (explicit URL requested)
-                            try {
-                                window.open('http://127.0.0.1:5500/public/demo-wallet/wallet-demo.html', '_blank', 'noopener');
-                            } catch (err) {
-                                // Fallback: navigate
-                                window.location.href = 'http://127.0.0.1:5500/public/demo-wallet/wallet-demo.html';
-                            }
-                            closeMenu();
-                        });
-                    }
-
-                    // Close menu when clicking outside
-                    document.addEventListener('click', (e) => {
-                        if (!menu) return;
-                        if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== toggleBtn) {
-                            closeMenu();
-                        }
-                    });
-                });
-            </script>
-        <!-- MutationObserver: block auto-inserted leaflet layers control and wire toggle button -->
-        <script>
-            (function() {
-                // allowAddControls is briefly set to true when user triggers toggle so the control can be added
-                let allowAddControls = false;
-
-                function removeAutoAddedControls() {
-                    document.querySelectorAll('.leaflet-control-layers').forEach(el => {
-                        if (!allowAddControls) {
-                            console.log('Removing auto-added leaflet control');
-                            el.remove();
-                        }
-                    });
-                }
-
-                // Observe DOM mutations to catch any early additions of Leaflet controls
-                const observer = new MutationObserver((mutations) => {
-                    for (const m of mutations) {
-                        if (m.addedNodes && m.addedNodes.length) {
-                            // If a leaflet control node is added and not allowed, remove it
-                            m.addedNodes.forEach(node => {
-                                try {
-                                    if (node.nodeType === 1 && node.classList && node.classList.contains('leaflet-control-layers')) {
-                                        // Respect either local allowAddControls (user click) or the global flag
-                                        const globalAllow = !!(window.__allowLeafletControl);
-                                        if (!allowAddControls && !globalAllow) {
-                                            console.log('MutationObserver: removing early leaflet-control-layers node');
-                                            node.remove();
-                                        } else {
-                                            console.log('MutationObserver: allowing leaflet-control-layers node (allowed by flag)');
-                                        }
-                                    }
-                                } catch (err) {
-                                    console.error('Error in MutationObserver handler:', err);
-                                }
-                            });
-                        }
-                    }
-                });
-
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Start observing body for nodes added to the DOM
-                    if (document.body) {
-                        observer.observe(document.body, { childList: true, subtree: true });
-                    }
-
-                    // Remove any that already exist
-                    removeAutoAddedControls();
-
-                    const btn = document.getElementById('toggle-layers');
-                    if (!btn) {
-                        console.warn('toggle-layers button not found in DOM');
-                        return;
-                    }
-
-                    console.log('Wiring toggle-layers button listener (MutationObserver active)');
-                    // Mark the button as wired so other modules (InteractiveMap / MapService)
-                    // can detect and avoid attaching duplicate handlers which cause a
-                    // double-invocation (add then immediate remove) race.
-                    try { btn.dataset.toggleWired = 'true'; } catch (e) { /* ignore */ }
-
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        console.log('toggle-layers clicked (user intent)');
-
-                        // If mapService exists, allow controls to be added briefly and call toggle
-                        if (window.mapService && typeof window.mapService.toggleLayersControl === 'function') {
-                            allowAddControls = true;
-                            // After 1s, disallow automatic additions again
-                            setTimeout(() => { allowAddControls = false; }, 1000);
-                            console.log('Calling window.mapService.toggleLayersControl() (allowAddControls=true)');
-                            window.mapService.toggleLayersControl();
-                        } else {
-                            console.log('mapService not ready, starting retry to call toggleLayersControl');
-                            const retry = setInterval(() => {
-                                console.log('Retrying toggleLayersControl availability check');
-                                if (window.mapService && typeof window.mapService.toggleLayersControl === 'function') {
-                                    clearInterval(retry);
-                                    allowAddControls = true;
-                                    setTimeout(() => { allowAddControls = false; }, 1000);
-                                    console.log('mapService available, calling toggleLayersControl (allowAddControls=true)');
-                                    window.mapService.toggleLayersControl();
-                                }
-                            }, 200);
-                        }
-                    });
-
-                    // Mark the button as wired so other modules (InteractiveMap) don't add a duplicate listener
-                    try { btn.dataset.toggleWired = 'true'; } catch (e) {}
-                });
-            })();
-        </script>
+    <!-- Página minimalista: sin scripts inline -->
 </body>
 </html>

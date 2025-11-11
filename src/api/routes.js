@@ -3,7 +3,7 @@
  * Maneja todos los endpoints de la aplicación con integración a magnumsmaster
  */
 
-import { mockData } from '../config/config.js';
+// import { mockData } from '../config/config.js';
 import MagnusmasterAPI from './magnusmasterAPI.js';
 
 // Instancia global del cliente API

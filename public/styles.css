@@ -10,6 +10,10 @@
   
   /* Blockchain Colors */
   --bitcoin-orange: #F7931A;
+  --brand-accent: var(--bitcoin-orange);
+  --btn-hover-start: #8b1631;
+  --btn-hover-end: #6a0f22;
+  --btn-hover-start-rgb: 139, 22, 49;
   --blockchain-green: #10B981;
   --network-blue: #3B82F6;
   --p2p-cyan: #06B6D4;
@@ -56,6 +60,58 @@ body {
   color: var(--text-primary);
   overflow: hidden;
 }
+
+/* === Unified header & navigation style (imported pattern from magnumsmaster) === */
+.site-header {
+  backdrop-filter: blur(8px) saturate(110%);
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  position: sticky;
+  top: 0;
+  background: linear-gradient(180deg, rgba(18,6,10,0.42), rgba(18,6,10,0.18));
+  background-color: rgba(18,6,10,0.32);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  height: 72px;
+  min-height: 72px;
+  padding: 0;
+  z-index: 1000;
+  display:flex;
+  align-items:center;
+}
+.site-header .container {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  height:100%;
+  width:100%;
+  padding:8px 18px;
+  box-sizing:border-box;
+}
+.logo {
+  font-weight:700;
+  letter-spacing:0.6px;
+  font-size:1.35rem;
+  line-height:1;
+  margin:0;
+  color: var(--brand-accent);
+}
+.logo-icon {
+  width:46px; height:auto; margin-right:10px;
+}
+.logo-icon.white { filter: invert(1) brightness(1.35) contrast(1.05); background-color: rgba(255,255,255,0.12); padding:6px; border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,0.35); transition: transform 420ms cubic-bezier(.2,.9,.2,1); }
+.logo-icon.white:hover { transform: scale(1.08) rotate(8deg); }
+.nav { margin-left:auto; display:flex; gap:6px; }
+.nav .btn, .control-btn.unified-btn { display:inline-block; padding:10px 16px; border-radius:8px; text-decoration:none; background: var(--brand-accent); color:#08101a; font-weight:600; border:1px solid rgba(0,0,0,0.08); transition: all .25s ease; font-size:.85rem; line-height:1; }
+.nav .btn:hover, .nav .btn:focus, .control-btn.unified-btn:hover, .control-btn.unified-btn:focus { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff; outline:none; }
+.nav .btn.active { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff; border:1px solid rgba(var(--btn-hover-start-rgb),.9); }
+
+/* Hide old themed header background while transitioning */
+.cartolmm-header { background: none; box-shadow:none; padding:0; }
+
+/* Map control button reset to unified style */
+.header-controls { gap:6px; }
+.header-controls .control-btn { background: var(--brand-accent); border:1px solid rgba(0,0,0,0.08); color:#08101a; font-weight:600; padding:10px 14px; border-radius:8px; font-size:.75rem; }
+.header-controls .control-btn:hover { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff; }
+
 
 /* Ensure root elements and map containers fill available height to avoid bottom gaps */
 html, body, #cartolmm-app, .map-container, .leaflet-map {

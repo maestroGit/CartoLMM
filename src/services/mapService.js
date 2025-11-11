@@ -63,14 +63,8 @@ class MapService {
             // Crear capas organizadas
             this.setupLayers();
 
-            // Intentar cargar nodos adicionales definidos en el JSON local (por ejemplo
-            // ubicaciones en islas) para que MapService los muestre en la capa de blockchain.
-            // No bloqueamos la inicialización si falla.
-            try {
-                this.loadNetworkNodesFromData();
-            } catch (err) {
-                console.warn('MapService: loadNetworkNodesFromData failed:', err);
-            }
+            // Nota: se elimina la carga de nodos desde JSON local eliminado.
+            // Si en el futuro hay una fuente remota para nodos extra, se integrará aquí.
 
             // Configurar eventos
             this.setupEventListeners();
@@ -83,85 +77,31 @@ class MapService {
         }
     }
 
-    /**
-     * Carga nodos definidos en `src/data/bodegas.json` (campo network.nodes)
-     * y los pasa a `loadBlockchainNodes` para renderizar markers.
-     */
-    async loadNetworkNodesFromData() {
-        try {
-            const resp = await fetch('/src/data/bodegas.json');
-            if (!resp.ok) return;
-            const data = await resp.json();
-            if (!data.network || !Array.isArray(data.network.nodes)) return;
-
-            const mapped = data.network.nodes
-                .filter(n => typeof n.lat === 'number' && typeof n.lng === 'number')
-                .map(n => ({
-                    id: n.nodeId || n.node || n.id,
-                    lat: n.lat,
-                    lng: n.lng,
-                    status: n.status || 'inactive',
-                    port: n.httpPort || n.port || null,
-                    peers: Array.isArray(n.peers) ? n.peers.length : (n.peers || 0),
-                    lastBlock: n.lastBlock || null
-                }));
-
-            if (mapped.length > 0) {
-                console.log(`MapService: cargando ${mapped.length} nodos desde bodega.json`);
-                this.loadBlockchainNodes(mapped);
-
-                // Intentar ajustar la vista para mostrar los nodos cargados (útil para islas)
-                try {
-                    const latLngs = mapped.map(n => [n.lat, n.lng]);
-                    if (latLngs.length > 0 && this.map) {
-                        const bounds = L.latLngBounds(latLngs);
-                        console.log('MapService: fitBounds para nodos con bounds:', bounds.toBBoxString());
-                        // Hacer un fitBounds suave
-                        this.map.fitBounds(bounds.pad(0.3));
-                    }
-                } catch (fbErr) {
-                    console.warn('MapService: fitBounds falló para nodos:', fbErr);
-                }
-            }
-        } catch (err) {
-            console.warn('MapService: error leyendo bodega.json para nodos:', err);
-        }
-    }
+    // Nota: se eliminó loadNetworkNodesFromData() que dependía de '/src/data/bodegas.json'
 
     /**
      * Configura las capas del mapa
      */
     setupLayers() {
-        // Capa de bodegas (no añadimos a this.map por defecto)
-    this.layers.bodegas = L.layerGroup();
+        // Capa de nodos blockchain (única overlay visual)
+        this.layers.blockchain = L.layerGroup();
         
-        // Capa de nodos blockchain
-    this.layers.blockchain = L.layerGroup();
-        
-        // Capa de conexiones/transacciones
+        // Capa de conexiones y animaciones (auxiliares, no visibles como overlay separado)
         this.layers.connections = L.layerGroup();
-        
-        // Capa de animaciones
         this.layers.animations = L.layerGroup();
 
-        // Control de capas: lo creamos pero no lo añadimos al mapa por defecto.
-        const overlays = {
-            "🍷 Bodegas": this.layers.bodegas,
-            "⛓️ Red Blockchain": this.layers.blockchain
-        };
-
-        this.layersControl = L.control.layers(this.baseLayers, overlays, { 
+        // Control de capas solo con bases (sin overlays para mantener UI minimalista)
+        this.layersControl = L.control.layers(this.baseLayers, undefined, { 
             position: 'topright',
             collapsed: false 
         });
 
-        // Add requested overlays to the map by default
+        // Añadir overlay principal por defecto
         try {
-            this.layers.bodegas.addTo(this.map);
             this.layers.blockchain.addTo(this.map);
-            console.log('MapService: Default overlays added -> Bodegas, Red Blockchain');
+            console.log('MapService: Capa de nodos añadida por defecto');
         } catch (err) {
-            console.warn('MapService: could not add default overlays at setup time', err);
+            console.warn('MapService: could not add default overlay at setup time', err);
         }
 
         // Wire toggle button in the UI (button exists in public/index.html)
@@ -300,73 +240,6 @@ class MapService {
         }
     }
 
-    /**
-     * Carga y muestra las bodegas en el mapa
-     */
-    async loadBodegas(bodegasData) {
-        try {
-            if (!Array.isArray(bodegasData)) {
-                console.warn('⚠️ Datos de bodegas no válidos');
-                return;
-            }
-
-            this.layers.bodegas.clearLayers();
-
-            bodegasData.forEach(bodega => {
-                this.createBodegaMarker(bodega);
-            });
-
-            console.log(`🍷 ${bodegasData.length} bodegas cargadas en el mapa`);
-        } catch (error) {
-            console.error('❌ Error cargando bodegas:', error);
-        }
-    }
-
-    /**
-     * Crea marker para una bodega
-     */
-    createBodegaMarker(bodega) {
-        const icon = L.divIcon({
-            className: 'bodega-marker',
-            html: `
-                <div class="marker-container">
-                    <div class="marker-icon" style="background-color: ${bodega.color || '#722F37'}">
-                        🍷
-                    </div>
-                    <div class="marker-pulse"></div>
-                </div>
-            `,
-            iconSize: [40, 40],
-            iconAnchor: [20, 20]
-        });
-
-        const marker = L.marker([bodega.location.lat, bodega.location.lng], { icon })
-            .bindPopup(this.createBodegaPopup(bodega), { offset: [0, -10] }) // popup casi tocando el icono
-            .addTo(this.layers.bodegas);
-
-        // Evento original: seleccionar bodega con click
-        marker.on('click', () => {
-            this.selectBodega(bodega);
-        });
-
-        this.markers[`bodega_${bodega.id}`] = marker;
-    }
-
-    /**
-     * Crea popup para bodega
-     */
-    createBodegaPopup(bodega) {
-        return `
-            <div class="bodega-popup">
-                <h3>${bodega.name}</h3>
-                <div class="bodega-actions">
-                    <button onclick="mapService.viewBodegaDetails('${bodega.id}')">
-                        Ver Detalles
-                    </button>
-                </div>
-            </div>
-        `;
-    }
 
     /**
      * Carga nodos blockchain en el mapa
@@ -477,18 +350,31 @@ class MapService {
             const from = L.latLng(fromPoint.lat, fromPoint.lng);
             const to = L.latLng(toPoint.lat, toPoint.lng);
 
-            // Crear línea de conexión
+            // Crear línea de conexión usando color desde variables CSS si es posible
+            let connectionColor = '#10B981';
+            try {
+                const cssGreen = getComputedStyle(document.documentElement).getPropertyValue('--blockchain-green').trim();
+                if (cssGreen) connectionColor = cssGreen;
+            } catch (e) { /* fallback mantiene el valor por defecto */ }
+
             const line = L.polyline([from, to], {
-                color: '#10B981',
+                color: connectionColor,
                 weight: 3,
                 opacity: 0.8,
                 dashArray: '10, 5'
             }).addTo(this.layers.connections);
 
             // Crear partícula animada
+            // Usar color de marca desde variables CSS si está disponible
+            let accentColor = '#F7931A';
+            try {
+                const cssAccent = getComputedStyle(document.documentElement).getPropertyValue('--brand-accent').trim();
+                if (cssAccent) accentColor = cssAccent;
+            } catch (e) { /* fallback mantiene el valor por defecto */ }
+
             const particle = L.circleMarker(from, {
                 radius: 8,
-                color: '#F7931A',
+                color: accentColor,
                 fillColor: '#FFB800',
                 fillOpacity: 0.8
             }).addTo(this.layers.animations);
@@ -606,35 +492,7 @@ class MapService {
         });
     }
 
-    /**
-     * Selecciona una bodega
-     */
-    selectBodega(bodega) {
-        console.log('🍷 Bodega seleccionada:', bodega);
-        
-        // Centrar mapa en la bodega
-        this.map.setView([bodega.location.lat, bodega.location.lng], 10);
-        
-        // Disparar evento
-        const event = new CustomEvent('bodega:selected', { detail: bodega });
-        window.dispatchEvent(event);
-    }
-
-    /**
-     * Ver detalles de bodega
-     */
-    viewBodegaDetails(bodegaId) {
-        console.log('📋 Ver detalles de bodega:', bodegaId);
-        // Implementar modal de detalles
-    }
-
-    /**
-     * Ver transacciones de bodega
-     */
-    viewBodegaTransactions(bodegaId) {
-        console.log('💰 Ver transacciones de bodega:', bodegaId);
-        // Implementar vista de transacciones
-    }
+    // Se ha eliminado todo el soporte de bodegas para una base mínima.
 
     /**
      * Maneja cambios de zoom

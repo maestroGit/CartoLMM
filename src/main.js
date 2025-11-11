@@ -304,11 +304,10 @@ function loadSafeMode() {
  */
 async function loadStaticData() {
     try {
-        const response = await fetch('/src/data/bodegas.json');
-        const data = await response.json();
-        
-        if (window.mapService && data.bodegas) {
-            await window.mapService.loadBodegas(data.bodegas);
+        // Fuente legacy eliminada. Cargar dataset vacío para modo seguro.
+        const emptyData = [];
+        if (window.mapService) {
+            await window.mapService.loadBodegas(emptyData);
         }
     } catch (error) {
         console.error('❌ Error cargando datos estáticos:', error);

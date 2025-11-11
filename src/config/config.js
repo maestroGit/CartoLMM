@@ -18,10 +18,6 @@ export const config = {
         methods: ["GET", "POST"]
     },
     
-    // Datos mock
-    enableMockData: process.env.ENABLE_MOCK_DATA !== 'false',
-    mockDataInterval: parseInt(process.env.MOCK_INTERVAL) || 5000, // Reduced to 5 seconds for testing
-    
     // Paths
     publicPath: 'public',
     srcPath: 'src',
@@ -51,21 +47,6 @@ export const routes = {
         root: '/',
         public: '/public',
         src: '/src'
-    }
-};
-
-export const mockData = {
-    // Configuración para datos simulados
-    bodegas: {
-        count: 5,
-        regions: ['Rioja', 'Ribera del Duero', 'Rías Baixas', 'Jerez', 'Navarra']
-    },
-    
-    blockchain: {
-        initialBlocks: 3,
-        transactionInterval: 30000,
-        blockInterval: 120000,
-        maxPeers: 5
     }
 };
 
