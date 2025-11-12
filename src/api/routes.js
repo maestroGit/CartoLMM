@@ -170,20 +170,16 @@ async function handleGetPeers(req, res) {
       });
     }
 
-        // 2. Extraer info del nodo local
-        // Nota: devolveremos el nodo local como con estado de error (rojo) y valores numéricos a 0
-        // para evitar mostrar la tarjeta como '🟢 unknown (LOCAL)' con métricas inválidas.
+        // 2. Extraer info del nodo local con sus datos reales
         const localNode = {
             nodeId: blockchain.nodeId || 'unknown',
-            httpUrl: blockchain.server?.httpUrl || blockchain.httpUrl || 'unknown',
-            p2pUrl: blockchain.server?.p2pUrl || blockchain.p2pUrl || 'unknown',
+            httpUrl: (blockchain.server?.httpUrl || blockchain.httpUrl || 'unknown').toString().trim(),
+            p2pUrl: (blockchain.server?.p2pUrl || blockchain.p2pUrl || 'unknown').toString().trim(),
             isLocal: true,
-            // Forzar estado de error para que el frontend muestre indicador rojo
-            status: 'error',
-            // Normalizar métricas a 0 para que no aparezcan valores positivos erróneos
-            blockHeight: 0,
-            difficulty: 0,
-            lastSeen: null,
+            status: 'online',
+            blockHeight: blockchain.blockHeight || 0,
+            difficulty: blockchain.difficulty || 0,
+            lastSeen: new Date().toISOString(),
             responseTime: 0
         };
 
@@ -326,22 +322,7 @@ async function handleGetPeers(req, res) {
             allNodes = [localNode, ...mockPeers];
         }
 
-        // 7. Asegurarse de que el nodo local aparezca en rojo y con métricas a 0
-        allNodes = allNodes.map(n => {
-            if (n.isLocal) {
-                return {
-                    ...n,
-                    status: 'error',
-                    blockHeight: 0,
-                    difficulty: 0,
-                    lastSeen: null,
-                    responseTime: 0
-                };
-            }
-            return n;
-        });
-
-        // 8. Calcular estadísticas
+        // 7. Calcular estadísticas
         const nodesWithBlocks = allNodes.filter(p => p.blockHeight > 0);
     
         const stats = {

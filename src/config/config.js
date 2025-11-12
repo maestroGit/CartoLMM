@@ -9,7 +9,7 @@ export const config = {
     nodeEnv: process.env.NODE_ENV || 'development',
     
     // APIs
-    blockchainApiUrl: process.env.BLOCKCHAIN_API_URL || 'http://localhost:3001',
+    blockchainApiUrl: process.env.BLOCKCHAIN_API_URL || 'http://localhost:3000',
     apiTimeout: parseInt(process.env.API_TIMEOUT) || 5000,
     
     // WebSocket

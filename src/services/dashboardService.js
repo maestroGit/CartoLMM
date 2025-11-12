@@ -477,37 +477,9 @@ updateMetricsDisplay() {
       this.metrics.pendingTransactions
     );
 
-  const activeNodesEl = document.getElementById("active-nodes");
-  if (activeNodesEl)
-    activeNodesEl.textContent =
-      this.metrics.activeNodes ?? activeNodesEl.textContent;
-  else
-    this.updateCounter(
-      ".active-nodes .metric-value",
-      this.metrics.activeNodes
-    );
+  
 
-  const totalBodegasEl = document.getElementById("total-bodegas");
-  if (totalBodegasEl)
-    totalBodegasEl.textContent =
-      this.metrics.totalBodegas ?? totalBodegasEl.textContent;
-  else
-    this.updateCounter(
-      ".total-bodegas .metric-value",
-      this.metrics.totalBodegas
-    );
 
-  const activeBodegasEl = document.querySelector(
-    ".active-bodegas .metric-value"
-  );
-  if (activeBodegasEl)
-    activeBodegasEl.textContent =
-      this.metrics.activeBodegas ?? activeBodegasEl.textContent;
-  else
-    this.updateCounter(
-      ".active-bodegas .metric-value",
-      this.metrics.activeBodegas
-    );
 
   // Actualizar estado de conexión
   const statusElement = document.querySelector(

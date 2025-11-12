@@ -87,10 +87,12 @@ class PeersService {
         statusIcon = '⚠️';
       }
 
-      // Special handling for local node: show explicit LOCAL label and use red indicator
+      // Special handling for local node: show explicit LOCAL label
       if (peer.isLocal) {
         borderStyle = 'border: 2px solid var(--brand-accent, #F7931A);';
-        if (peer.status === 'error') {
+        if (peer.status === 'online') {
+          displayName = 'LOCAL (online)';
+        } else if (peer.status === 'error') {
           statusColor = '#EF4444'; // rojo
           statusIcon = '🔴';
           displayName = 'LOCAL (error)';
