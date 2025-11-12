@@ -6,9 +6,10 @@
  */
 
 import fetch from 'node-fetch';
+import { config } from '../config/config.js';
 
 class MagnusmasterAPI {
-  constructor(baseURL = 'http://localhost:3000') {
+  constructor(baseURL = config.blockchainApiUrl) {
     this.baseURL = baseURL;
     this.isConnected = false;
     this.lastError = null;
