@@ -288,39 +288,7 @@ async function handleGetPeers(req, res) {
     });
 
         // 6. Combinar nodo local + peers remotos
-        let allNodes = [localNode, ...peersProcessed];
-
-        // Si no se detectaron peers remotos, usar un fallback mock para mantener la UI poblada
-        if (allNodes.length <= 1) {
-            const now = Date.now();
-            const threeHoursAgo = new Date(now - 3 * 60 * 60 * 1000).toISOString();
-            const mockPeers = [
-                {
-                    nodeId: 'node_8839',
-                    httpUrl: 'http://192.168.0.15:3001',
-                    p2pUrl: 'unknown',
-                    isLocal: false,
-                    status: 'online',
-                    blockHeight: 0,
-                    difficulty: 0,
-                    lastSeen: threeHoursAgo,
-                    responseTime: 22
-                },
-                {
-                    nodeId: 'node_6487',
-                    httpUrl: 'http://192.168.0.15:3001',
-                    p2pUrl: 'unknown',
-                    isLocal: false,
-                    status: 'online',
-                    blockHeight: 0,
-                    difficulty: 0,
-                    lastSeen: threeHoursAgo,
-                    responseTime: 34
-                }
-            ];
-
-            allNodes = [localNode, ...mockPeers];
-        }
+        const allNodes = [localNode, ...peersProcessed];
 
         // 7. Calcular estadísticas
         const nodesWithBlocks = allNodes.filter(p => p.blockHeight > 0);

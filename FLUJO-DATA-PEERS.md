@@ -944,3 +944,11 @@ fetch('http://localhost:3001/system-info').then(res => res.json()).then(pintarM�
 socket.on('system:metrics', pintarMétricas);
 
 // Donde pintarMétricas es tu función de actualización de UI
+
+
+FRONTEND:
+Ahora solo mostrará:
+
+Nodo local (siempre)
+Peers reales detectados por magnumsmaster (si existen)
+Nada más (sin datos falsos)
