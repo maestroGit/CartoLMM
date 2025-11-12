@@ -285,6 +285,87 @@ class MagnusmasterAPI {
       };
     }
   }
+
+  /**
+   * 🌐 Consultar información de un peer específico
+   * @param {string} peerUrl - URL HTTP del peer (ej: http://localhost:3002)
+   * @param {number} timeout - Timeout en ms (default: 5000)
+   * @returns {Promise<Object>} - Info del peer o error
+   */
+  async getPeerInfo(peerUrl, timeout = 5000) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const response = await fetch(`${peerUrl}/system-info`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        success: true,
+        data: data,
+        url: peerUrl,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.name === 'AbortError' ? 'Request timeout' : error.message,
+        url: peerUrl,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * 🔍 Ping a un peer (verificar disponibilidad rápida)
+   * @param {string} peerUrl - URL HTTP del peer
+   * @returns {Promise<Object>} - Status y tiempo de respuesta
+   */
+  async pingPeer(peerUrl) {
+    const startTime = Date.now();
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      const response = await fetch(`${peerUrl}/system-info`, {
+        method: 'HEAD', // Solo headers, más rápido
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+      const responseTime = Date.now() - startTime;
+
+      return {
+        success: true,
+        online: response.ok,
+        responseTime: responseTime,
+        status: response.status,
+        url: peerUrl,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      return {
+        success: false,
+        online: false,
+        responseTime: Date.now() - startTime,
+        error: error.message,
+        url: peerUrl,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
   
 }
 

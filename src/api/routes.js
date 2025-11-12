@@ -50,6 +50,9 @@ export async function setupAPIRoutes(app) {
     // API: Estado de conexión con magnumsmaster
     app.get('/api/magnumsmaster-status', handleGetMagnusmasterStatus);
     
+    // API: Proxy a /system-info de magnumsmaster
+    app.get('/api/system-info', handleGetSystemInfo);
+    
     console.log('✅ API Routes configuradas');
 }
 
@@ -140,25 +143,187 @@ async function handleGetBlocks(req, res) {
 
 // el backend solo devolverá nodos activos reales (de lo que MagnusmasterAPI detecte), 
 // y si no hay nodos, el array será vacío y el frontend mostrará “-”.
+/**
+ * Handler: Obtener peers/nodos con información detallada
+ * Consulta el nodo principal y luego enriquece la información de cada peer
+ */
 async function handleGetPeers(req, res) {
   try {
-    const peersResult = await magnusmasterClient.getPeers();
-    if (!peersResult.success) {
-      return res.status(500).json({
+    // 1. Obtener system-info del nodo principal
+    const systemInfo = await magnusmasterClient.getSystemInfo();
+    
+    if (!systemInfo.success) {
+      return res.status(503).json({
         success: false,
-        error: peersResult.error || "Error unknown",
-        timestamp: peersResult.timestamp || new Date().toISOString()
+        error: 'Backend magnumsmaster no disponible',
+        details: systemInfo.error,
+        timestamp: new Date().toISOString()
       });
     }
+
+    const blockchain = systemInfo.data?.blockchain;
+    if (!blockchain) {
+      return res.status(500).json({
+        success: false,
+        error: 'Datos de blockchain no disponibles',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // 2. Extraer info del nodo local
+    const localNode = {
+      nodeId: blockchain.nodeId || 'unknown',
+      httpUrl: blockchain.server?.httpUrl || blockchain.httpUrl || 'unknown',
+      p2pUrl: blockchain.server?.p2pUrl || blockchain.p2pUrl || 'unknown',
+      isLocal: true,
+      status: 'online',
+      blockHeight: blockchain.blockHeight || 0,
+      difficulty: blockchain.difficulty || 0,
+      lastSeen: new Date().toISOString(),
+      responseTime: 0 // Nodo local siempre rápido
+    };
+
+    // 3. Extraer peers remotos (pueden ser strings o objetos)
+    const network = blockchain.network || {};
+    const peersHttpRaw = network.peersHttp || [];
+    const peersP2P = network.peersP2P || [];
+    const p2pPeers = network.p2pPeers || []; // Array detallado si existe
+
+    // Normalizar peersHttp: puede ser array de strings o array de objetos {nodeId, httpUrl, lastSeen}
+    const peersHttp = peersHttpRaw.map(peer => {
+      if (typeof peer === 'string') {
+        return { httpUrl: peer, nodeId: null, lastSeen: null };
+      } else if (peer && typeof peer === 'object') {
+        return {
+          httpUrl: peer.httpUrl || peer.url || 'unknown',
+          nodeId: peer.nodeId || null,
+          lastSeen: peer.lastSeen || null
+        };
+      }
+      return { httpUrl: 'unknown', nodeId: null, lastSeen: null };
+    });
+
+    console.log(`📡 Consultando ${peersHttp.length} peers remotos...`);
+
+    // 4. Enriquecer cada peer con información detallada
+    const peersDetailed = await Promise.allSettled(
+      peersHttp.map(async (peer, index) => {
+        const startTime = Date.now();
+        const peerHttpUrl = peer.httpUrl.trim(); // Eliminar espacios
+        
+        try {
+          // Hacer petición a /system-info de cada peer
+          const peerResponse = await fetch(`${peerHttpUrl}/system-info`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(5000) // Timeout 5 segundos
+          });
+
+          if (!peerResponse.ok) {
+            throw new Error(`HTTP ${peerResponse.status}`);
+          }
+
+          const peerData = await peerResponse.json();
+          const responseTime = Date.now() - startTime;
+
+          // Extraer datos del peer
+          const peerBlockchain = peerData.blockchain || peerData.data?.blockchain || {};
+          
+          return {
+            nodeId: peer.nodeId || peerBlockchain.nodeId || `peer-${index + 1}`,
+            httpUrl: peerHttpUrl,
+            p2pUrl: peersP2P[index]?.url || peersP2P[index] || 'unknown',
+            isLocal: false,
+            status: 'online',
+            blockHeight: peerBlockchain.blockHeight || 0,
+            difficulty: peerBlockchain.difficulty || 0,
+            lastSeen: peer.lastSeen ? new Date(peer.lastSeen).toISOString() : new Date().toISOString(),
+            responseTime: responseTime,
+            // Info adicional si existe
+            version: peerBlockchain.version || '1.0.0',
+            peers: peerBlockchain.network?.peersHttp?.length || 0,
+            // Datos originales de magnumsmaster
+            originalData: {
+              nodeId: peer.nodeId,
+              lastSeenTimestamp: peer.lastSeen
+            }
+          };
+        } catch (error) {
+          // Peer no disponible o timeout
+          return {
+            nodeId: peer.nodeId || `peer-${index + 1}`,
+            httpUrl: peerHttpUrl,
+            p2pUrl: peersP2P[index]?.url || peersP2P[index] || 'unknown',
+            isLocal: false,
+            status: 'offline',
+            blockHeight: 0,
+            difficulty: 0,
+            lastSeen: peer.lastSeen ? new Date(peer.lastSeen).toISOString() : null,
+            responseTime: Date.now() - startTime,
+            error: error.message,
+            originalData: {
+              nodeId: peer.nodeId,
+              lastSeenTimestamp: peer.lastSeen
+            }
+          };
+        }
+      })
+    );
+
+    // 5. Procesar resultados (fulfilled y rejected)
+    const peersProcessed = peersDetailed.map(result => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      } else {
+        // En caso de error completo en Promise
+        return {
+          nodeId: 'unknown',
+          httpUrl: 'unknown',
+          p2pUrl: 'unknown',
+          isLocal: false,
+          status: 'error',
+          error: result.reason?.message || 'Unknown error'
+        };
+      }
+    });
+
+    // 6. Combinar nodo local + peers remotos
+    const allNodes = [localNode, ...peersProcessed];
+
+    // 7. Calcular estadísticas
+    const nodesWithBlocks = allNodes.filter(p => p.blockHeight > 0);
+    
+    const stats = {
+      total: allNodes.length,
+      online: allNodes.filter(p => p.status === 'online').length,
+      offline: allNodes.filter(p => p.status === 'offline').length,
+      error: allNodes.filter(p => p.status === 'error').length,
+      avgResponseTime: Math.round(
+        peersProcessed
+          .filter(p => p.status === 'online')
+          .reduce((sum, p) => sum + (p.responseTime || 0), 0) / 
+        (peersProcessed.filter(p => p.status === 'online').length || 1)
+      ),
+      maxBlockHeight: nodesWithBlocks.length > 0 ? Math.max(...nodesWithBlocks.map(p => p.blockHeight)) : 0,
+      minBlockHeight: nodesWithBlocks.length > 0 ? Math.min(...nodesWithBlocks.map(p => p.blockHeight)) : 0
+    };
+
+    console.log(`✅ Peers consultados: ${stats.online}/${stats.total} online`);
+
     res.json({
       success: true,
-      data: peersResult.peers,
-      count: peersResult.count,
-      activeCount: peersResult.activeConnections,
-      timestamp: peersResult.timestamp
+      peers: allNodes,
+      stats: stats,
+      network: {
+        localNode: localNode.nodeId,
+        p2pConnections: network.p2pConnections || 0,
+        totalPeers: allNodes.length
+      },
+      timestamp: new Date().toISOString()
     });
+
   } catch (error) {
-    handleAPIError(res, error, 'Error obteniendo peers reales');
+    handleAPIError(res, error, 'Error obteniendo peers');
   }
 }
 
@@ -503,6 +668,27 @@ async function handleGetMagnusmasterStatus(req, res) {
         });
     } catch (error) {
         handleAPIError(res, error, 'Error verificando estado de magnumsmaster');
+    }
+}
+
+/**
+ * Handler: System Info (proxy a magnumsmaster)
+ */
+async function handleGetSystemInfo(req, res) {
+    try {
+        const systemInfo = await magnusmasterClient.getSystemInfo();
+        
+        if (systemInfo && !systemInfo.error) {
+            res.json(systemInfo);
+        } else {
+            res.status(503).json({
+                success: false,
+                error: 'Backend magnumsmaster no disponible',
+                details: systemInfo?.error || 'No se pudo conectar'
+            });
+        }
+    } catch (error) {
+        handleAPIError(res, error, 'Error obteniendo system-info');
     }
 }
 

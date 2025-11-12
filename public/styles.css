@@ -31,7 +31,7 @@
   
   /* Layout */
   --header-height: 60px;
-  --sidebar-width: 320px;
+  --sidebar-width: 420px;
   --timeline-height: 0px;
   --border-radius: 8px;
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -202,10 +202,34 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
   background: white;
   border-left: 1px solid var(--border-color);
   overflow-y: auto;
-  padding: 1rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  height: 100%; /* Usa toda la altura disponible */
+  /* Mejor scroll en móviles */
+  -webkit-overflow-scrolling: touch;
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 22, 49, 0.3) transparent;
+}
+
+/* Custom scrollbar para WebKit (Chrome, Safari, Edge) */
+.sidebar-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-panel::-webkit-scrollbar-thumb {
+  background: rgba(139, 22, 49, 0.3);
+  border-radius: 3px;
+}
+
+.sidebar-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 22, 49, 0.5);
 }
 
 /* Hide the sidebar visually when the parent grid does not reserve space */
@@ -217,26 +241,26 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
 .metrics-section {
   background: var(--background-light);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  padding: 0.75rem;
   border: 1px solid var(--border-color);
 }
 
 .metrics-section h3 {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .metric-card {
   background: white;
-  padding: 0.75rem;
+  padding: 0.5rem;
   border-radius: var(--border-radius);
   text-align: center;
   border: 1px solid var(--border-color);
@@ -250,14 +274,15 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
 
 .metric-value {
   display: block;
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--wine-red);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
+  line-height: 1.2;
 }
 
 .metric-label {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -277,32 +302,32 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
 }
 
 .activity-section h3 {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
 .activity-feed {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
   max-height: 200px;
   overflow-y: auto;
 }
 
 .activity-item {
   background: white;
-  padding: 0.75rem;
+  padding: 0.6rem;
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
 }
 
 .activity-time {
   color: var(--text-secondary);
-  font-size: 0.75rem;
-  margin-bottom: 0.25rem;
+  font-size: 0.7rem;
+  margin-bottom: 0.2rem;
 }
 
 .activity-type-wine {
@@ -552,7 +577,9 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
   }
   
   .sidebar-panel {
-    height: 300px;
+    height: auto;
+    min-height: 40vh; /* Mínimo 40% de la altura de la ventana */
+    max-height: 60vh; /* Máximo 60% para dejar espacio al mapa */
     border-left: none;
     border-top: 1px solid var(--border-color);
   }
