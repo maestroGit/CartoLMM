@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Inicializando CartoLMM WebSocket Client (separado)...');
     if (window.CartoLMMWebSocket) {
         window.cartoLMMWebSocket = new window.CartoLMMWebSocket();
+        // Exponer la instancia real de socket para todos los módulos
+        window.socket = window.cartoLMMWebSocket.socket;
     } else {
         console.error('CartoLMMWebSocket no está cargado. Verifica el orden de los scripts.');
     }

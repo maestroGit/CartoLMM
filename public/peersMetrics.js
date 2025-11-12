@@ -256,4 +256,3 @@ window.peersService = new PeersService();
 
 // Al cargar, refresca una vez y (opcional) cada 30s
 window.peersService.refresh();
-setInterval(() => window.peersService.refresh(), 30000);
