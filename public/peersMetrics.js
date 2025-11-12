@@ -67,6 +67,8 @@ class PeersService {
 
     // Renderizar cada peer con info detallada
     this.peers.forEach(peer => {
+      // Normalizar y recortar URL para evitar espacios finales que rompan links
+      const httpUrl = (peer.httpUrl || '').toString().trim();
       const div = document.createElement('div');
       div.className = 'metric-card peer-card';
       
@@ -74,17 +76,31 @@ class PeersService {
       let statusColor = '#10B981'; // Verde
       let statusIcon = '🟢';
       let borderStyle = '';
-      
+      let displayName = peer.nodeId || 'N/A';
+
       if (peer.status === 'offline') {
         statusColor = '#EF4444'; // Rojo
         statusIcon = '🔴';
       } else if (peer.status === 'error') {
+        // Default error mapping (non-local is a warning)
         statusColor = '#F59E0B'; // Naranja
         statusIcon = '⚠️';
       }
-      
+
+      // Special handling for local node: show explicit LOCAL label and use red indicator
       if (peer.isLocal) {
         borderStyle = 'border: 2px solid var(--brand-accent, #F7931A);';
+        if (peer.status === 'error') {
+          statusColor = '#EF4444'; // rojo
+          statusIcon = '🔴';
+          displayName = 'LOCAL (error)';
+        } else if (peer.status === 'offline') {
+          statusColor = '#EF4444';
+          statusIcon = '🔴';
+          displayName = 'LOCAL (offline)';
+        } else {
+          displayName = `LOCAL${peer.nodeId && peer.nodeId !== 'unknown' ? ' — ' + peer.nodeId : ''}`;
+        }
       }
 
       // Construir HTML con toda la info (diseño ultra-compacto)
@@ -92,7 +108,7 @@ class PeersService {
       div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
           <span style="font-size: 0.7em; color: ${peer.isLocal ? 'var(--brand-accent, #F7931A)' : '#1F2937'}; font-weight: ${peer.isLocal ? 'bold' : '600'};">
-            ${statusIcon} ${peer.nodeId}${peer.isLocal ? ' (LOCAL)' : ''}
+            ${statusIcon} ${displayName}
           </span>
           <span style="font-size: 0.6em; color: ${statusColor}; text-transform: uppercase; font-weight: 600;">
             ${peer.status}
@@ -101,8 +117,8 @@ class PeersService {
         
         <div style="font-size: 0.65em; color: #6B7280; line-height: 1.3;">
           <div style="margin-bottom: 1px;">
-            <a href="${peer.httpUrl}" target="_blank" style="color: #3B82F6; text-decoration: none;">
-              ${this.shortenUrl(peer.httpUrl)}
+            <a href="${httpUrl}" target="_blank" style="color: #3B82F6; text-decoration: none;">
+              ${this.shortenUrl(httpUrl)}
             </a>
           </div>
           
@@ -172,12 +188,14 @@ class PeersService {
    * Acorta URLs largas para mejor visualización
    */
   shortenUrl = (url) => {
-    if (!url || url === 'unknown') return 'N/A';
+    if (!url) return 'N/A';
+    const cleaned = url.toString().trim();
+    if (!cleaned || cleaned === 'unknown') return 'N/A';
     try {
-      const urlObj = new URL(url);
+      const urlObj = new URL(cleaned);
       return `${urlObj.hostname}:${urlObj.port || (urlObj.protocol === 'wss:' || urlObj.protocol === 'https:' ? '443' : '80')}`;
     } catch {
-      return url.length > 30 ? url.substring(0, 27) + '...' : url;
+      return cleaned.length > 30 ? cleaned.substring(0, 27) + '...' : cleaned;
     }
   };
 
