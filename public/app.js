@@ -33,10 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const dashboardBtn = document.getElementById('dashboard-btn');
         if (dashboardBtn) {
             dashboardBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Placeholder: lógica futura para abrir panel interno dashboard
+                // No impedir la navegación: permite abrir el href en nueva pestaña (target="_blank")
                 console.log('Dashboard button clicked');
-                // Podría disparar evento global en el futuro
+                // Si en el futuro quieres manejarlo internamente, puedes impedir la navegación
+                // y abrir programáticamente: window.open(dashboardBtn.href, '_blank');
                 window.dispatchEvent(new CustomEvent('ui:dashboard'));
             });
         }
