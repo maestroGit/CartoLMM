@@ -1,0 +1,26 @@
+[
+  {
+    "id": "tx_hash_abc001",
+    "fromWallet": "04abc123DEF456bodega",
+    "toWallet": "045fgh789ANA111",
+    "tipo": "compra",
+    "fecha": "2025-04-15T16:12:22Z",
+    "firma": "sig_xyz001",
+    "datosExtra": {
+      "vino": "Rioja Crianza 2022",
+      "botellas": 6,
+      "denominacion": "D.O.Ca. Rioja"
+    }
+  },
+  {
+    "id": "tx_hash_mno777",
+    "fromWallet": "04999MINERVINA001x",
+    "toWallet": "04abc123DEF456bodega",
+    "tipo": "transferencia",
+    "fecha": "2025-04-18T19:45:10Z",
+    "firma": "sig_mno777",
+    "datosExtra": {
+      "motivo": "Distribución premios nodo"
+    }
+  }
+]

@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="components.css">
     <link rel="stylesheet" href="map-styles.css">
+    <link rel="stylesheet" href="peer-markers.css">
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -221,13 +222,16 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
     <script src="../src/services/blockchainService.js"></script>
+    <!-- Leaflet modules (antes de mapService) -->
+    <script src="../src/leaflet/PeerMarker.js"></script>
+    <script src="../src/leaflet/PeerLayerManager.js"></script>
     <script src="../src/services/mapService.js"></script>
     <script src="../src/services/dashboardService.js"></script>
     <script src="../src/main.js"></script>
     <script src="peersMetrics.js"></script>
 
     <!-- Servicio de refresco reactivo del dashboard y nodos -->
-    <script type="module" src="import-realtimeDashboardService.js"></script>
+    <script src="../src/services/realtimeDashboardService.js"></script>
 
     <!-- Loader inicial -->
     <div class="loader" style="display: flex;">

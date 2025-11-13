@@ -36,7 +36,7 @@ class RealtimeDashboardService {
             this.peersService.renderMetricGrid(data);
           }
           if (this.mapService && data.peers) {
-            console.log('Cargando ' + data.peers.length + ' peers en el mapa...');
+            console.log(\`Ì∑∫Ô∏è Cargando \${data.peers.length} peers en el mapa...\`);
             this.mapService.loadPeersOnMap(data.peers);
           }
         }
@@ -85,9 +85,9 @@ class RealtimeDashboardService {
     this.mapUpdateTimeout = setTimeout(() => {
       try {
         this.mapService.updatePeersOnMap(peers);
-        console.log('Mapa actualizado con peers WebSocket');
+        console.log('Ì∑∫Ô∏è Mapa actualizado con peers WebSocket');
       } catch (error) {
-        console.error('Error actualizando mapa:', error);
+        console.error('‚ùå Error actualizando mapa:', error);
       }
       this.mapUpdateTimeout = null;
     }, this.mapUpdateDelay);
@@ -98,11 +98,11 @@ window.RealtimeDashboardService = RealtimeDashboardService;
 
 function initRealtimeServiceGlobal() {
   if (!window.socket || !window.dashboardService || !window.peersService || !window.mapService) {
-    console.log('Esperando servicios para realtimeDashboardService...');
+    console.log('‚è≥ Esperando servicios para realtimeDashboardService...');
     setTimeout(initRealtimeServiceGlobal, 100);
     return;
   }
-  console.log('Inicializando realtimeDashboardService...');
+  console.log('Ì¥Ñ Inicializando realtimeDashboardService...');
   const realtimeService = new RealtimeDashboardService({
     socket: window.socket,
     dashboardService: window.dashboardService,
@@ -111,7 +111,7 @@ function initRealtimeServiceGlobal() {
   });
   window.realtimeDashboardService = realtimeService;
   realtimeService.init();
-  console.log('realtimeDashboardService inicializado');
+  console.log('‚úÖ realtimeDashboardService inicializado');
 }
 
 if (document.readyState === 'loading') {

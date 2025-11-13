@@ -1,0 +1,81 @@
+[
+  {
+    "id": "oauth_001",
+    "provider": "google",
+    "nombre": "Bodega Solar Viejo",
+    "email": "solarviejo@bodegas.com",
+    "localizacion": { "direccion": "Laguardia, Álava", "lat": 42.5546, "lng": -2.6188 },
+    "categorias": ["bodega"],
+    "wallets": [
+      {
+        "id": "w_001",
+        "publicKey": "04abc123DEF456bodega",
+        "status": "active",
+        "usuarioId": "oauth_001",
+        "fechaVinculacion": "2025-01-20T11:23:00Z"
+      }
+    ],
+    "blockchainActive": true,
+    "registrado": true,
+    "fechaRegistro": "2025-01-20T11:11:22Z"
+  },
+  {
+    "id": "oauth_002",
+    "provider": "github",
+    "nombre": "Ana López",
+    "email": "ana.wine@gmail.com",
+    "localizacion": { "direccion": "Madrid, España", "lat": 40.4168, "lng": -3.7038 },
+    "categorias": ["wine_lover"],
+    "wallets": [
+      {
+        "id": "w_002",
+        "publicKey": "045fgh789ANA111",
+        "status": "inactive",
+        "usuarioId": "oauth_002",
+        "fechaVinculacion": "2025-02-02T18:01:00Z"
+      }
+    ],
+    "blockchainActive": false,
+    "registrado": true,
+    "fechaRegistro": "2025-02-02T18:00:01Z"
+  },
+  {
+    "id": "oauth_003",
+    "provider": "google",
+    "nombre": "Viñedos del Sur",
+    "email": "contacto@vinossur.com",
+    "localizacion": { "direccion": "Jerez, Cádiz", "lat": 36.6850, "lng": -6.1267 },
+    "categorias": ["bodega", "minero"],
+    "wallets": [
+      {
+        "id": "w_003a",
+        "publicKey": "04999MINERVINA001x",
+        "status": "active",
+        "usuarioId": "oauth_003",
+        "fechaVinculacion": "2025-03-02T12:55:00Z"
+      },
+      {
+        "id": "w_003b",
+        "publicKey": "04444OTRAMINERO003",
+        "status": "inactive",
+        "usuarioId": "oauth_003",
+        "fechaVinculacion": "2025-03-05T09:00:00Z"
+      }
+    ],
+    "blockchainActive": true,
+    "registrado": true,
+    "fechaRegistro": "2025-03-01T10:00:00Z"
+  },
+  {
+    "id": "oauth_004",
+    "provider": "google",
+    "nombre": "Luis García",
+    "email": "lgarcia@vinoaficionado.es",
+    "localizacion": { "direccion": "Logroño, La Rioja", "lat": 42.4667, "lng": -2.4456 },
+    "categorias": ["wine_lover"],
+    "wallets": [],
+    "blockchainActive": false,
+    "registrado": true,
+    "fechaRegistro": "2025-04-10T08:01:00Z"
+  }
+]

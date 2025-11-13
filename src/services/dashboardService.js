@@ -398,12 +398,10 @@ class DashboardService {
    */
   updateMetrics(bodegasData = null, blockchainData = null) {
     if (bodegasData) {
-      this.metrics.totalBodegas = bodegasData.bodegas?.length || 0;
-      this.metrics.activeBodegas =
-        bodegasData.bodegas?.filter((b) => b.blockchain?.status === "active")
-          .length || 0;
+      const bodegasArray = Array.isArray(bodegasData.bodegas) ? bodegasData.bodegas : Array.isArray(bodegasData) ? bodegasData : [];
+      this.metrics.totalBodegas = bodegasArray.length || bodegasData.total || 0;
+      this.metrics.activeBodegas = bodegasArray.filter((b) => b.blockchain?.status === "active").length || bodegasData.active || 0;
     }
-
     if (blockchainData) {
       // blockchainData can come in several shapes:
       // - full payload { blocks: [], peers: [], transactions: [] }

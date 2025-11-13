@@ -116,7 +116,8 @@ class BlockchainService {
             if (!response.ok) throw new Error('Error obteniendo peers');
             
             const result = await response.json();
-            return result.success ? result.data : [];
+            // La API devuelve result.peers, no result.data
+            return result.success ? result.peers : [];
         } catch (error) {
             console.error('❌ Error obteniendo peers:', error);
             return [];

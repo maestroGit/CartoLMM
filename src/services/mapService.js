@@ -9,6 +9,7 @@ class MapService {
         this.markers = {};
         this.layers = {};
         this.animations = [];
+        this.peerManager = null; // Se inicializará después de crear el mapa
         this.defaultCenter = [40.4168, -3.7038]; // Madrid como centro de España
         this.defaultZoom = 6;
     }
@@ -59,6 +60,15 @@ class MapService {
 
             // Guardar las capas base para el control
             this.baseLayers = baseLayers;
+
+            // Inicializar gestor de peers (usar clase global si está disponible)
+            if (window.PeerLayerManager) {
+                this.peerManager = new window.PeerLayerManager(this.map);
+                console.log('✅ PeerLayerManager inicializado');
+            } else {
+                console.warn('⚠️ PeerLayerManager no disponible, se cargará después');
+                this.peerManager = null;
+            }
 
             // Crear capas organizadas
             this.setupLayers();
@@ -243,6 +253,137 @@ class MapService {
 
     /**
      * Carga nodos blockchain en el mapa
+     */
+    loadBlockchainNodes(nodesData) {
+        try {
+            if (!Array.isArray(nodesData)) {
+                console.warn('⚠️ Datos de nodos no válidos');
+                return;
+            }
+
+            // Usar nuevo método loadPeersOnMap
+            this.loadPeersOnMap(nodesData);
+        } catch (error) {
+            console.error('❌ Error cargando nodos blockchain:', error);
+        }
+    }
+
+    /**
+     * Carga peers blockchain en el mapa usando PeerLayerManager
+     * @param {Array} peers - Array de peers con coordenadas
+     */
+    loadPeersOnMap(peers) {
+        try {
+            if (!this.peerManager) {
+                console.error('❌ PeerLayerManager no inicializado');
+                return;
+            }
+
+            if (!Array.isArray(peers) || peers.length === 0) {
+                console.warn('⚠️ No hay peers para mostrar en el mapa');
+                return;
+            }
+
+            // Filtrar peers sin coordenadas
+            const peersWithCoords = peers.filter(
+                p => typeof p.lat === 'number' && typeof p.lng === 'number'
+            );
+
+            if (peersWithCoords.length === 0) {
+                console.warn('⚠️ Ningún peer tiene coordenadas válidas');
+                return;
+            }
+
+            console.log(`🗺️ Cargando ${peersWithCoords.length} peers en el mapa...`);
+
+            // Añadir cada peer al gestor
+            peersWithCoords.forEach(peer => {
+                this.peerManager.addPeer(peer);
+            });
+
+            console.log(`✅ ${peersWithCoords.length} peers cargados en el mapa`);
+
+            // Ajustar vista para incluir todos los peers si hay suficientes
+            if (peersWithCoords.length > 1) {
+                this.fitBoundsToPeers(peersWithCoords);
+            } else if (peersWithCoords.length === 1) {
+                // Un solo peer: centrar en él
+                const peer = peersWithCoords[0];
+                this.map.setView([peer.lat, peer.lng], 8);
+            }
+        } catch (error) {
+            console.error('❌ Error cargando peers en el mapa:', error);
+        }
+    }
+
+    /**
+     * Actualiza peers en el mapa (añade nuevos, actualiza existentes)
+     * @param {Array} peers - Array actualizado de peers
+     */
+    updatePeersOnMap(peers) {
+        try {
+            if (!this.peerManager) {
+                console.error('❌ PeerLayerManager no inicializado');
+                return;
+            }
+
+            if (!Array.isArray(peers)) {
+                console.warn('⚠️ Datos de peers no válidos para actualización');
+                return;
+            }
+
+            // Filtrar peers con coordenadas
+            const peersWithCoords = peers.filter(
+                p => typeof p.lat === 'number' && typeof p.lng === 'number'
+            );
+
+            console.log(`🔄 Actualizando ${peersWithCoords.length} peers en el mapa...`);
+
+            // Sincronizar peers (añade, actualiza, remueve según necesario)
+            this.peerManager.syncPeers(peersWithCoords);
+
+            console.log('✅ Peers actualizados en el mapa');
+        } catch (error) {
+            console.error('❌ Error actualizando peers:', error);
+        }
+    }
+
+    /**
+     * Ajusta la vista del mapa para incluir todos los peers
+     * @param {Array} peers - Array de peers con coordenadas
+     */
+    fitBoundsToPeers(peers) {
+        try {
+            if (!peers || peers.length === 0) return;
+
+            const bounds = L.latLngBounds(peers.map(p => [p.lat, p.lng]));
+            this.map.fitBounds(bounds, {
+                padding: [50, 50],
+                maxZoom: 10
+            });
+        } catch (error) {
+            console.warn('⚠️ Error ajustando vista a peers:', error);
+        }
+    }
+
+    /**
+     * Obtiene estadísticas de peers en el mapa
+     * @returns {Object} Estadísticas
+     */
+    getPeerStats() {
+        if (!this.peerManager) return { total: 0 };
+
+        const allMarkers = this.peerManager.getAllMarkers();
+        return {
+            total: allMarkers.length,
+            online: allMarkers.filter(m => m.data.status === 'online').length,
+            offline: allMarkers.filter(m => m.data.status === 'offline').length,
+            error: allMarkers.filter(m => m.data.status === 'error').length
+        };
+    }
+
+    /**
+     * Carga nodos blockchain en el mapa (alias legacy)
      */
     loadBlockchainNodes(nodesData) {
         try {

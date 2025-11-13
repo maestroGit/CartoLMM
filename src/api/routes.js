@@ -5,6 +5,7 @@
 
 // import { mockData } from '../config/config.js';
 import MagnusmasterAPI from './magnusmasterAPI.js';
+import coordinateService from '../services/coordinateService.js';
 
 // Instancia global del cliente API
 const magnusmasterClient = new MagnusmasterAPI();
@@ -310,9 +311,12 @@ async function handleGetPeers(req, res) {
 
     console.log(`✅ Peers consultados: ${stats.online}/${stats.total} online`);
 
+    // 8. Enriquecer peers con coordenadas geográficas
+    const peersWithCoordinates = await coordinateService.assignCoordinates(allNodes);
+
     res.json({
       success: true,
-      peers: allNodes,
+      peers: peersWithCoordinates,
       stats: stats,
       network: {
         localNode: localNode.nodeId,

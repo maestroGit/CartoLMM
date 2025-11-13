@@ -4,7 +4,8 @@ import { RealtimeDashboardService } from '../src/services/realtimeDashboardServi
 window.realtimeDashboardService = new RealtimeDashboardService({
   socket: window.CartoLMMWebSocket && window.CartoLMMWebSocket.prototype.socket ? window.CartoLMMWebSocket.prototype.socket : (window.socket || null),
   dashboardService: window.dashboardService,
-  peersService: window.peersService
+  peersService: window.peersService,
+  mapService: window.mapService // Nuevo: conectar servicio de mapa
 });
 
 window.realtimeDashboardService.init();

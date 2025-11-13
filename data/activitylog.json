@@ -1,0 +1,20 @@
+[
+  {
+    "id": "activity_001",
+    "usuarioId": "oauth_003",
+    "accion": "vinculacion_wallet",
+    "fechaHora": "2025-03-02T12:55:00Z"
+  },
+  {
+    "id": "activity_002",
+    "usuarioId": "oauth_003",
+    "accion": "cambio_status_wallet",
+    "fechaHora": "2025-03-06T09:21:12Z"
+  },
+  {
+    "id": "activity_003",
+    "usuarioId": "oauth_001",
+    "accion": "transaccion",
+    "fechaHora": "2025-04-15T16:12:22Z"
+  }
+]

@@ -42,6 +42,9 @@ async function initializeCartoLMM() {
         // Configurar listeners globales
         setupGlobalListeners();
 
+        // Inicializar servicio de tiempo real si existe
+        initializeRealtimeService();
+
         // Marcar como inicializado
         window.CartoLMM.initialized = true;
 
@@ -80,6 +83,36 @@ function verifyServices() {
 
     console.log('✅ Todos los servicios disponibles');
     return true;
+}
+
+/**
+ * Inicializa el servicio de actualizaciones en tiempo real
+ */
+function initializeRealtimeService() {
+    try {
+        // Si ya existe desde el módulo ES6, reconectar mapService
+        if (window.realtimeDashboardService) {
+            console.log('🔄 Reconectando mapService a realtimeDashboardService...');
+            window.realtimeDashboardService.mapService = window.mapService;
+            
+            // Cargar peers iniciales en el mapa
+            if (window.mapService) {
+                fetch('/api/peers')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && data.peers) {
+                            console.log(`🗺️ Cargando ${data.peers.length} peers en el mapa...`);
+                            window.mapService.loadPeersOnMap(data.peers);
+                        }
+                    })
+                    .catch(err => console.error('❌ Error cargando peers:', err));
+            }
+        } else {
+            console.warn('⚠️ realtimeDashboardService no encontrado');
+        }
+    } catch (error) {
+        console.error('❌ Error inicializando servicio tiempo real:', error);
+    }
 }
 
 /**
