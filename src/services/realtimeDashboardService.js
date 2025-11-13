@@ -33,7 +33,7 @@ class RealtimeDashboardService {
       .then(data => {
         if (data.success) {
           if (this.peersService) {
-            this.peersService.renderMetricGrid(data);
+            this.peersService.renderMetricGrid();
           }
           if (this.mapService && data.peers) {
             console.log('Cargando ' + data.peers.length + ' peers en el mapa...');

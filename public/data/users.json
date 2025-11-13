@@ -9,7 +9,7 @@
     "wallets": [
       {
         "id": "w_001",
-        "publicKey": "04abc123DEF456bodega",
+        "address": "04abc123DEF456bodega",
         "status": "active",
         "usuarioId": "oauth_001",
         "fechaVinculacion": "2025-01-20T11:23:00Z"
@@ -29,7 +29,7 @@
     "wallets": [
       {
         "id": "w_002",
-        "publicKey": "045fgh789ANA111",
+        "address": "045fgh789ANA111",
         "status": "inactive",
         "usuarioId": "oauth_002",
         "fechaVinculacion": "2025-02-02T18:01:00Z"
@@ -49,14 +49,14 @@
     "wallets": [
       {
         "id": "w_003a",
-        "publicKey": "04999MINERVINA001x",
+        "address": "04999MINERVINA001x",
         "status": "active",
         "usuarioId": "oauth_003",
         "fechaVinculacion": "2025-03-02T12:55:00Z"
       },
       {
         "id": "w_003b",
-        "publicKey": "04444OTRAMINERO003",
+        "address": "04444OTRAMINERO003",
         "status": "inactive",
         "usuarioId": "oauth_003",
         "fechaVinculacion": "2025-03-05T09:00:00Z"

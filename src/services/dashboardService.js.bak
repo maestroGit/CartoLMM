@@ -48,13 +48,6 @@ class DashboardService {
     }
   }
 
-  // Carga usuarios registrados en el mapa
-  async loadUsersOnMap() {
-    if (window.userService) {
-      const users = await window.userService.loadUsers();
-      window.userService.renderUsersOnMap(users);
-    }
-  }
   /**
    * Inicializa todos los servicios necesarios
    */
@@ -63,13 +56,6 @@ class DashboardService {
     const mapInitialized = window.mapService.initialize("map");
     if (!mapInitialized) {
       throw new Error("No se pudo inicializar el servicio de mapas");
-    }
-
-    // Inicializar userService
-    if (window.UserService && window.mapService.map) {
-      window.userService = new window.UserService();
-      window.userService.initialize(window.mapService.map);
-      console.log("✅ UserService inicializado");
     }
 
     // Inicializar blockchain (si falla, no usar datos mock)
@@ -107,10 +93,6 @@ class DashboardService {
         if (peersWithCoords.length > 0) {
           window.mapService.loadBlockchainNodes(peersWithCoords);
         }
-      }
-      // Cargar usuarios registrados en el mapa
-      if (this.loadUsersOnMap) {
-        await this.loadUsersOnMap();
       }
 
       // Actualizar métricas
@@ -416,16 +398,9 @@ class DashboardService {
    */
   updateMetrics(bodegasData = null, blockchainData = null) {
     if (bodegasData) {
-      const bodegasArray = Array.isArray(bodegasData.bodegas)
-        ? bodegasData.bodegas
-        : Array.isArray(bodegasData)
-        ? bodegasData
-        : [];
+      const bodegasArray = Array.isArray(bodegasData.bodegas) ? bodegasData.bodegas : Array.isArray(bodegasData) ? bodegasData : [];
       this.metrics.totalBodegas = bodegasArray.length || bodegasData.total || 0;
-      this.metrics.activeBodegas =
-        bodegasArray.filter((b) => b.blockchain?.status === "active").length ||
-        bodegasData.active ||
-        0;
+      this.metrics.activeBodegas = bodegasArray.filter((b) => b.blockchain?.status === "active").length || bodegasData.active || 0;
     }
     if (blockchainData) {
       // blockchainData can come in several shapes:
@@ -479,75 +454,79 @@ class DashboardService {
   /**
    * Actualiza visualización de métricas
    */
-  updateMetricsDisplay() {
-    // Actualizar contadores en sidebar
-    // Preferir elementos por ID si existen (más robusto frente a cambios de markup)
-    const blocksEl = document.getElementById("blocks-counter");
-    if (blocksEl)
-      blocksEl.textContent = this.metrics.totalBlocks ?? blocksEl.textContent;
-    else
-      this.updateCounter(
-        ".total-blocks .metric-value",
-        this.metrics.totalBlocks
-      );
-
-    const txEl = document.getElementById("transactions-counter");
-    if (txEl)
-      txEl.textContent = this.metrics.pendingTransactions ?? txEl.textContent;
-    else
-      this.updateCounter(
-        ".pending-transactions .metric-value",
-        this.metrics.pendingTransactions
-      );
-
-    // Actualizar estado de conexión
-    const statusElement = document.querySelector(
-      ".network-status .metric-value"
+updateMetricsDisplay() {
+  // Actualizar contadores en sidebar
+  // Preferir elementos por ID si existen (más robusto frente a cambios de markup)
+  const blocksEl = document.getElementById("blocks-counter");
+  if (blocksEl)
+    blocksEl.textContent = this.metrics.totalBlocks ?? blocksEl.textContent;
+  else
+    this.updateCounter(
+      ".total-blocks .metric-value",
+      this.metrics.totalBlocks
     );
-    if (statusElement) {
-      statusElement.textContent = this.metrics.networkStatus;
-      statusElement.className = `metric-value ${this.metrics.networkStatus}`;
-    }
 
-    // Mostrar última actualización en formato legible
-    const lastUpdatedEl = document.getElementById("metrics-last-updated");
-    if (lastUpdatedEl) {
-      const ts = this.metrics.lastUpdated;
-      if (!ts) {
-        lastUpdatedEl.textContent = "-";
-      } else {
-        // formatear a tiempo relativo simple y añadir la hora exacta
-        const when = (function format(ts) {
-          try {
-            const d = new Date(ts);
-            const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-            let rel;
-            if (diff < 5) rel = "ahora";
-            else if (diff < 60) rel = `hace ${diff}s`;
-            else if (diff < 3600) rel = `hace ${Math.floor(diff / 60)}m`;
-            else if (diff < 86400) rel = `hace ${Math.floor(diff / 3600)}h`;
-            else rel = `hace ${Math.floor(diff / 86400)}d`;
+  const txEl = document.getElementById("transactions-counter");
+  if (txEl)
+    txEl.textContent = this.metrics.pendingTransactions ?? txEl.textContent;
+  else
+    this.updateCounter(
+      ".pending-transactions .metric-value",
+      this.metrics.pendingTransactions
+    );
 
-            // Formatear hora exacta YYYY-MM-DD HH:MM
-            const pad = (n) => String(n).padStart(2, "0");
-            const exact = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-              d.getDate()
-            )} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  
 
-            return `${rel} — ${exact}`;
-          } catch (e) {
-            return String(ts);
-          }
-        })(ts);
 
-        lastUpdatedEl.textContent = when;
-      }
-    }
 
-    // ... tus actualizaciones de bloques, txs, nodos ...
-    // Actualiza los peers visibles con el mismo ritmo de las métricas
-    if (window.peersService) window.peersService.renderMetricGrid();
+  // Actualizar estado de conexión
+  const statusElement = document.querySelector(
+    ".network-status .metric-value"
+  );
+  if (statusElement) {
+    statusElement.textContent = this.metrics.networkStatus;
+    statusElement.className = `metric-value ${this.metrics.networkStatus}`;
   }
+
+  // Mostrar última actualización en formato legible
+  const lastUpdatedEl = document.getElementById("metrics-last-updated");
+  if (lastUpdatedEl) {
+    const ts = this.metrics.lastUpdated;
+    if (!ts) {
+      lastUpdatedEl.textContent = "-";
+    } else {
+      // formatear a tiempo relativo simple y añadir la hora exacta
+      const when = (function format(ts) {
+        try {
+          const d = new Date(ts);
+          const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+          let rel;
+          if (diff < 5) rel = "ahora";
+          else if (diff < 60) rel = `hace ${diff}s`;
+          else if (diff < 3600) rel = `hace ${Math.floor(diff / 60)}m`;
+          else if (diff < 86400) rel = `hace ${Math.floor(diff / 3600)}h`;
+          else rel = `hace ${Math.floor(diff / 86400)}d`;
+
+          // Formatear hora exacta YYYY-MM-DD HH:MM
+          const pad = (n) => String(n).padStart(2, "0");
+          const exact = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+            d.getDate()
+          )} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+          return `${rel} — ${exact}`;
+        } catch (e) {
+          return String(ts);
+        }
+      })(ts);
+
+      lastUpdatedEl.textContent = when;
+    }
+  }
+
+  // ... tus actualizaciones de bloques, txs, nodos ...
+  // Actualiza los peers visibles con el mismo ritmo de las métricas
+  if (window.peersService) window.peersService.renderMetricGrid();
+}
 
   /**
    * Actualiza un contador específico

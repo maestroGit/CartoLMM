@@ -85,8 +85,6 @@ class PeerMarker {
             <p><strong>ID:</strong> <code>${this.data.nodeId}</code></p>
             <p><strong>Estado:</strong> ${statusEmoji} <span class="status-${this.data.status}">${this.data.status || 'unknown'}</span></p>
             <p><strong>URL:</strong> <a href="${this.data.httpUrl}" target="_blank" rel="noopener">${this.data.httpUrl}</a></p>
-            <p><strong>Altura bloque:</strong> ${this.data.blockHeight || 0}</p>
-            <p><strong>Dificultad:</strong> ${this.data.difficulty || 0}</p>
             ${this.data.responseTime !== undefined ? `<p><strong>Latencia:</strong> ${this.data.responseTime}ms</p>` : ''}
             ${this.data.peers !== undefined ? `<p><strong>Peers conectados:</strong> ${this.data.peers}</p>` : ''}
             ${this.data.lastSeen ? `<p><strong>Última conexión:</strong> ${new Date(this.data.lastSeen).toLocaleString('es-ES')}</p>` : ''}

@@ -37,7 +37,8 @@
                 <img src="images/iconoBWred.png" alt="Logo" class="logo-icon white" />
                 <h1 class="logo">BlocksWine Map</h1>
                 <nav class="nav">
-                    <a href="http://localhost:3000/view.html" target="_blank" class="btn" id="dashboard-btn" title="Dashboard">Dashboard</a>
+                    <a href="http://localhost:3000/view.html" target="_blank" class="btn" id="dashboard-btn"
+                        title="Dashboard">Dashboard</a>
                     <a href="http://localhost:3000/demo-wallet/web-demo.html" target="_blank" rel="noopener" class="btn"
                         id="bw-wallet-btn">BW-Wallet</a>
                     <button id="toggle-layers" class="control-btn unified-btn" data-toggle-wired="true"
@@ -86,7 +87,7 @@
                             <span class="metric-value counter" id="transactions-counter">0</span>
                             <span class="metric-label">MEMPOOL</span>
                         </div>
-                    
+
                         <div class="metric-card">
                             <span class="metric-value" id="transactions-per-hour">-</span>
                             <span class="metric-label">TX/h</span>
@@ -94,14 +95,14 @@
                     </div>
                 </section>
                 <section class="metrics-section">
-                <h3>🌐 Nodos Blockchain conectados</h3>
-                <div class="metric-grid" id="peers-metric-grid">
-                    <!-- Los nodos se autocompletarán aquí por JS -->
-                    <div class="metric-card" id="no-peers-message" style="display:none;">
-                        <span class="metric-value" style="font-size:1.2em;">—</span>
-                        <span class="metric-label">No hay nodos conectados</span>
+                    <h3>🌐 Nodos Blockchain conectados</h3>
+                    <div class="metric-grid" id="peers-metric-grid">
+                        <!-- Los nodos se autocompletarán aquí por JS -->
+                        <div class="metric-card" id="no-peers-message" style="display:none;">
+                            <span class="metric-value" style="font-size:1.2em;">—</span>
+                            <span class="metric-label">No hay nodos conectados</span>
+                        </div>
                     </div>
-                </div>
                 </section>
                 <!-- Bodegas Metrics -->
                 <section class="metrics-section">
@@ -224,6 +225,8 @@
     <script src="../src/services/blockchainService.js"></script>
     <!-- Leaflet modules (antes de mapService) -->
     <script src="../src/leaflet/PeerMarker.js"></script>
+    <script src="../src/leaflet/UserMarker.js"></script>
+    <script src="../src/services/UserService.js"></script>
     <script src="../src/leaflet/PeerLayerManager.js"></script>
     <script src="../src/services/mapService.js"></script>
     <script src="../src/services/dashboardService.js"></script>
