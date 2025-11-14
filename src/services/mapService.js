@@ -274,6 +274,7 @@ class MapService {
      */
     loadPeersOnMap(peers) {
         try {
+            console.log('[loadPeersOnMap] peers recibidos:', peers);
             if (!this.peerManager) {
                 console.error('❌ PeerLayerManager no inicializado');
                 return;
@@ -288,6 +289,7 @@ class MapService {
             const peersWithCoords = peers.filter(
                 p => typeof p.lat === 'number' && typeof p.lng === 'number'
             );
+            console.log('[loadPeersOnMap] peers con coordenadas:', peersWithCoords);
 
             if (peersWithCoords.length === 0) {
                 console.warn('⚠️ Ningún peer tiene coordenadas válidas');
@@ -298,6 +300,7 @@ class MapService {
 
             // Añadir cada peer al gestor
             peersWithCoords.forEach(peer => {
+                console.log('[loadPeersOnMap] Añadiendo peer al mapa:', peer);
                 this.peerManager.addPeer(peer);
             });
 
@@ -542,8 +545,8 @@ class MapService {
         
         // Ajustar tamaño de markers según zoom
         if (zoom < 8) {
-            // Zoom out: markers más pequeños
-            document.documentElement.style.setProperty('--marker-scale', '0.8');
+            // Zoom out: markers mucho más pequeños
+            document.documentElement.style.setProperty('--marker-scale', '0.5');
         } else if (zoom > 12) {
             // Zoom in: markers más grandes
             document.documentElement.style.setProperty('--marker-scale', '1.2');

@@ -27,7 +27,7 @@ class UserMarker {
   createIcon() {
     const primaryCategory = this.data.categorias[0];
     const hasMultipleCategories = this.data.categorias.length > 1;
-    
+
     // Emojis según categoría
     const iconMap = {
       bodega: '🍇',
@@ -36,16 +36,7 @@ class UserMarker {
       default: '👤'
     };
 
-    // Tamaños según categoría
-    const sizeMap = {
-      bodega: 36,
-      wine_lover: 32,
-      minero: 34,
-      default: 30
-    };
-
     const emoji = iconMap[primaryCategory] || iconMap.default;
-    const size = sizeMap[primaryCategory] || sizeMap.default;
 
     // Badge si tiene blockchain activo
     const blockchainBadge = this.data.blockchainActive 
@@ -59,7 +50,7 @@ class UserMarker {
     }
 
     const html = `
-      <div class="user-marker user-marker-${primaryCategory}" style="font-size: ${size}px;">
+      <div class="user-marker user-marker-${primaryCategory}">
         ${emoji}
         ${blockchainBadge}
         ${multiBadge}
@@ -69,9 +60,9 @@ class UserMarker {
     return L.divIcon({
       html: html,
       className: 'user-icon-wrapper',
-      iconSize: [size + 8, size + 8],
-      iconAnchor: [(size + 8) / 2, (size + 8) / 2],
-      popupAnchor: [0, -(size + 8) / 2]
+      iconSize: [38, 38],
+      iconAnchor: [19, 19],
+      popupAnchor: [0, -19]
     });
   }
 

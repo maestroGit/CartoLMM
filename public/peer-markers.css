@@ -23,6 +23,10 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   cursor: pointer;
+  width: calc(36px * var(--marker-scale, 1));
+  height: calc(36px * var(--marker-scale, 1));
+  min-width: 0;
+  min-height: 0;
 }
 
 .peer-marker:hover {
@@ -30,10 +34,13 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
+
 .peer-marker .peer-icon {
   font-size: 20px;
   line-height: 1;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  transform: scale(var(--marker-scale, 1));
+  transition: transform 0.2s;
 }
 
 /* Nodo Local */
@@ -41,10 +48,13 @@
   background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   border: 3px solid #ffffff;
   animation: localPulse 2s ease-in-out infinite;
+  width: calc(36px * var(--marker-scale, 1));
+  height: calc(36px * var(--marker-scale, 1));
 }
 
 .peer-marker-local .peer-icon {
   font-size: 24px;
+  transform: scale(var(--marker-scale, 1));
 }
 
 @keyframes localPulse {
@@ -60,9 +70,11 @@
 
 /* Peer Online */
 .peer-marker-online {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   border: 2px solid #ffffff;
   position: relative;
+  width: calc(32px * var(--marker-scale, 1));
+  height: calc(32px * var(--marker-scale, 1));
 }
 
 .peer-marker-online .peer-pulse {
@@ -94,6 +106,8 @@
   background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
   border: 2px solid #9CA3AF;
   opacity: 0.7;
+  width: calc(28px * var(--marker-scale, 1));
+  height: calc(28px * var(--marker-scale, 1));
 }
 
 .peer-marker-offline:hover {
@@ -105,6 +119,8 @@
   background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
   border: 2px solid #FCA5A5;
   animation: errorBlink 1.5s ease-in-out infinite;
+  width: calc(28px * var(--marker-scale, 1));
+  height: calc(28px * var(--marker-scale, 1));
 }
 
 @keyframes errorBlink {

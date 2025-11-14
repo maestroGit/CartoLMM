@@ -48,9 +48,9 @@ export class WineryLayer {
               title: el.tags && el.tags.name ? el.tags.name : 'Bodega',
               icon: L.divIcon({
                 className: 'winery-marker',
-                html: '🍷',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
+                html: '<span class="winery-marker">🍷</span>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
               })
             });
             marker.bindPopup(`<strong>${el.tags && el.tags.name ? el.tags.name : 'Bodega'}</strong>`);

@@ -50,6 +50,7 @@ class CoordinateService {
    * @returns {Array} Peers con coordenadas mock
    */
   assignMockCoordinates(peers) {
+    console.log('[CoordinateService] Asignando coordenadas MOCK a peers (visualización, no reales)');
     return peers.map((peer, index) => {
       // Nodo local siempre en Madrid
       if (peer.isLocal) {
@@ -63,11 +64,9 @@ class CoordinateService {
 
       // Distribuir peers por regiones de forma determinista
       const region = this.mockRegions[index % this.mockRegions.length];
-      
       // Añadir pequeño offset aleatorio para separación visual
       const latOffset = (Math.random() - 0.5) * 0.15;
       const lngOffset = (Math.random() - 0.5) * 0.15;
-      
       return {
         ...peer,
         lat: region.lat + latOffset,

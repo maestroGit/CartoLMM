@@ -7,6 +7,7 @@ class PeerMarker {
     this.data = peerData;
     this.map = map;
     this.visible = true;
+    console.log('[PeerMarker.constructor] Creando marcador para peer:', peerData);
     this.marker = this.createMarker();
     this.attachPopup();
   }
@@ -17,6 +18,7 @@ class PeerMarker {
    */
   createMarker() {
     const icon = this.createIcon();
+    console.log('[PeerMarker.createMarker] lat:', this.data.lat, 'lng:', this.data.lng, 'icon:', icon);
     return L.marker([this.data.lat, this.data.lng], { icon }).addTo(this.map);
   }
 
@@ -27,32 +29,32 @@ class PeerMarker {
   createIcon() {
     const iconConfigs = {
       local: {
-        html: '<div class="peer-marker peer-marker-local"><span class="peer-icon">🏠</span></div>',
+        html: '<div class="peer-marker peer-marker-local"><span class="peer-icon">💻</span></div>',
         className: 'peer-icon-wrapper',
-        iconSize: [36, 36],
-        iconAnchor: [18, 36],
-        popupAnchor: [0, -36]
+        iconSize: [38, 38],
+        iconAnchor: [19, 19],
+        popupAnchor: [0, -19]
       },
       online: {
-        html: '<div class="peer-marker peer-marker-online"><span class="peer-icon">🌐</span><span class="peer-pulse"></span></div>',
+        html: '<div class="peer-marker peer-marker-online"><span class="peer-icon">📡</span><span class="peer-pulse"></span></div>',
         className: 'peer-icon-wrapper',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+        popupAnchor: [0, -17]
       },
       offline: {
-        html: '<div class="peer-marker peer-marker-offline"><span class="peer-icon">⚫</span></div>',
+        html: '<div class="peer-marker peer-marker-offline"><span class="peer-icon">🔴</span></div>',
         className: 'peer-icon-wrapper',
-        iconSize: [28, 28],
-        iconAnchor: [14, 28],
-        popupAnchor: [0, -28]
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -15]
       },
       error: {
         html: '<div class="peer-marker peer-marker-error"><span class="peer-icon">⚠️</span></div>',
         className: 'peer-icon-wrapper',
-        iconSize: [28, 28],
-        iconAnchor: [14, 28],
-        popupAnchor: [0, -28]
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -15]
       }
     };
 
@@ -76,7 +78,7 @@ class PeerMarker {
         error: '🟠'
       }[this.data.status] || '⚪';
       
-      const title = this.data.isLocal ? '🏠 NODO LOCAL' : '🌐 PEER REMOTO';
+      const title = this.data.isLocal ? '💻  NODO LOCAL' : '📡  PEER REMOTO';
       
       content = `
         <div class="peer-popup">

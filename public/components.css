@@ -7,7 +7,7 @@
 */
 
 /* Markers del mapa */
-.bodega-marker, .node-marker {
+.bodega-marker, .node-marker, .user-marker, .winery-marker {
     transition: all 0.3s ease;
 }
 
@@ -26,19 +26,33 @@
     justify-content: center;
 }
 
-.bodega-marker .marker-icon {
+.bodega-marker .marker-icon, .winery-marker, .user-marker {
     width: 30px;
     height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 20px;
     color: white;
     border: 2px solid white;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     transform: scale(var(--marker-scale, 1));
     transition: all 0.3s ease;
+}
+/* User marker emoji scaling */
+.user-marker {
+    font-size: 20px;
+    transform: scale(var(--marker-scale, 1));
+    transition: transform 0.2s;
+}
+.user-marker .user-multi-badge {
+    font-size: 14px;
+}
+.winery-marker {
+    font-size: 20px;
+    transform: scale(var(--marker-scale, 1));
+    transition: transform 0.2s;
 }
 
 .bodega-marker .marker-pulse {

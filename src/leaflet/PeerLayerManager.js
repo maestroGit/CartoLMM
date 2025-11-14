@@ -17,17 +17,18 @@ class PeerLayerManager {
    */
   addPeer(peerData) {
     const nodeId = peerData.nodeId || peerData.id || `peer-${Date.now()}`;
-    
+    console.log('[PeerLayerManager.addPeer] nodeId:', nodeId, 'data:', peerData);
     // Si ya existe, actualizar datos en lugar de crear nuevo
     if (this.peerMarkers.has(nodeId)) {
       const existingMarker = this.peerMarkers.get(nodeId);
       existingMarker.updateData(peerData);
+      console.log('[PeerLayerManager.addPeer] Actualizado peer existente:', nodeId);
       return existingMarker;
     }
-    
     // Crear nuevo marcador usando clase global
     const pm = new window.PeerMarker(peerData, this.map);
     this.peerMarkers.set(nodeId, pm);
+    console.log('[PeerLayerManager.addPeer] Marcador creado y añadido al mapa:', nodeId);
     return pm;
   }
 

@@ -1,3 +1,6 @@
+// NOTA: Si en el futuro se usan iconos emoji para viñedos (en vez de polígonos),
+// basta con crear los marcadores usando la clase 'vineyard-marker' y el CSS con
+// font-size y transform: scale(var(--marker-scale, 1)) para que respondan al zoom.
 // VineyardLayer.js
 // Capa Leaflet para mostrar zonas landuse=vineyard usando Overpass API
 
