@@ -1,0 +1,19 @@
+.user-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.user-multi-badge {
+  margin-left: -6px; /* solapamiento */
+  margin-right: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 0.85em;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  position: static;
+  padding-left: 0;
+  z-index: 2;
+}

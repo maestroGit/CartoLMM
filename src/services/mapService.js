@@ -10,8 +10,8 @@ class MapService {
         this.layers = {};
         this.animations = [];
         this.peerManager = null; // Se inicializará después de crear el mapa
-        this.defaultCenter = [40.4168, -3.7038]; // Madrid como centro de España
-        this.defaultZoom = 6;
+        this.defaultCenter = [41.4168, -1.7038]; // Centro de la vista mapa
+        this.defaultZoom = 3;
     }
 
     /**

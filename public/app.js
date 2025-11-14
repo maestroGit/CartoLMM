@@ -69,6 +69,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+
+        // --- Botón Vista: alternar entre vista actual y planisferio ---
+        const vistaBtn = document.getElementById('toggle-3d');
+        if (vistaBtn) {
+            let lastView = null;
+            vistaBtn.addEventListener('click', () => {
+                if (!window.mapService || !window.mapService.map) return;
+                const map = window.mapService.map;
+                // Si ya estamos en el planisferio, volver a la vista anterior
+                const worldZoom = 3;
+                const worldCenter = [20, 0];
+                const currentZoom = map.getZoom();
+                const currentCenter = map.getCenter();
+                if (Math.abs(currentZoom - worldZoom) < 0.5 &&
+                    Math.abs(currentCenter.lat - worldCenter[0]) < 2 &&
+                    Math.abs(currentCenter.lng - worldCenter[1]) < 2) {
+                    // Volver a la vista anterior si existe
+                    if (lastView) {
+                        map.setView(lastView.center, lastView.zoom);
+                    }
+                } else {
+                    // Guardar la vista actual y mostrar el planisferio
+                    lastView = { center: [currentCenter.lat, currentCenter.lng], zoom: currentZoom };
+                    map.setView(worldCenter, worldZoom);
+                }
+            });
+        }
     } catch (err) {
         console.warn('Layers toggle wiring error:', err);
     }

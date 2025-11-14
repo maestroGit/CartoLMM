@@ -1,0 +1,60 @@
+[
+  {
+    "id": "ba61ed05bbd22ff74040c7d0a0229a54927555cc6622cf6b24d50c1602a91756",
+    "lote": "ba61ed05bbd22ff74040c7d0a0229a54927555cc6622cf6b24d50c1602a91756",
+    "inputs": [
+      {
+        "txId": "prev_txid_0001",
+        "outputIndex": 0,
+        "address": "04abc123DEF456bodega",
+        "amount": 5000,
+        "signature": "sig_prevtx001"
+      }
+    ],
+    "outputs": [
+      {
+        "amount": 6,
+        "address": "045fgh789ANA111"
+      },
+      {
+        "amount": 4994,
+        "address": "04abc123DEF456bodega"
+      }
+    ],
+    "datosExtra": {
+      "tipo": "compra",
+      "vino": "Rioja Crianza 2022",
+      "botellas": 6,
+      "denominacion": "D.O.Ca. Rioja",
+      "fecha": "2025-04-15T16:12:22Z"
+    }
+  },
+  {
+    "id": "c30dbdb5333fbadf8e12b2b78c20487e0acc233ce11a98761a62a45e24e95e99",
+    "lote": "c30dbdb5333fbadf8e12b2b78c20487e0acc233ce11a98761a62a45e24e95e99",
+    "inputs": [
+      {
+        "txId": "prev_txid_0022",
+        "outputIndex": 1,
+        "address": "04999MINERVINA001x",
+        "amount": 9998,
+        "signature": "sig_prev0022"
+      }
+    ],
+    "outputs": [
+      {
+        "amount": 8,
+        "address": "04abc123DEF456bodega"
+      },
+      {
+        "amount": 9990,
+        "address": "04999MINERVINA001x"
+      }
+    ],
+    "datosExtra": {
+      "tipo": "transferencia",
+      "motivo": "Distribución premios nodo",
+      "fecha": "2025-04-18T19:45:10Z"
+    }
+  }
+]

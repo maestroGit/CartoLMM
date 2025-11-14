@@ -30,8 +30,8 @@ class UserMarker {
     
     // Emojis según categoría
     const iconMap = {
-      bodega: '🍷',
-      wine_lover: '🍇',
+      bodega: '🍇',
+      wine_lover: '🍷',
       minero: '⛏️',
       default: '👤'
     };
@@ -52,10 +52,11 @@ class UserMarker {
       ? '<div class="user-blockchain-active"></div>' 
       : '';
 
-    // Badge de múltiples categorías
-    const multiBadge = hasMultipleCategories 
-      ? `<div class="user-multi-badge">×${this.data.categorias.length}</div>` 
-      : '';
+    // Badge de múltiples categorías: si es minero, mostrar ⛏️
+    let multiBadge = '';
+    if (hasMultipleCategories && this.data.categorias.includes('minero')) {
+      multiBadge = '<div class="user-multi-badge">⛏️</div>';
+    }
 
     const html = `
       <div class="user-marker user-marker-${primaryCategory}" style="font-size: ${size}px;">
@@ -92,10 +93,14 @@ class UserMarker {
       ? '<div class="blockchain-status active">🟢 Blockchain activa</div>'
       : '<div class="blockchain-status inactive">⚪ Sin blockchain</div>';
 
+    const webField = this.data.web
+      ? `<p><strong>Web:</strong> <a href="https://${this.data.web}" target="_blank" rel="noopener">${this.data.web}</a></p>`
+      : '';
     const popupContent = `
       <div class="user-popup">
         <h3>${this.data.nombre}</h3>
         <p><strong>Email:</strong> ${this.data.email}</p>
+        ${webField}
         <p><strong>Categorías:</strong> ${categorias}</p>
         ${blockchainStatus}
         <div class="wallets-section">
