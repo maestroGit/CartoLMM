@@ -17,8 +17,12 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
+
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- osmtogeojson CDN para conversión OSM a GeoJSON -->
+    <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.4/osmtogeojson.js"></script>
 
     <!-- Socket.io for realtime -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -220,22 +224,22 @@
     </div>
 
     <!-- Scripts externos -->
+
     <script src="CartoLMMWebSocket.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
-    <script src="../src/services/blockchainService.js"></script>
-    <!-- Leaflet modules (antes de mapService) -->
-    <script src="../src/leaflet/PeerMarker.js"></script>
-    <script src="../src/leaflet/UserMarker.js"></script>
-    <script src="../src/services/UserService.js"></script>
-    <script src="../src/leaflet/PeerLayerManager.js"></script>
-    <script src="../src/services/mapService.js"></script>
-    <script src="../src/services/dashboardService.js"></script>
-    <script src="../src/main.js"></script>
+    <script type="module" src="../src/services/blockchainService.js"></script>
+    <script type="module" src="../src/leaflet/PeerMarker.js"></script>
+    <script type="module" src="../src/leaflet/UserMarker.js"></script>
+    <script type="module" src="../src/services/UserService.js"></script>
+    <script type="module" src="../src/leaflet/PeerLayerManager.js"></script>
+    <script type="module" src="../src/services/mapService.js"></script>
+    <script type="module" src="../src/services/dashboardService.js"></script>
+    <script type="module" src="../src/main.js"></script>
     <script src="peersMetrics.js"></script>
 
     <!-- Servicio de refresco reactivo del dashboard y nodos -->
-    <script src="../src/services/realtimeDashboardService.js"></script>
+    <script type="module" src="../src/services/realtimeDashboardService.js"></script>
 
     <!-- Loader inicial -->
     <div class="loader" style="display: flex;">

@@ -3,6 +3,11 @@
  * Inicializa todo el sistema cuando se carga la página
  */
 
+// Importar VineyardLayer y WineryLayer
+import { VineyardLayer } from './leaflet/VineyardLayer.js';
+import { WineryLayer } from './leaflet/WineryLayer.js';
+let vineyardLayerInstance = null;
+let wineryLayerInstance = null;
 // Configuración global
 window.CartoLMM = {
     version: '1.0.0',
@@ -20,6 +25,28 @@ window.CartoLMM = {
  * Función principal de inicialización
  */
 async function initializeCartoLMM() {
+    // Inicializar capas de viñedos y bodegas después de crear el mapa
+    setTimeout(() => {
+        if (window.mapService && window.mapService.map) {
+            vineyardLayerInstance = new VineyardLayer(window.mapService.map);
+            wineryLayerInstance = new WineryLayer(window.mapService.map);
+            // Añadir la capa de viñedos al control de capas como overlay
+            if (window.mapService.layersControl) {
+                if (vineyardLayerInstance.layer) {
+                    window.mapService.layersControl.addOverlay(
+                        vineyardLayerInstance.layer,
+                        'Viñedos (landuse=vineyard)'
+                    );
+                }
+                if (wineryLayerInstance.layer) {
+                    window.mapService.layersControl.addOverlay(
+                        wineryLayerInstance.layer,
+                        'Bodegas (amenity=winery)'
+                    );
+                }
+            }
+        }
+    }, 1000);
     try {
         console.log('🚀 Iniciando CartoLMM v' + window.CartoLMM.version);
         window.CartoLMM.startTime = Date.now();

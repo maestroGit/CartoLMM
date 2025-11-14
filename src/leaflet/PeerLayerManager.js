@@ -6,7 +6,7 @@ class PeerLayerManager {
   constructor(map) {
     this.map = map;
     this.peerMarkers = new Map(); // nodeId -> PeerMarker
-    this.peerRelations = [];
+  // Usar L global proporcionado por el CDN de Leaflet
     this.peerBuffers = [];
   }
 
