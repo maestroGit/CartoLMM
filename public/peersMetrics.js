@@ -54,7 +54,6 @@ class PeersService {
     }
 
     const noPeersMsg = document.getElementById('no-peers-message');
-    
     // Limpia previos
     grid.querySelectorAll('.metric-card:not(#no-peers-message)').forEach(e => e.remove());
 
@@ -65,13 +64,23 @@ class PeersService {
       if (noPeersMsg) noPeersMsg.style.display = 'none';
     }
 
-    // Renderizar cada peer con info detallada
-    this.peers.forEach(peer => {
+    // Filtrar peers únicos por nodeId
+    const uniquePeers = [];
+    const seenIds = new Set();
+    for (const peer of this.peers) {
+      const id = peer.nodeId || peer.id || peer.httpUrl;
+      if (!seenIds.has(id)) {
+        uniquePeers.push(peer);
+        seenIds.add(id);
+      }
+    }
+
+    // Renderizar cada peer único con info detallada
+    uniquePeers.forEach(peer => {
       // Normalizar y recortar URL para evitar espacios finales que rompan links
       const httpUrl = (peer.httpUrl || '').toString().trim();
       const div = document.createElement('div');
       div.className = 'metric-card peer-card';
-      
       // Estilos según estado
       let statusColor = '#10B981'; // Verde
       let statusIcon = '🟢';

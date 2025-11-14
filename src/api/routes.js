@@ -212,62 +212,83 @@ async function handleGetPeers(req, res) {
         const startTime = Date.now();
         const peerHttpUrl = peer.httpUrl.trim(); // Eliminar espacios
         
-        try {
-          // Hacer petición a /system-info de cada peer
-          const peerResponse = await fetch(`${peerHttpUrl}/system-info`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(5000) // Timeout 5 segundos
-          });
+                try {
+                    // Hacer petición a /system-info de cada peer
+                    const peerResponse = await fetch(`${peerHttpUrl}/system-info`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        signal: AbortSignal.timeout(5000) // Timeout 5 segundos
+                    });
 
-          if (!peerResponse.ok) {
-            throw new Error(`HTTP ${peerResponse.status}`);
-          }
+                    if (!peerResponse.ok) {
+                        throw new Error(`HTTP ${peerResponse.status}`);
+                    }
 
-          const peerData = await peerResponse.json();
-          const responseTime = Date.now() - startTime;
+                    const peerData = await peerResponse.json();
+                    const responseTime = Date.now() - startTime;
 
-          // Extraer datos del peer
-          const peerBlockchain = peerData.blockchain || peerData.data?.blockchain || {};
-          
-          return {
-            nodeId: peer.nodeId || peerBlockchain.nodeId || `peer-${index + 1}`,
-            httpUrl: peerHttpUrl,
-            p2pUrl: peersP2P[index]?.url || peersP2P[index] || 'unknown',
-            isLocal: false,
-            status: 'online',
-            blockHeight: peerBlockchain.blockHeight || 0,
-            difficulty: peerBlockchain.difficulty || 0,
-            lastSeen: peer.lastSeen ? new Date(peer.lastSeen).toISOString() : new Date().toISOString(),
-            responseTime: responseTime,
-            // Info adicional si existe
-            version: peerBlockchain.version || '1.0.0',
-            peers: peerBlockchain.network?.peersHttp?.length || 0,
-            // Datos originales de magnumsmaster
-            originalData: {
-              nodeId: peer.nodeId,
-              lastSeenTimestamp: peer.lastSeen
-            }
-          };
-        } catch (error) {
-          // Peer no disponible o timeout
-          return {
-            nodeId: peer.nodeId || `peer-${index + 1}`,
-            httpUrl: peerHttpUrl,
-            p2pUrl: peersP2P[index]?.url || peersP2P[index] || 'unknown',
-            isLocal: false,
-            status: 'offline',
-            blockHeight: 0,
-            difficulty: 0,
-            lastSeen: peer.lastSeen ? new Date(peer.lastSeen).toISOString() : null,
-            responseTime: Date.now() - startTime,
-            error: error.message,
-            originalData: {
-              nodeId: peer.nodeId,
-              lastSeenTimestamp: peer.lastSeen
-            }
-          };
-        }
+                    // Extraer datos del peer
+                    const peerBlockchain = peerData.blockchain || peerData.data?.blockchain || {};
+
+                    // Generar nodeId único y consistente
+                    let nodeId = peer.nodeId || peerBlockchain.nodeId;
+                    if (!nodeId || nodeId === 'unknown') {
+                        // Usa el host:puerto como fallback único
+                        try {
+                            const urlObj = new URL(peerHttpUrl);
+                            nodeId = `node_${urlObj.port || urlObj.hostname.replace(/\W/g, '')}`;
+                        } catch {
+                            nodeId = `node_${index + 1}`;
+                        }
+                    }
+
+                    return {
+                        nodeId,
+                        httpUrl: peerHttpUrl,
+                        p2pUrl: peersP2P[index]?.url || peersP2P[index] || 'unknown',
+                        isLocal: false,
+                        status: 'online',
+                        blockHeight: peerBlockchain.blockHeight || 0,
+                        difficulty: peerBlockchain.difficulty || 0,
+                        lastSeen: peer.lastSeen ? new Date(peer.lastSeen).toISOString() : new Date().toISOString(),
+                        responseTime: responseTime,
+                        // Info adicional si existe
+                        version: peerBlockchain.version || '1.0.0',
+                        peers: peerBlockchain.network?.peersHttp?.length || 0,
+                        // Datos originales de magnumsmaster
+                        originalData: {
+                            nodeId: peer.nodeId,
+                            lastSeenTimestamp: peer.lastSeen
+                        }
+                    };
+                } catch (error) {
+                    // Peer no disponible o timeout
+                    let nodeId = peer.nodeId;
+                    if (!nodeId || nodeId === 'unknown') {
+                        try {
+                            const urlObj = new URL(peerHttpUrl);
+                            nodeId = `node_${urlObj.port || urlObj.hostname.replace(/\W/g, '')}`;
+                        } catch {
+                            nodeId = `node_${index + 1}`;
+                        }
+                    }
+                    return {
+                        nodeId,
+                        httpUrl: peerHttpUrl,
+                        p2pUrl: peersP2P[index]?.url || peersP2P[index] || 'unknown',
+                        isLocal: false,
+                        status: 'offline',
+                        blockHeight: 0,
+                        difficulty: 0,
+                        lastSeen: peer.lastSeen ? new Date(peer.lastSeen).toISOString() : null,
+                        responseTime: Date.now() - startTime,
+                        error: error.message,
+                        originalData: {
+                            nodeId: peer.nodeId,
+                            lastSeenTimestamp: peer.lastSeen
+                        }
+                    };
+                }
       })
     );
 
@@ -288,12 +309,21 @@ async function handleGetPeers(req, res) {
       }
     });
 
-        // 6. Combinar nodo local + peers remotos
-        const allNodes = [localNode, ...peersProcessed];
+
+                // 6. Combinar nodo local + peers remotos y filtrar por httpUrl único (ignorar nodeId duplicados)
+                const allNodesRaw = [localNode, ...peersProcessed];
+                const allNodes = [];
+                const seenHttpUrls = new Set();
+                for (const node of allNodesRaw) {
+                    const url = node.httpUrl || node.nodeId;
+                    if (!seenHttpUrls.has(url)) {
+                        allNodes.push(node);
+                        seenHttpUrls.add(url);
+                    }
+                }
 
         // 7. Calcular estadísticas
         const nodesWithBlocks = allNodes.filter(p => p.blockHeight > 0);
-    
         const stats = {
             total: allNodes.length,
             online: allNodes.filter(p => p.status === 'online').length,

@@ -75,7 +75,7 @@ class UserMarker {
       ? this.data.wallets.map(w => `
           <div class="wallet-item">
             <strong>${w.type}:</strong> 
-            <code>${w.address.substring(0, 16)}...</code>
+            <code style="word-break:break-all;white-space:pre-wrap;user-select:all;">${w.address}</code>
           </div>
         `).join('')
       : '<p style="color: #999;">Sin wallets registradas</p>';
@@ -105,8 +105,9 @@ class UserMarker {
     `;
 
     this.marker.bindPopup(popupContent, {
-      maxWidth: 300,
-      className: 'user-custom-popup'
+      maxWidth: 500,
+      minWidth: 340,
+      className: 'peer-leaflet-popup user-custom-popup'
     });
   }
 

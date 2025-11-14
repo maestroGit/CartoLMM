@@ -1,5 +1,70 @@
 [
-  {
+ {
+  "id": "oauth_011",
+  "provider": "google",
+  "nombre": "Javi Barcelona",
+  "web":"" ,
+  "email": "info@barcelona.com",
+  "localizacion": { "direccion": "Barcelona, España", "lat": 41.3851, "lng": 2.1734 },
+  "categorias": ["wine_lover"],
+  "wallets": [
+    {
+      "id": "w_011",
+      "address": "0471ca059b715123afaf242935526cca823b8d3e64e3895a9b802df167e5875dbcc1151be36219e9fe18da04868f9b8845b8e185dd7ab5f46a3648b7ecbc2f4708",
+      "status": "active",
+      "usuarioId": "oauth_011",
+      "fechaVinculacion": "2025-03-01T11:00:00Z",
+      "type": "wine_lover"
+    }
+  ],
+  "blockchainActive": true,
+  "registrado": true,
+  "fechaRegistro": "2025-03-01T10:45:00Z"
+},
+{
+  "id": "oauth_012",
+  "provider": "facebook",
+  "nombre": "Maison Parisienne",
+  "web": "www.maisonparisienne.fr",
+  "email": "contact@maisonparisienne.fr",
+  "localizacion": { "direccion": "París, Francia", "lat": 48.8566, "lng": 2.3522 },
+  "categorias": ["wine_lover"],
+  "wallets": [
+    {
+      "id": "w_012",
+      "address": "04ef3951bbdfa181e45142897b9e928e9595b8454e5bd4b4702bc80648bd7c22fa4f5201b18ee4531bcef5866626690ae9ea933df16e6e65774ae3b71752981e28",
+      "status": "active",
+      "usuarioId": "oauth_012",
+      "fechaVinculacion": "2025-03-02T12:00:00Z",
+      "type": "wine_lover"
+    }
+  ],
+  "blockchainActive": true,
+  "registrado": true,
+  "fechaRegistro": "2025-03-02T11:45:00Z"
+},
+{
+  "id": "oauth_013",
+  "provider": "github",
+  "nombre": "Peter Cellars",
+  "web": "www.petercellars.co.uk",
+  "email": "info@petercellars.co.uk",
+  "localizacion": { "direccion": "Londres, Reino Unido", "lat": 51.5074, "lng": -0.1278 },
+  "categorias": ["wine_lover"],
+  "wallets": [
+    {
+      "id": "w_013",
+      "address": "04f7f27c27a67f71530e84d8aedd5ff00466455c185e1c5ff680c802ccb39598164145c4e2192a9507d09525a0c6c89193ed285daaf9fc1a5aead791e863d88004",
+      "status": "active",
+      "usuarioId": "oauth_013",
+      "fechaVinculacion": "2025-03-03T13:00:00Z",
+      "type": "bodewine_lover"
+    }
+  ],
+  "blockchainActive": true,
+  "registrado": true,
+  "fechaRegistro": "2025-03-03T12:45:00Z"
+}, {
     "id": "oauth_005",
     "provider": "facebook",
     "nombre": "Cape Vines Estate",

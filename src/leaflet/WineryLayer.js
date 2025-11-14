@@ -53,7 +53,11 @@ export class WineryLayer {
                 iconAnchor: [15, 15]
               })
             });
-            marker.bindPopup(`<strong>${el.tags && el.tags.name ? el.tags.name : 'Bodega'}</strong>`);
+            marker.bindPopup(`<strong>${el.tags && el.tags.name ? el.tags.name : 'Bodega'}</strong>`, {
+              maxWidth: 500,
+              minWidth: 340,
+              className: 'peer-leaflet-popup'
+            });
             this.layer.addLayer(marker);
           }
         });

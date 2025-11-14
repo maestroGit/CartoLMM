@@ -77,9 +77,12 @@ class PeerMarker {
         offline: '🔴',
         error: '🟠'
       }[this.data.status] || '⚪';
-      
       const title = this.data.isLocal ? '💻  NODO LOCAL' : '📡  PEER REMOTO';
-      
+      // Mostrar publicKey completa si existe
+      let walletSection = '';
+      if (this.data.walletPublicKey) {
+        walletSection = `<p><strong>Wallet:</strong> <code style="word-break:break-all;white-space:pre-wrap;user-select:all;">${this.data.walletPublicKey}</code></p>`;
+      }
       content = `
         <div class="peer-popup">
           <h4 class="peer-popup-title">${title}</h4>
@@ -91,6 +94,7 @@ class PeerMarker {
             ${this.data.peers !== undefined ? `<p><strong>Peers conectados:</strong> ${this.data.peers}</p>` : ''}
             ${this.data.lastSeen ? `<p><strong>Última conexión:</strong> ${new Date(this.data.lastSeen).toLocaleString('es-ES')}</p>` : ''}
             ${this.data.city ? `<p><strong>📍 Ubicación:</strong> ${this.data.city}</p>` : ''}
+            ${walletSection}
           </div>
         </div>
       `;
@@ -104,7 +108,8 @@ class PeerMarker {
     }
     
     this.marker.bindPopup(content, {
-      maxWidth: 300,
+      maxWidth: 500,
+      minWidth: 340,
       className: 'peer-leaflet-popup'
     });
   }

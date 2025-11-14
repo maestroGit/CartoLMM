@@ -1050,3 +1050,42 @@ kbd {
     Estas reglas se aplican a elementos posicionados fixed o absolute
     dentro de `public/index.html` o creados dinámicamente por JS.
 ------------------------------------------------------------------ */
+
+/* Ampliar el popup y asegurar que la public key se vea y copie bien */
+.peer-leaflet-popup .peer-popup-content code {
+  display: block;
+  font-size: 0.98em;
+  background: #f6f6f6;
+  padding: 6px 8px;
+  border-radius: 6px;
+  word-break: break-all;
+  white-space: pre-wrap;
+  user-select: all;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.peer-leaflet-popup .peer-popup-content {
+  min-width: 340px;
+  max-width: 480px;
+  word-break: break-word;
+}
+
+/* Mejorar padding y margen en el contenido de los popups */
+.peer-leaflet-popup .peer-popup-content,
+.peer-leaflet-popup .user-popup,
+.peer-leaflet-popup .wallets-section {
+  padding: 16px 18px 14px 18px;
+  margin: 6px 0 4px 0;
+  border-radius: 10px;
+  background: #fff;
+  box-sizing: border-box;
+}
+.peer-leaflet-popup h3,
+.peer-leaflet-popup h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.peer-leaflet-popup p,
+.peer-leaflet-popup .wallet-item {
+  margin-bottom: 8px;
+}
