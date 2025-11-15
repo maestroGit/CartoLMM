@@ -72,10 +72,12 @@ class UserMarker {
       .join(' ');
 
     const wallets = this.data.wallets && this.data.wallets.length > 0
-      ? this.data.wallets.map(w => `
-          <div class="wallet-item">
+      ? this.data.wallets.map((w, idx) => `
+          <div class="wallet-item" style="margin-bottom:10px;">
             <strong>${w.type}:</strong> 
             <code style="word-break:break-all;white-space:pre-wrap;user-select:all;">${w.address}</code>
+            <button class="balance-btn-user-popup" style="margin-left:8px;" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Balance</button>
+            <div class="wallet-balance-result" id="wallet-balance-result-${this.data.id || idx}" style="font-size:12px;color:#2a2;min-height:18px;margin-top:2px;"></div>
           </div>
         `).join('')
       : '<p style="color: #999;">Sin wallets registradas</p>';
@@ -122,6 +124,41 @@ class UserMarker {
       minWidth: 440,
       className: 'peer-leaflet-popup user-custom-popup'
     });
+
+    // Inyectar función global para obtener balance si no existe
+    if (!window.getWalletBalance) {
+      window.getWalletBalance = function(address, btn) {
+        if (!address) return;
+        const resultDiv = btn.nextElementSibling;
+        if (resultDiv) {
+          resultDiv.textContent = 'Consultando...';
+        }
+        console.log('[Balance] Solicitando balance para address:', address);
+        fetch(`/api/balance?address=${encodeURIComponent(address)}`)
+          .then(r => r.json())
+          .then(data => {
+            console.log('[Balance] Respuesta recibida para', address, ':', data);
+            if (resultDiv) {
+              if (data && typeof data.balance !== 'undefined') {
+                resultDiv.textContent = data.balance + ' MAG';
+              } else if (data && data.error) {
+                resultDiv.textContent = 'Error: ' + data.error;
+                resultDiv.style.color = '#a22';
+              } else {
+                resultDiv.textContent = 'Balance no disponible';
+                resultDiv.style.color = '#a22';
+              }
+            }
+          })
+          .catch(err => {
+            console.error('[Balance] Error de red para', address, err);
+            if (resultDiv) {
+              resultDiv.textContent = 'Error de red';
+              resultDiv.style.color = '#a22';
+            }
+          });
+      }
+    }
   }
 
   updateData(newData) {
