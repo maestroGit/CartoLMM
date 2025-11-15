@@ -1,3 +1,91 @@
+.user-popup {
+    position: relative;
+    padding-top: 64px;
+    min-height: 440px;
+    box-sizing: border-box;
+}
+ .leaflet-popup-close-button {
+    color: #f7931a !important;
+    font-size: 32px !important;
+    font-weight: bold;
+    cursor: pointer;
+        position: absolute;
+        top: 18px !important;
+        right: 24px !important;
+        border: none;
+        text-align: center;
+        width: 48px;
+        height: 48px;
+        font: 32px / 48px Tahoma, Verdana, sans-serif;
+        color: #f7931a;
+        text-decoration: none;
+        background: transparent;
+        z-index: 10000;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+}
+.leaflet-popup-close-button span {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    pointer-events: none;
+}
+ .leaflet-popup-close-button:hover,
+ .leaflet-popup-close-button:focus {
+    color: #fff !important;
+    background-color: #f7931a !important;
+    transform: scale(1.1);
+    text-decoration: none;
+    border-radius: 50%;
+    padding: 0;
+}
+.close {
+    color: #f7931a;
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    background-color: rgba(247, 147, 26, 0.1);
+    z-index: 10000;
+}
+.close:hover,
+.close:focus {
+    color: #fff;
+    background-color: #f7931a;
+    transform: scale(1.1);
+    text-decoration: none;
+}
+/* Botón Move en popup usuario/bodega */
+.move-btn-user-popup {
+    display: inline-block;
+    margin: 8px auto 0 auto;
+    padding: 6px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    background-color: #f7931a;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 1px 4px #0001;
+    transition: background 0.18s, transform 0.12s;
+    transform: translateY(-1px);
+}
+.move-btn-user-popup:hover {
+    background-color: #6B0F0F !important;
+}
 /* Estilos adicionales para componentes JavaScript de CartoLMM */
 /*
     Este archivo contiene estilos específicos de componentes (popups, markers,
@@ -1088,4 +1176,75 @@ kbd {
 .peer-leaflet-popup p,
 .peer-leaflet-popup .wallet-item {
   margin-bottom: 8px;
+}
+
+/* Imagen de botella o icono en popup de usuario/bodega */
+/* Centrado vertical y horizontal del contenedor de imagen y botón */
+.user-bottle-img-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 12px auto 16px auto;
+    padding: 8px;
+    background: #fffbe9;
+    border: 2px solid #e0c36e;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #0001;
+    min-height: 60px;
+    min-width: 60px;
+    max-width: 140px;
+    max-height: 180px;
+}
+.user-bottle-img-wrapper img {
+    max-width: 120px;
+    max-height: 120px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #0002;
+    background: #fff;
+    cursor: zoom-in;
+    transition: box-shadow 0.2s;
+}
+
+/* Overlay para zoom */
+.zoom-image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    cursor: grab;
+}
+.zoom-image-modal img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 4px 32px #0008;
+    cursor: grab;
+    transition: transform 0.2s;
+    user-select: none;
+}
+.zoom-image-modal .close-zoom-btn {
+    position: absolute;
+    top: 32px;
+    right: 48px;
+    background: #fffbe9;
+    border: 2px solid #e0c36e;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 2rem;
+    color: #b89c3a;
+    cursor: pointer;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px #0002;
+}
 }

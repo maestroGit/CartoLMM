@@ -7,6 +7,7 @@
   "email": "info@barcelona.com",
   "localizacion": { "direccion": "Barcelona, España", "lat": 41.3851, "lng": 2.1734 },
   "categorias": ["wine_lover"],
+  "img-bottle": "/public/images/pierola-reserva.jpg",
   "wallets": [
     {
       "id": "w_011",
@@ -29,6 +30,7 @@
   "email": "contact@maisonparisienne.fr",
   "localizacion": { "direccion": "París, Francia", "lat": 48.8566, "lng": 2.3522 },
   "categorias": ["wine_lover"],
+  "img-bottle": "",
   "wallets": [
     {
       "id": "w_012",
@@ -51,6 +53,7 @@
   "email": "info@petercellars.co.uk",
   "localizacion": { "direccion": "Londres, Reino Unido", "lat": 51.5074, "lng": -0.1278 },
   "categorias": ["wine_lover"],
+  "img-bottle": "",
   "wallets": [
     {
       "id": "w_013",
@@ -72,6 +75,7 @@
     "email": "info@capevines.co.za",
     "localizacion": { "direccion": "Stellenbosch, Sudáfrica", "lat": -33.9321, "lng": 18.8602 },
     "categorias": ["bodega"],
+    "img-bottle": "",
     "wallets": [
       {
         "id": "w_005",
@@ -93,6 +97,7 @@
     "email": "yuki.tanaka@tokyowine.jp",
     "localizacion": { "direccion": "Yamanashi, Japón", "lat": 35.6639, "lng": 138.5683 },
     "categorias": ["wine_lover"],
+    "img-bottle": "",
     "wallets": [],
     "blockchainActive": false,
     "registrado": true,
@@ -106,6 +111,7 @@
     "email": "contacto@andesvino.cl",
     "localizacion": { "direccion": "Santiago, Chile", "lat": -33.4489, "lng": -70.6693 },
     "categorias": ["bodega"],
+    "img-bottle": "",
     "wallets": [
       {
         "id": "w_007",
@@ -127,6 +133,7 @@
     "email": "emily.j@wineusa.com",
     "localizacion": { "direccion": "Napa Valley, California, USA", "lat": 38.5025, "lng": -122.2654 },
     "categorias": ["wine_lover"],
+    "img-bottle": "",
     "wallets": [
       {
         "id": "w_008",
@@ -149,6 +156,7 @@
     "email": "info@mendozavino.ar",
     "localizacion": { "direccion": "Mendoza, Argentina", "lat": -32.8895, "lng": -68.8458 },
     "categorias": ["bodega"],
+    "img-bottle": "",
     "wallets": [
       {
         "id": "w_009",
@@ -171,6 +179,7 @@
     "email": "contact@bordeaux.fr",
     "localizacion": { "direccion": "Bordeaux, Francia", "lat": 44.8378, "lng": -0.5792 },
     "categorias": ["bodega"],
+    "img-bottle": "",
     "wallets": [
       {
         "id": "w_010",
@@ -192,6 +201,7 @@
     "email": "ava.patel@delhiwine.in",
     "localizacion": { "direccion": "Delhi, India", "lat": 28.6139, "lng": 77.2090 },
     "categorias": ["wine_lover"],
+    "img-bottle": "",
     "wallets": [],
     "blockchainActive": false,
     "registrado": true,
@@ -205,6 +215,7 @@
     "email": "info@outbackwines.au",
     "localizacion": { "direccion": "Barossa Valley, Australia", "lat": -34.5325, "lng": 138.9574 },
     "categorias": ["bodega"],
+    "img-bottle": "",
     "wallets": [
       {
         "id": "w_012",
@@ -226,6 +237,7 @@
     "email": "elena.p@moscowwine.ru",
     "localizacion": { "direccion": "Moscú, Rusia", "lat": 55.7558, "lng": 37.6173 },
     "categorias": ["wine_lover"],
+    "img-bottle": "",
     "wallets": [],
     "blockchainActive": false,
     "registrado": true,
@@ -243,6 +255,7 @@
     "lng": -2.4833
   },
   "categorias": ["bodega"],
+  "img-bottle":  "/public/images/pierola-reserva.jpg",
   "wallets": [
     {
       "id": "w_016",
@@ -268,6 +281,7 @@
     "lng": -3.9833
   },
   "categorias": ["bodega"],
+  "img-bottle": "https://www.vinosribera.com/2363-medium_default/traslascuestas-roble-magnum.jpg",
   "wallets": [
     {
       "id": "w_015",
@@ -291,6 +305,7 @@
     "email": "info@arcticcellars.gl",
     "localizacion": { "direccion": "Nuuk, Groenlandia", "lat": 64.1835, "lng": -51.7216 },
     "categorias": ["bodega"],
+    "img-bottle": "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png",
     "wallets": [
       {
         "id": "w_014",

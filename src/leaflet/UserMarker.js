@@ -87,6 +87,18 @@ class UserMarker {
     const webField = this.data.web
       ? `<p><strong>Web:</strong> <a href="https://${this.data.web}" target="_blank" rel="noopener">${this.data.web}</a></p>`
       : '';
+
+    // Imagen: usar campo this.data["img-bottle"] si existe, si no, usar imagen por defecto
+    const imagenSrc = this.data["img-bottle"] && this.data["img-bottle"].trim() !== ''
+      ? this.data["img-bottle"]
+      : '/public/images/IconoMagnum.png';
+    const isExternal = imagenSrc.startsWith('http://') || imagenSrc.startsWith('https://');
+    const finalImgSrc = isExternal ? imagenSrc : imagenSrc;
+    // Botón Move
+    const moveBtn = `<div style="width:100%;display:flex;justify-content:center;"><button class="move-btn-user-popup" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
+    // Imagen con zoom interactivo
+    const imagenDiv = `<div class="user-bottle-img-wrapper"><img src="${finalImgSrc}" alt="Imagen botella o icono" onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')">${moveBtn}</div>`;
+
     const popupContent = `
       <div class="user-popup">
         <h3>${this.data.nombre}</h3>
@@ -98,6 +110,7 @@ class UserMarker {
           <strong>Wallets:</strong>
           ${wallets}
         </div>
+        ${imagenDiv}
         <p style="font-size: 11px; color: #999; margin-top: 8px;">
           Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()}
         </p>
@@ -105,8 +118,8 @@ class UserMarker {
     `;
 
     this.marker.bindPopup(popupContent, {
-      maxWidth: 500,
-      minWidth: 340,
+      maxWidth: 600,
+      minWidth: 440,
       className: 'peer-leaflet-popup user-custom-popup'
     });
   }
