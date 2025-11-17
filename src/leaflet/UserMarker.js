@@ -112,6 +112,31 @@ class UserMarker {
           <strong>Wallets:</strong>
           ${wallets}
         </div>
+        <!-- Wallet UTXO UI (colapsable) -->
+        <details style="margin:10px 0 0 0;">
+          <summary style="cursor:pointer;font-weight:500;">Abrir gestión de wallet UTXO</summary>
+          <div class="wallet-section" style="width:100%;max-width:420px;margin:0 auto;">
+            <div class="wallet-import-controls" style="display:flex;flex-direction:column;gap:8px;">
+              <label for="wallet-file" style="font-weight:500;">Importar keystore (.json):</label>
+              <input type="file" id="wallet-file" accept="application/json" style="padding:4px;">
+              <label for="wallet-passphrase" style="font-weight:500;">Passphrase para descifrar:</label>
+              <input type="password" id="wallet-passphrase" placeholder="Passphrase" style="padding:4px;">
+              <button id="wallet-import" class="wallet-btn" style="margin-top:6px;">Importar PublicKey</button>
+              <button id="wallet-reset" class="wallet-btn" style="display:none;margin-top:6px;background:#eee;color:#333;">Cambiar wallet</button>
+              <span class="wallet-badge" id="wallet-badge" style="display:none;margin-top:4px;background:#e0ffe0;color:#1a4d1a;padding:2px 8px;border-radius:6px;font-size:13px;">Wallet cargada</span>
+              <button id="wallet-history" class="wallet-btn" style="display:none;margin-top:6px;background:#f5f5f5;color:#333;">Historial</button>
+            </div>
+            <div class="wallet-status" id="wallet-status" style="margin-top:10px;font-size:13px;color:#2a2;"></div>
+            <div class="wallet-balance-area" style="margin-top:10px;">
+              <strong>Balance:</strong> <span id="wallet-balance">0</span>
+            </div>
+            <div class="wallet-utxos-area" style="margin-top:10px;">
+              <strong>UTXOs:</strong>
+              <div id="wallet-utxo-list" style="margin-top:4px;"></div>
+            </div>
+          </div>
+        </details>
+        <!-- /Wallet UTXO UI -->
         ${imagenDiv}
         <p style="font-size: 11px; color: #999; margin-top: 8px;">
           Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()}
