@@ -7,6 +7,7 @@ function initWalletPopupLogic(popupNode) {
   // Usar querySelector para buscar los controles dentro del nodo del popup
   const importBtn = popupNode.querySelector('#wallet-import');
   const fileInput = popupNode.querySelector('#wallet-file');
+  if (fileInput && !fileInput.classList.contains('wallet-file-input')) fileInput.classList.add('wallet-file-input');
   const passInput = popupNode.querySelector('#wallet-passphrase');
   const badge = popupNode.querySelector('#wallet-badge');
   const resetBtn = popupNode.querySelector('#wallet-reset');
@@ -99,7 +100,7 @@ function initWalletPopupLogic(popupNode) {
         utxos.forEach((u, i) => {
           total += u.amount || 0;
           const div = document.createElement('div');
-          div.className = 'utxo-container';
+          div.className = 'utxo-container wallet-utxo-container';
           // Checkbox
           const cb = document.createElement('input');
           cb.type = 'checkbox';
@@ -113,7 +114,7 @@ function initWalletPopupLogic(popupNode) {
           const label = document.createElement('label');
           label.htmlFor = cb.id;
           label.style = 'flex:1;cursor:pointer;';
-          label.innerHTML = `<span style=\"font-weight:500;\">${u.amount}</span> <span style=\"color:#888;word-break:break-all;\">${u.txId} #${u.outputIndex}</span>`;
+          label.innerHTML = `<span style=\"font-weight:500;\">${u.amount}</span> <span class=\"wallet-utxo-label\">${u.txId} #${u.outputIndex}</span>`;
           // Burn button
           const burnBtn = document.createElement('button');
           burnBtn.textContent = 'Burn';

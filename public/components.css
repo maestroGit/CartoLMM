@@ -1,3 +1,289 @@
+.footer-popup {
+    padding: 8px 0 0 0 !important;
+    margin-top: 8px !important;
+}
+.footer-popup-item {
+    color: #888 !important;
+    font-size: 12px !important;
+    margin: 0 0 2px 0 !important;
+    padding: 0 !important;
+}
+.user-popup .wallet-utxo-container {
+    background: rgb(61, 99, 137) !important;
+    border-radius: 6px !important;
+    margin-bottom: 4px !important;
+    padding: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+.user-popup .wallet-utxo-label {
+    color: #888 !important;
+    word-break: break-all !important;
+}
+.user-popup .wallet-file-input {
+    color: #808080 !important;
+}
+.user-popup .wallet-file-input::file-selector-button {
+    background: #fff !important;
+    color: #8b1631 !important;
+    border: 1px solid #f7931a !important;
+    border-radius: 6px !important;
+    padding: 4px 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.2s, color 0.2s !important;
+}
+.user-popup .wallet-file-input::file-selector-button:hover {
+    background: #f7931a !important;
+    color: #fff !important;
+}
+/* === WALLET BUTTONS & FILE INPUT (MATCH DEMO-WALLET) === */
+.user-popup .wallet-btn.wallet-reset {
+    background: #274b6d !important;
+    color: #fff !important;
+    border: 1px solid #3d678a !important;
+    position: relative;
+}
+.user-popup .wallet-btn.wallet-reset:hover { background:#2e5a84 !important; }
+.user-popup .wallet-btn.wallet-reset:active { transform: translateY(1px) !important; }
+.user-popup .wallet-btn.wallet-loaded {
+    background: linear-gradient(180deg,#6a0f22 0%, #4e0918 100%) !important;
+    color:#fff !important;
+    border:1px solid rgba(106,15,34,0.9) !important;
+    box-shadow:0 6px 18px rgba(106,15,34,0.45) !important;
+}
+.user-popup .wallet-btn.wallet-loaded:hover {
+    background: linear-gradient(180deg,#6a0f22 0%, #5c0d1d 100%) !important;
+    transform: translateY(-1px) !important;
+}
+.user-popup .wallet-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #6a0f22;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid rgba(106,15,34,0.8);
+    box-shadow: 0 4px 12px rgba(106,15,34,0.35);
+    margin-left: 8px;
+}
+.user-popup input[type="file"] {
+    color: #808080 !important;
+}
+.user-popup input[type="file"]::file-selector-button {
+    background: #fff !important;
+    color: #8b1631 !important;
+    border: 1px solid #f7931a !important;
+    border-radius: 6px !important;
+    padding: 4px 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.2s, color 0.2s !important;
+}
+.user-popup input[type="file"]::file-selector-button:hover {
+    background: #f7931a !important;
+    color: #fff !important;
+}
+/* === FIN WALLET BUTTONS & FILE INPUT === */
+/* Unificar botones wallet con demo-wallet */
+.user-popup .wallet-btn {
+    background-color: #f7931a;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+.user-popup .wallet-btn:hover {
+    background-color: #e07d0b;
+}
+* {
+    box-sizing: border-box;
+}
+.user-popup .wallet-historial-item {
+    margin-top: 6px !important;
+    margin-bottom: 16px !important;
+    background-color: rgba(255, 255, 255, 0.726) !important;
+    border: 3px solid #f7931a !important;
+    border-radius: 15px !important;
+    box-shadow: 0 2px 8px #0001 !important;
+    color: #333 !important;
+    padding: 12px 16px !important;
+    font-size: 0.98em !important;
+    word-break: break-all !important;
+}
+/* === WALLET HISTORIAL & CAMBIAR WALLET (MATCH DEMO-WALLET) === */
+.user-popup .wallet-historial-item {
+    background-color: rgba(255, 255, 255, 0.726);
+    border: 3px solid #f7931a;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px #0001;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    font-size: 0.98em;
+    word-break: break-all;
+}
+.user-popup .wallet-historial-item div {
+    margin-bottom: 4px;
+}
+.user-popup .wallet-historial-modal {
+    background-color: #fff;
+    border: 3px solid #f7931a;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(247, 147, 26, 0.3);
+    max-width: 600px;
+    margin: 5% auto;
+    padding: 20px 24px 16px;
+    position: relative;
+}
+.user-popup .wallet-btn.wallet-reset {
+    background: #274b6d;
+    color: #fff;
+    border: 1px solid #3d678a;
+    position: relative;
+}
+.user-popup .wallet-btn.wallet-reset:hover { background:#2e5a84; }
+.user-popup .wallet-btn.wallet-reset:active { transform: translateY(1px); }
+/* === FIN WALLET HISTORIAL & CAMBIAR WALLET === */
+/* === WALLET UI (DEMO-WALLET) STYLES ADAPTADOS === */
+.user-popup .wallet-fieldset {
+    border:1px dashed #999;
+    padding:8px 12px;
+    border-radius:8px;
+    margin-bottom:12px;
+}
+.user-popup .wallet-input {
+    border: 2px solid #f7931a;
+    padding: 12px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #0b1220;
+    font-weight: 500;
+    width: 100%;
+}
+.user-popup .wallet-input.half {
+    width: 50%;
+    max-width: 420px;
+}
+.user-popup .wallet-btn {
+    background-color: #f7931a;
+    border: none;
+    color: white;
+    padding: 10px 22px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 15px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+.user-popup .wallet-btn:hover {
+    background-color: #e07d0b;
+}
+.user-popup .wallet-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #6a0f22;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid rgba(106,15,34,0.8);
+    box-shadow: 0 4px 12px rgba(106,15,34,0.35);
+    margin-left: 8px;
+}
+.user-popup .wallet-utxo-container {
+    background: rgb(61, 99, 137);
+    border-radius: 6px;
+    margin-bottom: 4px;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.user-popup .wallet-utxo-container.is-pending { opacity: 0.6; }
+.user-popup .wallet-badge-pend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fff3e2;
+    color: #a65b00;
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid #ffc37a;
+}
+.user-popup .wallet-badge-pend::before {
+    content: '⏳';
+    font-size: 12px;
+}
+.user-popup .wallet-copy-btn {
+    padding:8px 10px;
+    font-size:12px;
+    background:#274b6d;
+    border:1px solid #3d678a;
+    color:#fff;
+    border-radius:6px;
+    cursor:pointer;
+}
+.user-popup .wallet-copy-btn:hover { background:#2e5a84; }
+.user-popup .wallet-muted { color: #c9aeb6; margin-top:6px; }
+.user-popup .wallet-output {
+    background:rgba(255,255,255,0.02);
+    padding:12px;
+    border-radius:8px;
+    margin-top:10px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-x:auto;
+    max-width:100%;
+    box-sizing:border-box;
+}
+.user-popup .wallet-readonly {
+    background:#0b1b2b;
+    color:#e5f1ff;
+    border:1px dashed #2a3a4a;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+}
+.user-popup .wallet-readonly:focus { outline:none; box-shadow:0 0 0 2px rgba(31,88,135,0.3); }
+.user-popup .wallet-readonly.wallet-loaded {
+    background: #6a0f22 !important;
+    color: #fff !important;
+    border: 2px solid rgba(106,15,34,0.9) !important;
+}
+.user-popup .wallet-btn.wallet-reset {
+    background: #274b6d;
+    color: #fff;
+    border: 1px solid #3d678a;
+    position: relative;
+}
+.user-popup .wallet-btn.wallet-reset:hover { background:#2e5a84; }
+.user-popup .wallet-btn.wallet-loaded {
+    background: linear-gradient(180deg,#6a0f22 0%, #4e0918 100%) !important;
+    color:#fff !important;
+    border:1px solid rgba(106,15,34,0.9) !important;
+    box-shadow:0 6px 18px rgba(106,15,34,0.45);
+}
+.user-popup .wallet-btn.wallet-loaded:hover {
+    background: linear-gradient(180deg,#6a0f22 0%, #5c0d1d 100%) !important;
+    transform: translateY(-1px);
+}
+/* === FIN WALLET UI (DEMO-WALLET) STYLES === */
 .user-popup {
     position: relative;
     padding-top: 64px;
