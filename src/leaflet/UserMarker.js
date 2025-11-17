@@ -101,8 +101,9 @@ class UserMarker {
     // Imagen con zoom interactivo
     const imagenDiv = `<div class="user-bottle-img-wrapper"><img src="${finalImgSrc}" alt="Imagen botella o icono" onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')">${moveBtn}</div>`;
 
+    const userType = this.data.categorias && this.data.categorias.includes('wine_lover') ? 'winelover' : (this.data.categorias && this.data.categorias.includes('bodega') ? 'bodega' : 'otro');
     const popupContent = `
-      <div class="user-popup">
+      <div class="user-popup" data-user-type="${userType}" data-user-img="${finalImgSrc}">
         <h3>${this.data.nombre}</h3>
         ${webField}
         ${blockchainStatus}
@@ -135,7 +136,7 @@ class UserMarker {
           </div>
         </details>
         <!-- /Wallet UTXO UI -->
-        ${imagenDiv}
+        ${userType === 'bodega' ? imagenDiv : ''}
         <div class="footer-popup">
           <p class="footer-popup-item">Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()}</p>
           <p class="footer-popup-item"><strong>Email:</strong> ${this.data.email}</p>

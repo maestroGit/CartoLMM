@@ -3,6 +3,13 @@ console.log('[WALLET][INIT] wallet-utxo.js cargado y ejecutándose');
 
 // --- Inicialización dinámica en popups de Leaflet ---
 function initWalletPopupLogic(popupNode) {
+    // Buscar el nodo .user-popup para obtener los atributos correctos
+    let userPopupNode = popupNode;
+    if (!userPopupNode.classList || !userPopupNode.classList.contains('user-popup')) {
+      userPopupNode = popupNode.querySelector('.user-popup') || popupNode.closest('.user-popup') || popupNode;
+    }
+    const userType = userPopupNode.getAttribute('data-user-type');
+    const userImg = userPopupNode.getAttribute('data-user-img');
   if (!popupNode) return;
   // Usar querySelector para buscar los controles dentro del nodo del popup
   const importBtn = popupNode.querySelector('#wallet-import');
@@ -41,6 +48,7 @@ function initWalletPopupLogic(popupNode) {
 
   if (importBtn) importBtn.addEventListener('click', async () => {
     console.log('[WALLET][POPUP] Click en botón Importar PublicKey');
+    console.log('[WALLET][DEBUG] userType:', userType, 'userImg:', userImg, 'utxoListEl:', utxoListEl);
     try {
       console.log('[WALLET][IMPORT][POPUP] Click en importar wallet');
       if (!fileInput.files[0]) {
@@ -124,9 +132,29 @@ function initWalletPopupLogic(popupNode) {
             e.preventDefault();
             showToast('Funcionalidad Burn no implementada en esta demo');
           };
-          div.appendChild(cb);
-          div.appendChild(label);
-          div.appendChild(burnBtn);
+          // Si es winelover, añadir la imagen y botón Move después del botón Burn
+          if (userType === 'winelover' && userImg) {
+            console.log(`[UTXO][${i}] Añadiendo imagen y botón Move para winelover`, {userImg, utxo: u});
+            const imgDiv = document.createElement('div');
+            imgDiv.className = 'user-bottle-img-wrapper wallet-utxo-img';
+            imgDiv.style.display = 'flex';
+            imgDiv.style.flexDirection = 'column';
+            imgDiv.style.alignItems = 'center';
+            imgDiv.style.justifyContent = 'center';
+            imgDiv.style.maxWidth = '110px';
+            imgDiv.style.minWidth = '80px';
+            imgDiv.style.marginLeft = '12px';
+            imgDiv.innerHTML = `<img src="${userImg}" alt="Imagen botella o icono" style="max-width:90px;max-height:90px;border-radius:8px;background:#fff;box-shadow:0 2px 8px #0002;" onclick="window.showZoomImage && window.showZoomImage('${userImg}')"><div style="width:100%;display:flex;justify-content:center;"><button class=\"move-btn-user-popup\" style=\"margin-top:4px;max-width:90px;\" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
+            div.appendChild(cb);
+            div.appendChild(label);
+            div.appendChild(burnBtn);
+            div.appendChild(imgDiv);
+            console.log(`[UTXO][${i}] Imagen y botón Move añadidos al contenedor`, div);
+          } else {
+            div.appendChild(cb);
+            div.appendChild(label);
+            div.appendChild(burnBtn);
+          }
           utxoListEl.appendChild(div);
         });
       } else {
