@@ -473,7 +473,6 @@ async function handleGetTransactions(req, res) {
 async function handleGetBalance(req, res) {
     try {
         const { address } = req.query;
-        
         if (!address) {
             return res.status(400).json({
                 success: false,
@@ -481,21 +480,31 @@ async function handleGetBalance(req, res) {
                 code: 'MISSING_ADDRESS'
             });
         }
-        
-        const mockBalance = {
-            address: address,
-            balance: Math.floor(Math.random() * 1000) + 100,
-            balanceFormatted: `${(Math.floor(Math.random() * 1000) + 100).toLocaleString()} LMM`,
-            lastUpdated: new Date().toISOString(),
-            transactionCount: Math.floor(Math.random() * 50) + 5,
-            type: address.includes('bodega') ? 'winery' : 'customer'
-        };
-        
-        res.json({
-            success: true,
-            data: mockBalance,
-            timestamp: new Date().toISOString()
-        });
+
+        // Llama siempre a magnumsmaster para obtener el balance real
+        const response = await magnusmasterClient.getAddressBalance(address);
+        if (response && response.success && response.data) {
+            // Si hay datos reales, devuélvelos tal cual
+            return res.json({
+                success: true,
+                data: response.data,
+                timestamp: response.timestamp || new Date().toISOString()
+            });
+        } else {
+            // Si no hay datos reales, devuelve balance cero
+            return res.json({
+                success: true,
+                data: {
+                    address: address,
+                    balance: 0,
+                    balanceFormatted: '0 LMM',
+                    lastUpdated: new Date().toISOString(),
+                    transactionCount: 0,
+                    type: address.includes('bodega') ? 'winery' : 'customer'
+                },
+                timestamp: new Date().toISOString()
+            });
+        }
     } catch (error) {
         handleAPIError(res, error, 'Error obteniendo balance');
     }

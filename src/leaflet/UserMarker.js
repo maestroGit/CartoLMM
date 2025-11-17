@@ -139,15 +139,10 @@ class UserMarker {
           .then(data => {
             console.log('[Balance] Respuesta recibida para', address, ':', data);
             if (resultDiv) {
-              if (data && typeof data.balance !== 'undefined') {
-                resultDiv.textContent = data.balance + ' MAG';
-              } else if (data && data.error) {
-                resultDiv.textContent = 'Error: ' + data.error;
-                resultDiv.style.color = '#a22';
-              } else {
-                resultDiv.textContent = 'Balance no disponible';
-                resultDiv.style.color = '#a22';
-              }
+              // El backend ahora siempre devuelve data.data.balance
+              const balance = (data && data.data && typeof data.data.balance !== 'undefined') ? data.data.balance : 0;
+              resultDiv.textContent = balance + ' Importe Total';
+              resultDiv.style.color = 'rgba(215, 126, 42, 1)';
             }
           })
           .catch(err => {
