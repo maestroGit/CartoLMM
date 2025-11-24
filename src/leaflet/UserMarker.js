@@ -101,7 +101,7 @@ class UserMarker {
     // Imagen con zoom interactivo y botón Move solo para wine_lover
     const moveBtn = `<div style=\"width:100%;display:flex;justify-content:center;\"><button class=\"move-btn-user-popup\" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
     // Para bodega: solo imagen, contenedor ancho
-    const imagenDivBodega = `<div class=\"user-bottle-img-wrapper bodega-img-full\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\"></div>`;
+      const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" style="max-width:320px;max-height:320px;width:100%;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#e8b1b1;" onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')"></div>`;
     // Para wine_lover: imagen + botón Move
     const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\">${moveBtn}</div>`;
 
@@ -110,8 +110,7 @@ class UserMarker {
       <div class="user-popup" data-user-type="${userType}" data-user-img="${finalImgSrc}">
         ${userType === 'bodega' ? imagenDivBodega : ''}
         <h3${userType === 'bodega' ? ' class="bodega-img-title"' : ''}>${this.data.nombre}</h3>
-        ${webField}
-        ${blockchainStatus}
+        ${userType !== 'bodega' ? blockchainStatus : ''}
         <div class="wallets-section">
           <strong>Wallets:</strong>
           ${wallets}
@@ -146,7 +145,9 @@ class UserMarker {
         <div class="footer-popup">
           <p class="footer-popup-item">Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()}</p>
           <p class="footer-popup-item"><strong>Email:</strong> ${this.data.email}</p>
+          ${userType === 'bodega' ? `<p class=\"footer-popup-item\"><strong>Web:</strong> <a href=\"https://${this.data.web}\" target=\"_blank\" rel=\"noopener\">${this.data.web}</a></p>` : ''}
           <p class="footer-popup-item"><strong>Categorías:</strong> ${categorias}</p>
+          ${userType === 'bodega' && this.data.blockchainActive ? `<p class=\"footer-popup-item\">🟢 Blockchain activa</p>` : ''}
         </div>
       </div>
     `;
@@ -173,7 +174,7 @@ class UserMarker {
             if (resultDiv) {
               // El backend ahora siempre devuelve data.data.balance
               const balance = (data && data.data && typeof data.data.balance !== 'undefined') ? data.data.balance : 0;
-              resultDiv.textContent = balance + ' Importe Total';
+              resultDiv.textContent = balance + ' BW';
               resultDiv.style.color = 'rgba(215, 126, 42, 1)';
             }
           })

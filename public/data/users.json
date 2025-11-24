@@ -2,7 +2,7 @@
  {
   "id": "oauth_011",
   "provider": "google",
-  "nombre": "wallet-demo(1)-Javi Barcelona",
+  "nombre": "Javi Barcelona",
   "web":"" ,
   "email": "info@barcelona.com",
   "localizacion": { "direccion": "Barcelona, España", "lat": 41.3851, "lng": 2.1734 },

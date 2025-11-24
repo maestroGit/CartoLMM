@@ -1,3 +1,38 @@
+.wallet-balance-result {
+  display: none;
+  font-size: 1.15rem !important;
+  color: #d77e2a !important;
+  min-height: 22px !important;
+  margin-top: 6px !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+  background: #fff7e6;
+  border-radius: 8px;
+  padding: 4px 0;
+  box-shadow: 0 2px 8px #d77e2a22;
+  width: 50% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  transition: background 0.3s, color 0.3s;
+}
+.wallet-balance-result:not(:empty) {
+  display: block;
+}
+.wallet-balance-result {
+  font-size: 1.15rem !important;
+  color: #d77e2a !important;
+  min-height: 22px !important;
+  margin-top: 6px !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+  background: #fff7e6;
+  border-radius: 8px;
+  padding: 4px 0;
+  box-shadow: 0 2px 8px #d77e2a22;
+  width: 50% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
 .leaflet-popup .balance-btn-user-popup {
   background: #ff9800 !important;
   color: #222 !important;
@@ -42,8 +77,8 @@
   margin-top: 0;
 }
 .footer-popup {
-  padding: 8px 0 0 0 !important;
-  margin-top: 8px !important;
+  padding: 2px 0 0 0 !important;
+  margin-top: 2px !important;
 }
 
 .footer-popup-item {
@@ -1881,7 +1916,7 @@ kbd {
 }
 
 .leaflet-popup-content {
-  padding: 10px 20px 16px 20px !important;
+  padding: 2px 2px 2px 2px !important;
   min-width: 400px;
   max-width: 400px;
   box-sizing: border-box;
