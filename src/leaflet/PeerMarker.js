@@ -29,32 +29,36 @@ class PeerMarker {
   createIcon() {
     const iconConfigs = {
       local: {
-        html: '<div class="peer-marker peer-marker-local"><span class="peer-icon">💻</span></div>',
+        html: '<div class="peer-marker peer-marker-local" title="Hover effect"><span class="peer-icon">💻</span></div>',
         className: 'peer-icon-wrapper',
         iconSize: [38, 38],
         iconAnchor: [19, 19],
-        popupAnchor: [0, -19]
+        popupAnchor: [0, -19],
+        title: this.data.nodeId || this.data.id
       },
       online: {
-        html: '<div class="peer-marker peer-marker-online"><span class="peer-icon">📡</span><span class="peer-pulse"></span></div>',
+        html: '<div class="peer-marker peer-marker-online" title="Hover effect"><span class="peer-icon">📡</span><span class="peer-pulse"></span></div>',
         className: 'peer-icon-wrapper',
         iconSize: [34, 34],
         iconAnchor: [17, 17],
-        popupAnchor: [0, -17]
+        popupAnchor: [0, -17],
+        title: this.data.nodeId || this.data.id
       },
       offline: {
-        html: '<div class="peer-marker peer-marker-offline"><span class="peer-icon">🔴</span></div>',
+        html: '<div class="peer-marker peer-marker-offline" title="Hover effect"><span class="peer-icon">🔴</span></div>',
         className: 'peer-icon-wrapper',
         iconSize: [30, 30],
         iconAnchor: [15, 15],
-        popupAnchor: [0, -15]
+        popupAnchor: [0, -15],
+        title: this.data.nodeId || this.data.id
       },
       error: {
-        html: '<div class="peer-marker peer-marker-error"><span class="peer-icon">⚠️</span></div>',
+        html: '<div class="peer-marker peer-marker-error" title="Hover effect"><span class="peer-icon">⚠️</span></div>',
         className: 'peer-icon-wrapper',
         iconSize: [30, 30],
         iconAnchor: [15, 15],
-        popupAnchor: [0, -15]
+        popupAnchor: [0, -15],
+        title: this.data.nodeId || this.data.id
       }
     };
 
@@ -69,7 +73,6 @@ class PeerMarker {
    */
   attachPopup() {
     let content;
-    
     // Popup para peer blockchain
     if (this.data.nodeId) {
       const statusEmoji = {
@@ -85,15 +88,18 @@ class PeerMarker {
       }
       content = `
         <div class="peer-popup">
-          <h4 class="peer-popup-title">${title}</h4>
-          <div class="peer-popup-content">
-            <p><strong>ID:</strong> <code>${this.data.nodeId}</code></p>
-            <p><strong>Estado:</strong> ${statusEmoji} <span class="status-${this.data.status}">${this.data.status || 'unknown'}</span></p>
-            <p><strong>URL:</strong> <a href="${this.data.httpUrl}" target="_blank" rel="noopener">${this.data.httpUrl}</a></p>
-            ${this.data.responseTime !== undefined ? `<p><strong>Latencia:</strong> ${this.data.responseTime}ms</p>` : ''}
-            ${this.data.peers !== undefined ? `<p><strong>Peers conectados:</strong> ${this.data.peers}</p>` : ''}
-            ${this.data.lastSeen ? `<p><strong>Última conexión:</strong> ${new Date(this.data.lastSeen).toLocaleString('es-ES')}</p>` : ''}
-            ${this.data.city ? `<p><strong>📍 Ubicación:</strong> ${this.data.city}</p>` : ''}
+          <h4 class="peer-popup-title" style="margin-bottom:6px;">${title}</h4>
+          <div class="peer-popup-content" style="display:flex;flex-direction:column;gap:4px;">
+            <p style="margin:0;"><strong>ID:</strong> <code>${this.data.nodeId}</code></p>
+            <p style="margin:0;"><strong>Estado:</strong> ${statusEmoji} <span class="status-${this.data.status}">${this.data.status || 'unknown'}</span></p>
+            <p style="margin:0;"><strong>URL:</strong> <a href="${this.data.httpUrl}" target="_blank" rel="noopener">${this.data.httpUrl}</a></p>
+            <div class="peer-popup-img-wrapper" style="text-align:center;margin:6px 0 2px 0;">
+              <img src="images/iconoBWred.png" alt="Peer" style="max-width:220px;border-radius:8px;box-shadow:0 2px 8px rgba(208, 127, 127, 0.13);margin:0;" />
+            </div>
+            ${this.data.responseTime !== undefined ? `<p style=\"margin:0;\"><strong>Latencia:</strong> ${this.data.responseTime}ms</p>` : ''}
+            ${this.data.peers !== undefined ? `<p style=\"margin:0;\"><strong>Peers conectados:</strong> ${this.data.peers}</p>` : ''}
+            ${this.data.lastSeen ? `<p style=\"margin:0;\"><strong>Última conexión:</strong> ${new Date(this.data.lastSeen).toLocaleString('es-ES')}</p>` : ''}
+            ${this.data.city ? `<p style=\"margin:0;\"><strong>📍 Ubicación:</strong> ${this.data.city}</p>` : ''}
             ${walletSection}
           </div>
         </div>
@@ -106,11 +112,11 @@ class PeerMarker {
         ${this.data.region || this.data.city ? `Región: ${this.data.region || this.data.city}<br>` : ''}
       `;
     }
-    
+
     this.marker.bindPopup(content, {
-      maxWidth: 500,
-      minWidth: 340,
-      className: 'peer-leaflet-popup'
+      maxWidth: 800,
+      minWidth: 440,
+      className: 'peer-leaflet-popup user-custom-popup'
     });
   }
 

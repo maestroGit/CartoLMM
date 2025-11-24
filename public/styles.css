@@ -1,3 +1,15 @@
+.leaflet-popup h3.bodega-img-title {
+  color: #fff !important;
+  background: #ff9800 !important;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px #0002;
+  display: inline-block;
+  margin-bottom: 10px;
+  margin-top: 0;
+  font-size: 1rem;
+}
 /* CartoLMM - Wine-Tech CSS Theme */
 /* Del Terruño al Ciberespacio */
 

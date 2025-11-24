@@ -76,7 +76,7 @@ class UserMarker {
           <div class="wallet-item" style="margin-bottom:10px;">
             <strong>${w.type}:</strong> 
             <code style="word-break:break-all;white-space:pre-wrap;user-select:all;">${w.address}</code>
-            <button class="balance-btn-user-popup" style="margin-left:8px;" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Balance</button>
+            <button class="balance-btn-user-popup" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Balance</button>
             <div class="wallet-balance-result" id="wallet-balance-result-${this.data.id || idx}" style="font-size:12px;color:#2a2;min-height:18px;margin-top:2px;"></div>
           </div>
         `).join('')
@@ -97,14 +97,19 @@ class UserMarker {
     const isExternal = imagenSrc.startsWith('http://') || imagenSrc.startsWith('https://');
     const finalImgSrc = isExternal ? imagenSrc : imagenSrc;
     // Botón Move
-    const moveBtn = `<div style="width:100%;display:flex;justify-content:center;"><button class="move-btn-user-popup" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
-    // Imagen con zoom interactivo
-    const imagenDiv = `<div class="user-bottle-img-wrapper"><img src="${finalImgSrc}" alt="Imagen botella o icono" onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')">${moveBtn}</div>`;
+
+    // Imagen con zoom interactivo y botón Move solo para wine_lover
+    const moveBtn = `<div style=\"width:100%;display:flex;justify-content:center;\"><button class=\"move-btn-user-popup\" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
+    // Para bodega: solo imagen, contenedor ancho
+    const imagenDivBodega = `<div class=\"user-bottle-img-wrapper bodega-img-full\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\"></div>`;
+    // Para wine_lover: imagen + botón Move
+    const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\">${moveBtn}</div>`;
 
     const userType = this.data.categorias && this.data.categorias.includes('wine_lover') ? 'winelover' : (this.data.categorias && this.data.categorias.includes('bodega') ? 'bodega' : 'otro');
     const popupContent = `
       <div class="user-popup" data-user-type="${userType}" data-user-img="${finalImgSrc}">
-        <h3>${this.data.nombre}</h3>
+        ${userType === 'bodega' ? imagenDivBodega : ''}
+        <h3${userType === 'bodega' ? ' class="bodega-img-title"' : ''}>${this.data.nombre}</h3>
         ${webField}
         ${blockchainStatus}
         <div class="wallets-section">
@@ -112,6 +117,7 @@ class UserMarker {
           ${wallets}
         </div>
         <!-- Wallet UTXO UI (colapsable) -->
+        ${userType !== 'bodega' ? `
         <details style="margin:10px 0 0 0;">
           <summary style="cursor:pointer;font-weight:500;">Abrir gestión de wallet UTXO</summary>
           <div class="wallet-section" style="width:100%;max-width:420px;margin:0 auto;">
@@ -125,7 +131,7 @@ class UserMarker {
               <span class="wallet-badge" id="wallet-badge" style="display:none;">Wallet cargada</span>
               <button id="wallet-history" class="wallet-btn" style="display:none;">Historial</button>
             </div>
-            <div class="wallet-status" id="wallet-status" style="margin-top:10px;font-size:13px;color:#2a2;"></div>
+            <div class="wallet-status" id="wallet-status" style="margin-top:1px;font-size:13px;color:#2a2;"></div>
             <div class="wallet-balance-area" style="margin-top:10px;">
               <strong>Balance:</strong> <span id="wallet-balance">0</span>
             </div>
@@ -135,8 +141,8 @@ class UserMarker {
             </div>
           </div>
         </details>
+        ` : ''}
         <!-- /Wallet UTXO UI -->
-        ${userType === 'bodega' ? imagenDiv : ''}
         <div class="footer-popup">
           <p class="footer-popup-item">Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()}</p>
           <p class="footer-popup-item"><strong>Email:</strong> ${this.data.email}</p>
@@ -146,7 +152,7 @@ class UserMarker {
     `;
 
     this.marker.bindPopup(popupContent, {
-      maxWidth: 600,
+      maxWidth: 800,
       minWidth: 440,
       className: 'peer-leaflet-popup user-custom-popup'
     });

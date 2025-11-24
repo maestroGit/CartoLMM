@@ -1,3 +1,118 @@
+    // === Wallet Global Bodega: Cifrado/Descifrado/Carga ===
+    const walletFileInput = document.getElementById('wallet-global-file');
+    const walletPassInput = document.getElementById('wallet-global-pass');
+    const encryptBtn = document.getElementById('wallet-global-encrypt');
+    const decryptBtn = document.getElementById('wallet-global-decrypt');
+    const uploadBtn = document.getElementById('wallet-global-upload');
+    const statusDiv = document.getElementById('wallet-global-status');
+    let loadedWalletJson = null;
+
+    // Leer archivo wallet seleccionado
+    if (walletFileInput) {
+        walletFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    loadedWalletJson = JSON.parse(evt.target.result);
+                    statusDiv.textContent = 'Wallet cargada.';
+                } catch (err) {
+                    statusDiv.textContent = 'Archivo inválido: ' + err.message;
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    // Cifrar y descargar wallet
+    if (encryptBtn) {
+        encryptBtn.addEventListener('click', async () => {
+            if (!loadedWalletJson) return statusDiv.textContent = 'Carga primero un archivo wallet.';
+            const pass = walletPassInput.value;
+            if (!pass) return statusDiv.textContent = 'Introduce una passphrase.';
+            // Solo soporta wallets con privateKey y publicKey
+            if (!loadedWalletJson.privateKey || !loadedWalletJson.publicKey) {
+                return statusDiv.textContent = 'Wallet JSON debe tener privateKey y publicKey.';
+            }
+            try {
+                const res = await fetch('http://localhost:3000/wallet/encrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ privateKey: loadedWalletJson.privateKey, passphrase: pass })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Error cifrando wallet');
+                // Descargar archivo cifrado
+                const out = {
+                    publicKey: loadedWalletJson.publicKey,
+                    ...data
+                };
+                const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'wallet_cifrada.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                statusDiv.textContent = 'Wallet cifrada y descargada.';
+            } catch (err) {
+                statusDiv.textContent = 'Error: ' + err.message;
+            }
+        });
+    }
+
+    // Descifrar wallet (mostrar privateKey)
+    if (decryptBtn) {
+        decryptBtn.addEventListener('click', async () => {
+            if (!loadedWalletJson) return statusDiv.textContent = 'Carga primero un archivo wallet.';
+            const pass = walletPassInput.value;
+            if (!pass) return statusDiv.textContent = 'Introduce una passphrase.';
+            // Debe tener campos cifrados
+            const { encryptedPrivateKey, salt, iv, tag } = loadedWalletJson;
+            if (!encryptedPrivateKey || !salt || !iv || !tag) {
+                return statusDiv.textContent = 'El archivo no parece ser una wallet cifrada.';
+            }
+            try {
+                const res = await fetch('http://localhost:3000/wallet/decrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ encryptedPrivateKey, salt, iv, tag, passphrase: pass })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Error descifrando wallet');
+                statusDiv.textContent = 'PrivateKey: ' + data.privateKey;
+            } catch (err) {
+                statusDiv.textContent = 'Error: ' + err.message;
+            }
+        });
+    }
+
+    // Cargar wallet global en backend (como bodega)
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', async () => {
+            if (!loadedWalletJson) return statusDiv.textContent = 'Carga primero un archivo wallet.';
+            const pass = walletPassInput.value;
+            if (!pass) return statusDiv.textContent = 'Introduce una passphrase.';
+            const { encryptedPrivateKey, salt, iv, tag, publicKey } = loadedWalletJson;
+            if (!encryptedPrivateKey || !salt || !iv || !tag || !publicKey) {
+                return statusDiv.textContent = 'El archivo no es una wallet cifrada válida.';
+            }
+            try {
+                const res = await fetch('http://localhost:3000/wallet/load-global', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ encryptedPrivateKey, salt, iv, tag, passphrase: pass, publicKey })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Error cargando wallet global');
+                statusDiv.textContent = 'Wallet global cargada en backend.';
+            } catch (err) {
+                statusDiv.textContent = 'Error: ' + err.message;
+            }
+        });
+    }
 // Inicializar app y wiring de UI cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Inicializando CartoLMM WebSocket Client (separado)...');

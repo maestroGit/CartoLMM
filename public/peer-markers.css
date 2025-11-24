@@ -157,20 +157,19 @@
 .peer-popup {
   padding: 0;
   min-width: 260px;
-  max-width: 320px;
+  max-width: 350px;
 }
 
 .peer-popup-title {
   background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
   color: #F9FAFB;
-  padding: 12px 16px;
+  padding: 12px 1ch;
   margin: 0;
   font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-radius: 12px 12px 0 0;
-  border-bottom: 2px solid #374151;
+  
 }
 
 .peer-popup-content {
