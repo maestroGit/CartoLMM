@@ -1,3 +1,12 @@
+/* Centrar y mostrar completa cualquier imagen con object-fit: contain en popups */
+.user-bottle-img-wrapper img[style*="object-fit:contain"],
+.user-bottle-img-wrapper.bodega-img-full img[style*="object-fit:contain"] {
+  width: 320px;
+  height: 320px;
+  object-fit: contain !important;
+  display: block;
+  margin: 0 auto;
+}
 .wallet-balance-result {
   display: none;
   font-size: 1.15rem !important;
@@ -90,7 +99,7 @@
 
 /* Popup usuario: contenedor básico */
 .user-popup {
-  background: #fff;
+  background:#2B0F13;
   border-radius: 10px;
   padding: 5px 5px 5px 5px;
   max-width: 400px;
@@ -109,19 +118,20 @@
 }
 
 .user-popup .wallet-utxo-container .user-bottle-img-wrapper {
-  width: 70px;
-  height: 70px;
+  width: 180px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: #fff;
+  background:#3D6389;
   box-shadow: 0 2px 8px #0001;
 }
 
 .user-popup .wallet-utxo-container .user-bottle-img-wrapper img {
-  width: 60px;
-  height: 60px;
+  width: 180px;
+  height: 180px;
+  background: #3D6389;
   border-radius: 8px;
   object-fit: contain;
 }
@@ -129,37 +139,35 @@
 /* Imagen grande para bodega */
 
 .user-bottle-img-wrapper.bodega-img-full {
-  width: 100%;
-  max-width: 100%;
-  border-radius: 12px;
-  padding: 12px 0;
+  width: 400px;
+  height: 400px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  background: #2B0F13;
+  border-radius: 12px;
 }
 .user-bottle-img-wrapper.bodega-img-full img {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  max-height: 440px;
-  border-radius: 12px;
+  width: 400px;
+  height: 400px;
   object-fit: contain;
+  border-radius: 12px;
   box-shadow: 0 4px 24px #0003;
-  background: #e8b1b1;
+  background: #2B0F13;
 }
 
 /* Etiquetas y campos básicos */
 .user-popup .wallet-utxo-label {
-  color: #888;
+  color: yellow ;
   word-break: break-all;
 }
 
 .user-popup .wallet-file-input {
-  color: #808080;
+  color: #21a809;
 }
 
 .user-popup .wallet-file-input::file-selector-button {
-  background: #fff;
+  background: #f7931a;
   color: #8b1631;
   border: 1px solid #f7931a;
   border-radius: 6px;
@@ -173,6 +181,7 @@
 .leaflet-popup-content {
   max-width: 480px;
   max-height: 520px;
+  min-height: 320px;    /* altura mínima */
   width: 100%;
   box-sizing: border-box;
   padding: 0;
@@ -181,12 +190,12 @@
 }
 
 .user-popup .wallet-utxo-label {
-  color: #888 !important;
+  color: #4a541e !important;
   word-break: break-all !important;
 }
 
 .user-popup .wallet-file-input {
-  color: #808080 !important;
+  color: #f5dcdc !important;
 }
 
 .user-popup .wallet-file-input::file-selector-button {
@@ -274,7 +283,7 @@
 }
 
 .user-popup input[type="file"] {
-  color: #808080 !important;
+  color: #b8abab !important;
 }
 
 .user-popup input[type="file"]::file-selector-button {
@@ -289,7 +298,7 @@
 }
 
 .user-popup input[type="file"]::file-selector-button:hover {
-  background: #f7931a !important;
+  background: #85152F !important;
   color: #fff !important;
 }
 
@@ -608,10 +617,9 @@
   right: 20px;
   width: 40px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
   border-radius: 50%;
+  box-shadow: 0 4px 24px #0003;
   transition: all 0.3s ease;
   background-color: rgba(247, 147, 26, 0.1);
   z-index: 10000;
@@ -1813,11 +1821,12 @@ kbd {
 .peer-leaflet-popup .peer-popup-content,
 .peer-leaflet-popup .user-popup,
 .peer-leaflet-popup .wallets-section {
-  padding: 0px 10px px 10px;
+  padding: 0px 10px 0px 10px;
   margin: 6px 0 4px 0;
   border-radius: 10px;
-  background: rgba(183, 77, 82, 0.954);
+  background: #2B0F13;
   box-sizing: border-box;
+  color: #FFD7B3;
 }
 
 /* .peer-leaflet-popup h3,
@@ -1827,9 +1836,11 @@ kbd {
 } */
 
 .peer-leaflet-popup p,
-.peer-leaflet-popup .wallet-item {
-  margin-bottom: 8px;
-}
+  .peer-leaflet-popup .wallet-item {
+    margin-bottom: 8px;
+    color: #FFD7B3;
+  }
+
 
 /* Imagen de botella o icono en popup de usuario/bodega */
 /* Centrado vertical y horizontal del contenedor de imagen y botón */
@@ -1844,13 +1855,13 @@ kbd {
   box-shadow: 0 2px 8px #0001;
   min-height: 60px;
   min-width: 60px;
-  max-width: 140px;
-  max-height: 100px;
+  max-width: 340px;
+  max-height: 200px;
 }
 
 .user-bottle-img-wrapper img {
-  max-width: 120px;
-  max-height: 120px;
+  max-width: 320px;
+  max-height: 220px;
   border-radius: 8px;
   box-shadow: 0 2px 8px #0002;
   background: #fff;
@@ -1906,19 +1917,19 @@ kbd {
 .leaflet-popup-content-wrapper,
 .leaflet-popup-content,
 .peer-popup {
-  background: #fff;
+  background: #2B0F13;
   border-radius: 12px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.10);
   padding: 0;
   margin: 0;
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-  color: #222;
+  color: #FFD7B3;
 }
 
 .leaflet-popup-content {
   padding: 2px 2px 2px 2px !important;
   min-width: 400px;
-  max-width: 400px;
+  max-width: 800px;
   box-sizing: border-box;
 }
 
@@ -1934,12 +1945,12 @@ kbd {
   font-size: 1.25em;
   font-weight: 600;
   margin-bottom: 10px;
-  color: #2a2a2a;
+  color: yellow;
 }
 
 .peer-popup-content {
   font-size: 1em;
-  color: #222;
+  color: #22212170;
   margin: 0;
   padding: 0;
 }
@@ -1958,8 +1969,8 @@ kbd {
   top: 8px !important;
   right: 8px !important;
   font-size: 1.6em !important;
-  color: #333 !important;
-  background: rgba(255,255,255,0.8) !important;
+  color: #f7931a !important;
+  background: rgba(247, 147, 26, 0.1) !important;
   border-radius: 50% !important;
   width: 32px !important;
   height: 32px !important;
@@ -1977,9 +1988,50 @@ kbd {
   max-width: 800px !important;
   min-width: 440px !important;
   border-radius: 12px !important;
-  background: #fff !important;
+  background: #f7931a !important;
   box-shadow: 0 2px 16px rgba(0,0,0,0.10) !important;
-  padding: 24px 20px 16px 20px !important;
-  color: #222 !important;
+  padding: 2px 2px 2px 2px !important;
+  color: #FFD7B3 !important;
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif !important;
 }
+
+/* Unificar estilo de la punta del popup con la paleta burdeos */
+.leaflet-popup-tip {
+  background: #2B0F13 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px #0002 !important;
+  border: 2px solid #f7931a !important;
+}
+
+/* === USER CARD (WINE_LOVER POPUP) === */
+.user-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0 8px 0;
+}
+.user-card-img-wrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 2px 8px #0002;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.user-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.user-card-name {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+}
+/* === END USER CARD (WINE_LOVER POPUP) === */

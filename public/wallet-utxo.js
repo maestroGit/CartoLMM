@@ -1,15 +1,17 @@
-
+  // --- Insertar card de usuario al inicio del popup ---
 console.log('[WALLET][INIT] wallet-utxo.js cargado y ejecutándose');
 
 // --- Inicialización dinámica en popups de Leaflet ---
 function initWalletPopupLogic(popupNode) {
     // Buscar el nodo .user-popup para obtener los atributos correctos
+    console.log('[WALLET][INIT] initWalletPopupLogic llamada');
     let userPopupNode = popupNode;
     if (!userPopupNode.classList || !userPopupNode.classList.contains('user-popup')) {
       userPopupNode = popupNode.querySelector('.user-popup') || popupNode.closest('.user-popup') || popupNode;
     }
     const userType = userPopupNode.getAttribute('data-user-type');
     const userImg = userPopupNode.getAttribute('data-user-img');
+    console.log('[WALLET][INIT] userPopupNode:', userPopupNode, 'userType:', userType, 'userImg:', userImg);
   if (!popupNode) return;
   // Usar querySelector para buscar los controles dentro del nodo del popup
   const importBtn = popupNode.querySelector('#wallet-import');
@@ -17,11 +19,19 @@ function initWalletPopupLogic(popupNode) {
   if (fileInput && !fileInput.classList.contains('wallet-file-input')) fileInput.classList.add('wallet-file-input');
   const passInput = popupNode.querySelector('#wallet-passphrase');
   const badge = popupNode.querySelector('#wallet-badge');
-  const resetBtn = popupNode.querySelector('#wallet-reset');
   const historyBtn = popupNode.querySelector('#wallet-history');
   const statusEl = popupNode.querySelector('#wallet-status');
   const balanceEl = popupNode.querySelector('#wallet-balance');
   const utxoListEl = popupNode.querySelector('#wallet-utxo-list');
+
+  // Reordenar: mover el área de balance y UTXOs justo después del nombre y estado
+  const walletBalanceArea = popupNode.querySelector('.wallet-balance-area');
+  const walletUtxosArea = popupNode.querySelector('.wallet-utxos-area');
+  const walletImportControls = popupNode.querySelector('.wallet-import-controls');
+  if (walletBalanceArea && walletUtxosArea && walletImportControls) {
+    walletImportControls.parentNode.insertBefore(walletBalanceArea, walletImportControls);
+    walletImportControls.parentNode.insertBefore(walletUtxosArea, walletImportControls);
+  }
   if (!importBtn) {
     console.warn('[WALLET][POPUP] No se encontró el botón wallet-import en el popup actual');
     return;
@@ -38,7 +48,6 @@ function initWalletPopupLogic(popupNode) {
     if (fileInput) fileInput.value = '';
     if (passInput) passInput.value = '';
     if (badge) badge.style.display = 'none';
-    if (resetBtn) resetBtn.style.display = 'none';
     if (historyBtn) historyBtn.style.display = 'none';
     if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
     if (balanceEl) balanceEl.textContent = '0';
@@ -95,7 +104,6 @@ function initWalletPopupLogic(popupNode) {
       walletState.pub = data.publicKey;
       walletState.loaded = true;
       badge.style.display = '';
-      resetBtn.style.display = '';
       historyBtn.style.display = '';
       statusEl.textContent = 'Wallet cargada';
       statusEl.style.color = '#2a2';
@@ -135,21 +143,73 @@ function initWalletPopupLogic(popupNode) {
           // Si es winelover, añadir la imagen y botón Move después del botón Burn
           if (userType === 'winelover' && userImg) {
             console.log(`[UTXO][${i}] Añadiendo imagen y botón Move para winelover`, {userImg, utxo: u});
+            // Estructura: checkbox + label + imagen + botones alineados
+            div.style.display = 'flex';
+            div.style.flexDirection = 'column';
+            div.style.alignItems = 'center';
+            div.style.gap = '8px';
+
+            // Fila principal: checkbox y label
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.width = '100%';
+            row.style.gap = '10px';
+
+            // Importe
+            const amountSpan = document.createElement('span');
+            amountSpan.style.fontWeight = '500';
+            amountSpan.textContent = u.amount;
+
+            row.appendChild(cb);
+            row.appendChild(amountSpan);
+            div.appendChild(row);
+
+            // Public key debajo
+            const pubkeyRow = document.createElement('div');
+            pubkeyRow.className = 'wallet-utxo-label';
+            pubkeyRow.style.marginTop = '2px';
+            pubkeyRow.style.fontSize = '0.98em';
+            pubkeyRow.style.wordBreak = 'break-all';
+            pubkeyRow.textContent = `${u.txId} #${u.outputIndex}`;
+            div.appendChild(pubkeyRow);
+
+            // Imagen
             const imgDiv = document.createElement('div');
-            imgDiv.className = 'user-bottle-img-wrapper wallet-utxo-img';
-            imgDiv.style.display = 'flex';
-            imgDiv.style.flexDirection = 'column';
-            imgDiv.style.alignItems = 'center';
-            imgDiv.style.justifyContent = 'center';
-            imgDiv.style.maxWidth = '110px';
-            imgDiv.style.minWidth = '80px';
-            imgDiv.style.marginLeft = '12px';
-            imgDiv.innerHTML = `<img src="${userImg}" alt="Imagen botella o icono" style="max-width:90px;max-height:90px;border-radius:8px;background:#fff;box-shadow:0 2px 8px #0002;" onclick="window.showZoomImage && window.showZoomImage('${userImg}')"><div style="width:100%;display:flex;justify-content:center;"><button class=\"move-btn-user-popup\" style=\"margin-top:4px;max-width:90px;\" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
-            div.appendChild(cb);
-            div.appendChild(label);
-            div.appendChild(burnBtn);
+            imgDiv.className = 'user-bottle-img-wrapper bodega-img-full';
+            imgDiv.innerHTML = `<img src="${userImg}" alt="Imagen botella o icono" onclick="window.showZoomImage && window.showZoomImage('${userImg}')">`;
             div.appendChild(imgDiv);
-            console.log(`[UTXO][${i}] Imagen y botón Move añadidos al contenedor`, div);
+
+            // Fila de botones: Burn y Move alineados y del mismo tamaño
+            const btnRow = document.createElement('div');
+            btnRow.style.display = 'flex';
+            btnRow.style.justifyContent = 'center';
+            btnRow.style.alignItems = 'center';
+            btnRow.style.width = '100%';
+            btnRow.style.gap = '8px';
+
+            // Unificar estilos de tamaño
+            burnBtn.style.padding = '6px 22px';
+            burnBtn.style.fontSize = '15px';
+            burnBtn.style.fontWeight = '600';
+            burnBtn.style.margin = '0';
+            burnBtn.style.maxWidth = '';
+
+            const moveBtn = document.createElement('button');
+            moveBtn.className = 'move-btn-user-popup';
+            moveBtn.textContent = 'Move';
+            moveBtn.style.padding = '6px 22px';
+            moveBtn.style.fontSize = '15px';
+            moveBtn.style.fontWeight = '600';
+            moveBtn.style.margin = '0';
+            moveBtn.style.maxWidth = '';
+            moveBtn.onclick = () => window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank');
+
+            btnRow.appendChild(burnBtn);
+            btnRow.appendChild(moveBtn);
+            div.appendChild(btnRow);
+
+            console.log(`[UTXO][${i}] Imagen y botones alineados añadidos al contenedor`, div);
           } else {
             div.appendChild(cb);
             div.appendChild(label);
@@ -170,10 +230,6 @@ function initWalletPopupLogic(popupNode) {
       showToast('Error al importar wallet');
     }
   });
-  if (resetBtn) resetBtn.addEventListener('click', () => {
-    resetWalletUI();
-    showToast('wallet reiniciada');
-  });
 }
 
 // Hook global: cada vez que se abre un popup de Leaflet, reinicializar lógica wallet
@@ -184,10 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mutation.type === 'childList') {
         mutation.addedNodes.forEach(node => {
           if (node.nodeType === 1) {
-            // Buscar el botón dentro del nuevo nodo
             const importBtn = node.querySelector && node.querySelector('#wallet-import');
             if (importBtn && !importBtn._walletListenerAttached) {
-              console.log('[WALLET][MUTATION] Detectado #wallet-import en el DOM, inicializando lógica wallet');
+              console.log('[WALLET][MUTATION] Detectado #wallet-import en el DOM, inicializando lógica wallet en nodo:', node);
               initWalletPopupLogic(node);
             }
           }
@@ -200,6 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mantener el hook de popupopen por si el evento se dispara correctamente
   document.addEventListener('popupopen', function(e) {
     if (e && e.popup && e.popup._contentNode) {
+      console.log('[WALLET][POPUPOPEN] Evento popupopen detectado, inicializando lógica wallet');
       setTimeout(() => {
         initWalletPopupLogic(e.popup._contentNode);
         console.log('[WALLET][POPUP] Lógica wallet inicializada en nuevo popup');
@@ -409,10 +465,6 @@ document.getElementById('wallet-import').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('wallet-reset').addEventListener('click', () => {
-  resetWalletUI();
-  showToast('wallet reiniciada');
-});
 
 // --- Hex helpers ---
 function hexToBuf(hex) {

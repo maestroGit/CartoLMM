@@ -494,7 +494,7 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
 }
 
 .leaflet-popup h3 {
-  color: var(--wine-red);
+  color: #FFA726;
   margin-bottom: 0.5rem;
   font-size: 1rem;
 }

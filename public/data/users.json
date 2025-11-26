@@ -20,17 +20,21 @@
   ],
   "blockchainActive": true,
   "registrado": true,
-  "fechaRegistro": "2025-03-01T10:45:00Z"
+  "fechaRegistro": "2025-03-01T10:45:00Z",
+  "userCard": {
+    "img": "/public/images/pierola-reserva.jpg",
+    "name": "Javi Barcelona"
+  }
 },
 {
   "id": "oauth_012",
   "provider": "facebook",
-  "nombre": "Wallet-demo(8) Lionel",
+  "nombre": "Lionel",
   "web": "www.maisonparisienne.fr",
   "email": "contact@maisonparisienne.fr",
   "localizacion": { "direccion": "París, Francia", "lat": 48.8566, "lng": 2.3522 },
   "categorias": ["wine_lover"],
-  "img-bottle": "",
+  "img-bottle": "/public/images/BWworld-whaite.jpg",
   "wallets": [
     {
       "id": "w_012",
@@ -43,17 +47,21 @@
   ],
   "blockchainActive": true,
   "registrado": true,
-  "fechaRegistro": "2025-03-02T11:45:00Z"
+  "fechaRegistro": "2025-03-02T11:45:00Z",
+  "userCard": {
+    "img": "/public/images/BWworld-whaite.jpg",
+    "name": "Lionel"
+  }
 },
 {
   "id": "oauth_013",
   "provider": "github",
-  "nombre": "Wallet-demo(3)Peter Londres",
+  "nombre": "Peter Londres",
   "web": "www.petercellars.co.uk",
   "email": "info@petercellars.co.uk",
   "localizacion": { "direccion": "Londres, Reino Unido", "lat": 51.5074, "lng": -0.1278 },
   "categorias": ["wine_lover"],
-  "img-bottle": "",
+  "img-bottle": "/public/images/BWworld-whaite.jpg",
   "wallets": [
     {
       "id": "w_013",
@@ -66,7 +74,11 @@
   ],
   "blockchainActive": true,
   "registrado": true,
-  "fechaRegistro": "2025-03-03T12:45:00Z"
+  "fechaRegistro": "2025-03-03T12:45:00Z",
+  "userCard": {
+    "img": "/public/images/BWworld-whaite.jpg",
+    "name": "Peter Londres"
+  }
 }, {
     "id": "oauth_005",
     "provider": "facebook",
@@ -97,7 +109,7 @@
     "email": "yuki.tanaka@tokyowine.jp",
     "localizacion": { "direccion": "Yamanashi, Japón", "lat": 35.6639, "lng": 138.5683 },
     "categorias": ["wine_lover"],
-    "img-bottle": "",
+    "img-bottle": "/public/images/BWworld-whaite.jpg",
     "wallets": [],
     "blockchainActive": false,
     "registrado": true,
@@ -133,7 +145,7 @@
     "email": "emily.j@wineusa.com",
     "localizacion": { "direccion": "Napa Valley, California, USA", "lat": 38.5025, "lng": -122.2654 },
     "categorias": ["wine_lover"],
-    "img-bottle": "",
+     "img-bottle":"/public/images/BWworld-whaite.jpg",
     "wallets": [
       {
         "id": "w_008",

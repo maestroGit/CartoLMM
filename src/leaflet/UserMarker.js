@@ -106,8 +106,18 @@ class UserMarker {
     const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\">${moveBtn}</div>`;
 
     const userType = this.data.categorias && this.data.categorias.includes('wine_lover') ? 'winelover' : (this.data.categorias && this.data.categorias.includes('bodega') ? 'bodega' : 'otro');
+    // Card de usuario para wine_lover
+    const userCard = (userType === 'winelover' && finalImgSrc && this.data.nombre) ? `
+      <div class="user-card">
+        <div class="user-card-img-wrapper">
+          <img src="${finalImgSrc}" alt="${this.data.nombre}" class="user-card-img" />
+        </div>
+        <div class="user-card-name">${this.data.nombre}</div>
+      </div>
+    ` : '';
     const popupContent = `
       <div class="user-popup" data-user-type="${userType}" data-user-img="${finalImgSrc}">
+        ${userCard}
         ${userType === 'bodega' ? imagenDivBodega : ''}
         <h3${userType === 'bodega' ? ' class="bodega-img-title"' : ''}>${this.data.nombre}</h3>
         ${userType !== 'bodega' ? blockchainStatus : ''}

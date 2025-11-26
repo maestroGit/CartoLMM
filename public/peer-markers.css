@@ -43,7 +43,7 @@
   transition: transform 0.2s;
 }
 
-/* Nodo Local */
+/* Nodo Local Marcador en el Mapa */
 .peer-marker-local {
   background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   border: 3px solid #ffffff;
@@ -84,7 +84,7 @@
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: 12%;
   background: rgba(59, 130, 246, 0.4);
   animation: peerPulse 2s ease-out infinite;
   pointer-events: none;
@@ -156,13 +156,13 @@
 
 .peer-popup {
   padding: 0;
-  min-width: 260px;
-  max-width: 350px;
+  min-width: 400px;
+  max-width: 400px;
 }
 
 .peer-popup-title {
   background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
-  color: #F9FAFB;
+  color: #F7931A;
   padding: 12px 1ch;
   margin: 0;
   font-size: 14px;
@@ -174,6 +174,10 @@
 
 .peer-popup-content {
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .peer-popup-content p {
@@ -181,6 +185,16 @@
   font-size: 13px;
   line-height: 1.6;
   color: #D1D5DB;
+  width: 100%;
+  text-align: center;
+}
+/* Centrar imagen en el popup peer */
+.peer-popup-img-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
 }
 
 .peer-popup-content p:first-child {
@@ -296,9 +310,16 @@
   }
 
   .peer-popup-title {
-    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+    background: rgb(255, 167, 38);
     color: #111827;
     border-bottom: 2px solid #D1D5DB;
+    border-radius: 20px;
+  }
+
+  .peer-popup-content,
+  .peer-leaflet-popup .leaflet-popup-content-wrapper {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #1F2937;
   }
 
   .peer-popup-content p {
