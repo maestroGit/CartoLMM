@@ -18,6 +18,7 @@ class PeerLayerManager {
   addPeer(peerData) {
     const nodeId = peerData.nodeId || peerData.id || `peer-${Date.now()}`;
     console.log('[PeerLayerManager.addPeer] nodeId:', nodeId, 'data:', peerData);
+    console.log('[PeerLayerManager.addPeer] map object:', this.map);
     // Si ya existe, actualizar datos en lugar de crear nuevo
     if (this.peerMarkers.has(nodeId)) {
       const existingMarker = this.peerMarkers.get(nodeId);
@@ -28,7 +29,7 @@ class PeerLayerManager {
     // Crear nuevo marcador usando clase global
     const pm = new window.PeerMarker(peerData, this.map);
     this.peerMarkers.set(nodeId, pm);
-    console.log('[PeerLayerManager.addPeer] Marcador creado y añadido al mapa:', nodeId);
+    console.log('[PeerLayerManager.addPeer] Marcador creado y añadido al mapa:', nodeId, pm);
     return pm;
   }
 

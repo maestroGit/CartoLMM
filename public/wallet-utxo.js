@@ -15,9 +15,29 @@ function initWalletPopupLogic(popupNode) {
   if (!popupNode) return;
   // Usar querySelector para buscar los controles dentro del nodo del popup
   const importBtn = popupNode.querySelector('#wallet-import');
-  const fileInput = popupNode.querySelector('#wallet-file');
+  // Usar la variable userPopupNode ya existente
+  // Obtener el id único del usuario para seleccionar los elementos dinámicos
+  let userId = userPopupNode.getAttribute('data-user-id') || userPopupNode.getAttribute('data-user-type');
+  // Fallback: buscar input por id dinámico
+  // Buscar el input file por id dinámico, si no existe usar el primero disponible
+  let fileInput = null;
+  if (userId) {
+    fileInput = popupNode.querySelector(`#wallet-file-${userId}`);
+  }
+  if (!fileInput) {
+    // Fallback: buscar cualquier input file
+    fileInput = popupNode.querySelector('input[type="file"]');
+  }
+  console.log('[WALLET][INIT] fileInput:', fileInput);
   if (fileInput && !fileInput.classList.contains('wallet-file-input')) fileInput.classList.add('wallet-file-input');
-  const passInput = popupNode.querySelector('#wallet-passphrase');
+  // Buscar el input de passphrase por id dinámico, si no existe usar el primero disponible
+  let passInput = null;
+  if (userId) {
+    passInput = popupNode.querySelector(`#wallet-passphrase-${userId}`);
+  }
+  if (!passInput) {
+    passInput = popupNode.querySelector('input[type="password"]');
+  }
   const badge = popupNode.querySelector('#wallet-badge');
   const historyBtn = popupNode.querySelector('#wallet-history');
   const statusEl = popupNode.querySelector('#wallet-status');
@@ -59,19 +79,29 @@ function initWalletPopupLogic(popupNode) {
     console.log('[WALLET][POPUP] Click en botón Importar PublicKey');
     console.log('[WALLET][DEBUG] userType:', userType, 'userImg:', userImg, 'utxoListEl:', utxoListEl);
     try {
+      // --- INICIO FLUJO DE IMPORTACIÓN ---
       console.log('[WALLET][IMPORT][POPUP] Click en importar wallet');
-      if (!fileInput.files[0]) {
+      // Validar que el input de archivo existe y tiene archivo seleccionado
+      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
         statusEl.textContent = 'Selecciona un archivo de keystore (.json)';
         statusEl.style.color = '#c00';
         return;
       }
-      if (!passInput.value) {
+      // Validar que el input de passphrase existe y tiene valor
+      if (!passInput || !passInput.value) {
         statusEl.textContent = 'Introduce la passphrase para descifrar el keystore';
         statusEl.style.color = '#c00';
         return;
       }
+      // Log para depuración: archivo seleccionado
+      console.log('[WALLET][IMPORT][DEBUG] fileInput.files:', fileInput.files, 'file:', fileInput.files[0]);
+      // Leer el archivo y mostrar contenido para depuración
       const raw = await fileInput.files[0].text();
+      console.log('[WALLET][IMPORT][DEBUG] raw file content:', raw);
+      // Parsear el JSON y mostrar para depuración
       const data = JSON.parse(raw);
+      console.log('[WALLET][IMPORT][DEBUG] parsed JSON:', data);
+      // --- FIN DE VALIDACIONES Y LECTURA ---
       const passBuf = new TextEncoder().encode(passInput.value);
       const salt = data.kdfParams?.salt ? hexToBuf(data.kdfParams.salt) : crypto.getRandomValues(new Uint8Array(16));
       const passKey = await crypto.subtle.importKey(
