@@ -103,10 +103,13 @@ class UserMarker {
       ? `<p><strong>Web:</strong> <a href="https://${this.data.web}" target="_blank" rel="noopener">${this.data.web}</a></p>`
       : '';
 
-    // Imagen: usar campo this.data["img-bottle"] si existe, si no, usar imagen por defecto
-    const imagenSrc = this.data["img-bottle"] && this.data["img-bottle"].trim() !== ''
-      ? this.data["img-bottle"]
-      : '/public/images/IconoMagnum.png';
+    // Imagen: usar campo this.data.userCard.img si existe y no está vacío, si no usar iconoBWred.png o dejar en blanco
+    let imagenSrc = '';
+    if (this.data.userCard && this.data.userCard.img && this.data.userCard.img.trim() !== '') {
+      imagenSrc = this.data.userCard.img;
+    } else {
+      imagenSrc = '/public/images/iconoBWred.png';
+    }
     const isExternal = imagenSrc.startsWith('http://') || imagenSrc.startsWith('https://');
     const finalImgSrc = isExternal ? imagenSrc : imagenSrc;
     // Botón Move
@@ -114,7 +117,7 @@ class UserMarker {
     // Imagen con zoom interactivo y botón Move solo para wine_lover
     const moveBtn = `<div style=\"width:100%;display:flex;justify-content:center;\"><button class=\"move-btn-user-popup\" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
     // Para bodega: solo imagen, contenedor ancho
-      const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" style="max-width:320px;max-height:320px;width:100%;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#e8b1b1;" onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')"></div>`;
+      const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')"></div>`;
     // Para wine_lover: imagen + botón Move
     const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\">${moveBtn}</div>`;
 
@@ -143,7 +146,7 @@ class UserMarker {
       </div>
     ` : '';
     const popupContent = `
-      <div class="user-popup" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${finalImgSrc}">
+      <div class="user-popup" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${finalImgSrc}" data-img-bottle="${this.data['img-bottle'] || ''}">
         ${userCard}
         ${userType === 'bodega' ? imagenDivBodega : ''}
         <h3${userType === 'bodega' ? ' class="bodega-img-title"' : ''}>${this.data.nombre}</h3>

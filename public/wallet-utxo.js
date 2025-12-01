@@ -11,6 +11,8 @@ function initWalletPopupLogic(popupNode) {
     }
     const userType = userPopupNode.getAttribute('data-user-type');
     const userImg = userPopupNode.getAttribute('data-user-img');
+    // Obtener la imagen de la botella desde el atributo data-img-bottle
+    const userBottleImg = userPopupNode.getAttribute('data-img-bottle');
     console.log('[WALLET][INIT] userPopupNode:', userPopupNode, 'userType:', userType, 'userImg:', userImg);
   if (!popupNode) return;
   // Usar querySelector para buscar los controles dentro del nodo del popup
@@ -204,10 +206,10 @@ function initWalletPopupLogic(popupNode) {
             pubkeyRow.textContent = `${u.txId} #${u.outputIndex}`;
             div.appendChild(pubkeyRow);
 
-            // Imagen
+            // Imagen de la botella (img-bottle)
             const imgDiv = document.createElement('div');
             imgDiv.className = 'user-bottle-img-wrapper bodega-img-full';
-            imgDiv.innerHTML = `<img src="${userImg}" alt="Imagen botella o icono" onclick="window.showZoomImage && window.showZoomImage('${userImg}')">`;
+            imgDiv.innerHTML = `<img src="${userBottleImg || '/public/images/default-bottle.png'}" alt="Imagen botella o icono" onclick="window.showZoomImage && window.showZoomImage('${userBottleImg || '/public/images/default-bottle.png'}')">`;
             div.appendChild(imgDiv);
 
             // Fila de botones: Burn y Move alineados y del mismo tamaño

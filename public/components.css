@@ -300,8 +300,10 @@
 /* Imagen grande para bodega */
 
 .user-bottle-img-wrapper.bodega-img-full {
-  width: 400px;
-  height: 400px;
+  width: 100%;
+  max-width: 100%;
+  max-height: 320px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -309,8 +311,8 @@
   border-radius: 12px;
 }
 .user-bottle-img-wrapper.bodega-img-full img {
-  width: 400px;
-  height: 400px;
+  max-width: 100%;
+  max-height: 320px;
   object-fit: contain;
   border-radius: 12px;
   box-shadow: 0 4px 24px #0003;
