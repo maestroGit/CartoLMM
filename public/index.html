@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CartoBW</title>
+    <link rel="icon" href="./images/favicon.png" type="image/png">
+    
 
     <!-- Estilos -->
     <link rel="stylesheet" href="styles.css">
@@ -27,8 +29,7 @@
     <!-- Socket.io for realtime -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-    <!-- Wine-Tech Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'>🍷</svg>">
+   
 </head>
 
 <body>
@@ -250,10 +251,10 @@
 
     <!-- Scripts externos -->
 
-    <script src="CartoLMMWebSocket.js"></script>
+    <script type="module" src="CartoLMMWebSocket.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app.js"></script>
-        <script src="wallet-utxo.js"></script>
+    <script type="module" src="app.js"></script>
+    <script type="module" src="wallet-utxo.js"></script>
     <script type="module" src="../src/services/blockchainService.js"></script>
     <script type="module" src="../src/leaflet/PeerMarker.js"></script>
     <script type="module" src="../src/leaflet/UserMarker.js"></script>
@@ -262,8 +263,8 @@
     <script type="module" src="../src/services/mapService.js"></script>
     <script type="module" src="../src/services/dashboardService.js"></script>
     <script type="module" src="../src/main.js"></script>
-    <script src="peersMetrics.js"></script>
-    <script src="zoom-image.js"></script>
+    <script type="module" src="peersMetrics.js"></script>
+    <script type="module" src="zoom-image.js"></script>
 
     <!-- Servicio de refresco reactivo del dashboard y nodos -->
     <script type="module" src="../src/services/realtimeDashboardService.js"></script>

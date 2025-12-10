@@ -5,7 +5,7 @@
 export const config = {
     // Servidor
     port: process.env.PORT || 8080,
-    host: process.env.HOST || 'localhost',
+    host: process.env.HOST || '0.0.0.0',
     nodeEnv: process.env.NODE_ENV || 'development',
     
     // APIs
