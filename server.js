@@ -37,13 +37,17 @@ app.use((req, res, next) => {
 // Middleware para parsear JSON
 app.use(express.json());
 
-// Middleware para servir archivos estáticos
+
+// Servir archivos estáticos de Vite (dist) en producción
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// (Opcional) Servir también public y src si necesitas acceso directo a esos recursos
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
-// Ruta principal
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Para cualquier ruta no API, servir index.html de dist (SPA)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Middleware de manejo de errores
