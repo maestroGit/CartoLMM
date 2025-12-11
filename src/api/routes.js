@@ -483,6 +483,7 @@ async function handleGetBalance(req, res) {
         }
 
         // Llama siempre a magnumsmaster para obtener el balance real
+        // Asegura que la dirección se envía como POST JSON
         const response = await magnusmasterClient.getAddressBalance(address);
         console.log(`[API] /api/balance - respuesta de magnumsmaster:`, response);
         if (response && response.success && response.data) {
