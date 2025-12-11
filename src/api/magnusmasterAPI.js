@@ -15,6 +15,7 @@ class MagnusmasterAPI {
     this.lastError = null;
     this.retryAttempts = 3;
     this.retryDelay = 4000; // 4 segundos entre reintentos para mayor estabilidad
+    console.log(`🌐 MagnusmasterAPI: Usando baseURL para magnumsmaster: ${this.baseURL}`);
   }
 
   /**
