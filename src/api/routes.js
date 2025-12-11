@@ -473,6 +473,7 @@ async function handleGetTransactions(req, res) {
 async function handleGetBalance(req, res) {
     try {
         const { address } = req.query;
+        console.log(`[API] /api/balance - address recibida:`, address);
         if (!address) {
             return res.status(400).json({
                 success: false,
@@ -483,6 +484,7 @@ async function handleGetBalance(req, res) {
 
         // Llama siempre a magnumsmaster para obtener el balance real
         const response = await magnusmasterClient.getAddressBalance(address);
+        console.log(`[API] /api/balance - respuesta de magnumsmaster:`, response);
         if (response && response.success && response.data) {
             // Si hay datos reales, devuélvelos tal cual
             return res.json({
