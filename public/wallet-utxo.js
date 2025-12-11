@@ -235,7 +235,7 @@ function initWalletPopupLogic(popupNode) {
             moveBtn.style.fontWeight = '600';
             moveBtn.style.margin = '0';
             moveBtn.style.maxWidth = '';
-            moveBtn.onclick = () => window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank');
+            moveBtn.onclick = () => window.open(`${apiBaseUrl}/demo-wallet/web-demo.html`,'_blank');
 
             btnRow.appendChild(burnBtn);
             btnRow.appendChild(moveBtn);

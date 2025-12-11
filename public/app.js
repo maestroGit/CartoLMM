@@ -36,7 +36,7 @@
                 return statusDiv.textContent = 'Wallet JSON debe tener privateKey y publicKey.';
             }
             try {
-                const res = await fetch('http://localhost:3000/wallet/encrypt', {
+                const res = await fetch(`${apiBaseUrl}/wallet/encrypt`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ privateKey: loadedWalletJson.privateKey, passphrase: pass })
@@ -75,7 +75,7 @@
                 return statusDiv.textContent = 'El archivo no parece ser una wallet cifrada.';
             }
             try {
-                const res = await fetch('http://localhost:3000/wallet/decrypt', {
+                const res = await fetch(`${apiBaseUrl}/wallet/decrypt`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ encryptedPrivateKey, salt, iv, tag, passphrase: pass })
@@ -100,7 +100,7 @@
                 return statusDiv.textContent = 'El archivo no es una wallet cifrada válida.';
             }
             try {
-                const res = await fetch('http://localhost:3000/wallet/load-global', {
+                const res = await fetch(`${apiBaseUrl}/wallet/load-global`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ encryptedPrivateKey, salt, iv, tag, passphrase: pass, publicKey })

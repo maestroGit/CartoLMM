@@ -28,7 +28,7 @@ class CartoLMMWebSocket {
         
         try {
             // Detectar si estamos en Live Server o CartoLMM server
-            const socketUrl = window.location.port === '5500' ? 'http://localhost:8080' : undefined;
+            const socketUrl = typeof apiBaseUrl !== 'undefined' ? apiBaseUrl : undefined;
             console.log('🔌 Conectando WebSocket a:', socketUrl || 'mismo servidor');
             
             // Inicializar Socket.io
