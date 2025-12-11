@@ -9,7 +9,9 @@
     "dev": "nodemon server.js",
     "test": "node test/integration.test.js",
     "test:integration": "node test/integration.test.js",
-    "build": "echo \"Static files, no build needed\" && exit 0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "vite:dev": "vite",
     "install-deps": "npm install",
     "clean": "rm -rf node_modules package-lock.json && npm install"
   },
