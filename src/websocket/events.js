@@ -125,7 +125,7 @@ const initializeMagnusmasterIntegration = async () => {
 const startGlobalBlockchainMonitoring = () => {
   console.log("📡 Iniciando monitoreo blockchain global...");
 
-  // Monitorear cambios en bloques cada 5 segundos
+  // Monitorear cambios en bloques cada 15 segundos
   const blockMonitor = setInterval(async () => {
     try {
       if (connectedClients.size === 0) return;
@@ -141,9 +141,9 @@ const startGlobalBlockchainMonitoring = () => {
     } catch (error) {
       console.error("Error monitoreando bloques:", error);
     }
-  }, 5000);
+  }, 15000);
 
-  // Monitorear transacciones cada 3 segundos
+  // Monitorear transacciones cada 15 segundos
   const txMonitor = setInterval(async () => {
     try {
       if (connectedClients.size === 0) return;
@@ -159,9 +159,9 @@ const startGlobalBlockchainMonitoring = () => {
     } catch (error) {
       console.error("Error monitoreando transacciones:", error);
     }
-  }, 3000);
+  }, 15000);
 
-  // Monitorear métricas del sistema cada 10 segundos
+  // Monitorear métricas del sistema cada 30 segundos
   const systemMonitor = setInterval(async () => {
     try {
       if (connectedClients.size === 0) return;
@@ -175,7 +175,7 @@ const startGlobalBlockchainMonitoring = () => {
     } catch (error) {
       console.error("Error monitoreando sistema:", error);
     }
-  }, 10000);
+  }, 30000);
 
   // Guardar intervalos para limpieza
   activeIntervals.set("blocks", blockMonitor);

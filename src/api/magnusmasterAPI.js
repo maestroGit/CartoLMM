@@ -14,7 +14,7 @@ class MagnusmasterAPI {
     this.isConnected = false;
     this.lastError = null;
     this.retryAttempts = 3;
-    this.retryDelay = 1000; // 1 segundo
+    this.retryDelay = 4000; // 4 segundos entre reintentos para mayor estabilidad
   }
 
   /**

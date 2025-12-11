@@ -42,9 +42,31 @@ Esto asegura que:
   node server.js
   ```
 
-## Notas
-- El puerto debe ser tomado de `process.env.PORT` para compatibilidad con plataformas cloud.
-- El build de Vite debe ejecutarse antes del deploy para que la carpeta `dist` esté actualizada.
+
+## Variables de entorno y configuración en Seenode
+
+- **PORT:** Puedes definir `PORT=3000` o `PORT=80` en las variables de entorno, pero Seenode asignará el puerto real y tu app lo usará automáticamente gracias a `process.env.PORT`. El valor solo se usará si Seenode no lo define.
+- **NODE_ENV:**
+  - Durante el build, asegúrate de que se instalan las devDependencies (como Vite). Si Seenode usa las mismas variables para build y start, usa el comando:
+    ```bash
+    npm ci --include=dev && npm run build
+    ```
+    Esto forzará la instalación de devDependencies aunque `NODE_ENV=production` esté activa.
+  - Durante el start, sí debe estar `NODE_ENV=production` para que tu app corra en modo producción.
+- **BLOCKCHAIN_API_URL:** Define la URL de tu backend blockchain según el entorno.
+
+## Ejemplo de variables en Seenode
+
+```
+BLOCKCHAIN_API_URL=https://app.blockswine.com
+PORT=3000
+NODE_ENV=production
+HOST=0.0.0.0
+```
+
+## Resultado
+
+Con esta configuración y los comandos recomendados, el build y el despliegue en Seenode funcionan correctamente, sirviendo el frontend de Vite y el backend Express desde el mismo servidor.
 
 ---
 
