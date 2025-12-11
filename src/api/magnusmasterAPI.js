@@ -93,16 +93,20 @@ class MagnusmasterAPI {
   /**
    * ⛓️ Obtener información de la blockchain
    */
-  async getBlocks() {
-    return await this.makeRequest('/blocks');
-  }
+    async getBlocks() {
+      const response = await this.makeRequest('/blocks');
+      console.log('[MagnusmasterAPI] Respuesta de /blocks:', response);
+      return response;
+    }
 
   /**
    * 🏊‍♂️ Obtener pool de transacciones
    */
-  async getTransactionsPool() {
-    return await this.makeRequest('/transactionsPool');
-  }
+    async getTransactionsPool() {
+      const response = await this.makeRequest('/transactionsPool');
+      console.log('[MagnusmasterAPI] Respuesta de /transactionsPool:', response);
+      return response;
+    }
 
   /**
    * 💰 Obtener balance de una dirección específica
