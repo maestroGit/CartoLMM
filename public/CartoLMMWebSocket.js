@@ -125,21 +125,39 @@ class CartoLMMWebSocket {
         });
         
         // Actualizar contador de bloques en tiempo real
+        let lastBlocksCount = null;
         this.socket.on('blockchain:blocks-update', (data) => {
+            const blocksCounter = document.getElementById('blocks-counter');
             if (data && Array.isArray(data.blocks)) {
-                const blocksCounter = document.getElementById('blocks-counter');
+                if (typeof data.error === 'string' && data.error.includes('429')) {
+                    // Mantener el último valor válido
+                    if (blocksCounter && lastBlocksCount !== null) {
+                        blocksCounter.textContent = lastBlocksCount;
+                    }
+                    return;
+                }
                 if (blocksCounter) {
                     blocksCounter.textContent = data.blocks.length;
+                    lastBlocksCount = data.blocks.length;
                 }
             }
         });
 
         // Actualizar contador de transacciones en tiempo real
+        let lastTxCount = null;
         this.socket.on('blockchain:transactions-update', (data) => {
+            const txCounter = document.getElementById('transactions-counter');
             if (data && Array.isArray(data.transactions)) {
-                const txCounter = document.getElementById('transactions-counter');
+                if (typeof data.error === 'string' && data.error.includes('429')) {
+                    // Mantener el último valor válido
+                    if (txCounter && lastTxCount !== null) {
+                        txCounter.textContent = lastTxCount;
+                    }
+                    return;
+                }
                 if (txCounter) {
                     txCounter.textContent = data.transactions.length;
+                    lastTxCount = data.transactions.length;
                 }
             }
         });
