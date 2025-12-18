@@ -1,3 +1,22 @@
+    // Responsive nav: toggle menu on mobile
+    document.addEventListener('DOMContentLoaded', () => {
+        const nav = document.querySelector('.nav');
+        const toggleBtn = document.getElementById('toggle-metrics');
+        if (nav && toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                nav.classList.toggle('open');
+                toggleBtn.setAttribute('aria-expanded', nav.classList.contains('open') ? 'true' : 'false');
+            });
+            // Cerrar menú al hacer click fuera
+            document.addEventListener('click', (e) => {
+                if (nav.classList.contains('open') && !nav.contains(e.target) && e.target !== toggleBtn) {
+                    nav.classList.remove('open');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+    });
     // === Wallet Global Bodega: Cifrado/Descifrado/Carga ===
     const walletFileInput = document.getElementById('wallet-global-file');
     const walletPassInput = document.getElementById('wallet-global-pass');
