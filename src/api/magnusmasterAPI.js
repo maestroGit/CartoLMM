@@ -15,7 +15,48 @@ class MagnusmasterAPI {
     this.lastError = null;
     this.retryAttempts = 3;
     this.retryDelay = 4000; // 4 segundos entre reintentos para mayor estabilidad
+    this.cache = new Map();
+    this.inflight = new Map();
     console.log(`🌐 MagnusmasterAPI: Usando baseURL para magnumsmaster: ${this.baseURL}`);
+  }
+
+  getCacheEntry(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    return entry;
+  }
+
+  setCacheEntry(key, value, ttlMs) {
+    if (!ttlMs || ttlMs <= 0) return;
+    this.cache.set(key, {
+      value,
+      expiresAt: Date.now() + ttlMs,
+      createdAt: Date.now(),
+    });
+  }
+
+  buildRequestKey(endpoint, fetchOptions) {
+    const method = (fetchOptions?.method || 'GET').toUpperCase();
+    const body = fetchOptions?.body ? String(fetchOptions.body) : '';
+    return `${method} ${endpoint} ${body}`;
+  }
+
+  parseRetryAfterMs(response) {
+    const header = response?.headers?.get?.('retry-after');
+    if (!header) return null;
+    const trimmed = String(header).trim();
+    if (!trimmed) return null;
+    // retry-after puede ser segundos o una fecha HTTP.
+    const seconds = Number(trimmed);
+    if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+    const when = Date.parse(trimmed);
+    if (Number.isFinite(when)) return Math.max(0, when - Date.now());
+    return null;
+  }
+
+  async sleep(ms) {
+    if (!ms || ms <= 0) return;
+    await new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
@@ -53,40 +94,105 @@ class MagnusmasterAPI {
    * 🔄 Método genérico para hacer peticiones con retry
    */
   async makeRequest(endpoint, options = {}) {
-    const { retries = this.retryAttempts, ...fetchOptions } = options;
-    
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        const response = await fetch(`${this.baseURL}${endpoint}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          ...fetchOptions
-        });
+    const {
+      retries = this.retryAttempts,
+      cacheTtlMs = 0,
+      cacheKey,
+      allowStaleOnError = true,
+      ...fetchOptions
+    } = options;
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const requestKey = cacheKey || this.buildRequestKey(endpoint, fetchOptions);
+    const cacheEntry = this.getCacheEntry(requestKey);
+    const hasFreshCache = cacheEntry && cacheEntry.expiresAt > Date.now();
+    const staleValue = cacheEntry ? cacheEntry.value : null;
+
+    if (hasFreshCache) {
+      return { ...cacheEntry.value, cache: { hit: true, stale: false } };
+    }
+
+    // Deduplicación: si ya hay una request idéntica en vuelo, reutilizarla.
+    if (this.inflight.has(requestKey)) {
+      return await this.inflight.get(requestKey);
+    }
+
+    const runner = (async () => {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const response = await fetch(`${this.baseURL}${endpoint}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            ...fetchOptions
+          });
+
+          if (!response.ok) {
+            // Caso especial: 429 (rate limit)
+            if (response.status === 429) {
+              const retryAfterMs = this.parseRetryAfterMs(response);
+              const errorMsg = `HTTP 429: Too Many Requests`;
+
+              // Si hay cache (aunque esté caducada), devolverla en vez de insistir.
+              if (allowStaleOnError && staleValue) {
+                return { ...staleValue, cache: { hit: true, stale: true }, warning: errorMsg };
+              }
+
+              // Reintentar sólo si el servidor da Retry-After; si no, no insistimos.
+              if (attempt < retries && retryAfterMs != null && retryAfterMs > 0) {
+                await this.sleep(retryAfterMs);
+                continue;
+              }
+
+              throw new Error(errorMsg);
+            }
+
+            const text = await response.text().catch(() => '');
+            const suffix = text ? ` - ${text.slice(0, 200)}` : '';
+            throw new Error(`HTTP ${response.status}: ${response.statusText}${suffix}`);
+          }
+
+          const rawText = await response.text();
+          let data;
+          try {
+            data = rawText ? JSON.parse(rawText) : null;
+          } catch {
+            // Si el backend devuelve algo no-JSON, propagar un error claro.
+            throw new Error(`Respuesta no JSON desde ${endpoint}`);
+          }
+
+          const result = { success: true, data, timestamp: new Date().toISOString() };
+          this.setCacheEntry(requestKey, result, cacheTtlMs);
+          return result;
+
+        } catch (error) {
+          console.warn(`🔄 Intento ${attempt}/${retries} falló para ${endpoint}:`, error.message);
+
+          if (attempt === retries) {
+            // Último intento: si hay cache caducada y se permite, usarla.
+            if (allowStaleOnError && staleValue) {
+              return { ...staleValue, cache: { hit: true, stale: true }, warning: error.message };
+            }
+
+            return {
+              success: false,
+              error: error.message,
+              endpoint,
+              timestamp: new Date().toISOString()
+            };
+          }
+
+          // Esperar antes del siguiente intento
+          await this.sleep(this.retryDelay * attempt);
         }
-
-        const data = await response.json();
-        return { success: true, data, timestamp: new Date().toISOString() };
-
-      } catch (error) {
-        console.warn(`🔄 Intento ${attempt}/${retries} falló para ${endpoint}:`, error.message);
-        
-        if (attempt === retries) {
-          return { 
-            success: false, 
-            error: error.message, 
-            endpoint,
-            timestamp: new Date().toISOString()
-          };
-        }
-        
-        // Esperar antes del siguiente intento
-        await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
       }
+    })();
+
+    this.inflight.set(requestKey, runner);
+    try {
+      return await runner;
+    } finally {
+      this.inflight.delete(requestKey);
     }
   }
 
@@ -94,7 +200,7 @@ class MagnusmasterAPI {
    * ⛓️ Obtener información de la blockchain
    */
     async getBlocks() {
-      const response = await this.makeRequest('/blocks');
+      const response = await this.makeRequest('/blocks', { cacheTtlMs: 30000 });
       console.log('[MagnusmasterAPI] Respuesta de /blocks:', response);
       return response;
     }
@@ -103,7 +209,7 @@ class MagnusmasterAPI {
    * 🏊‍♂️ Obtener pool de transacciones
    */
     async getTransactionsPool() {
-      const response = await this.makeRequest('/transactionsPool');
+      const response = await this.makeRequest('/transactionsPool', { cacheTtlMs: 10000 });
       console.log('[MagnusmasterAPI] Respuesta de /transactionsPool:', response);
       return response;
     }
@@ -112,9 +218,12 @@ class MagnusmasterAPI {
    * 💰 Obtener balance de una dirección específica
    */
   async getAddressBalance(address) {
+    const cacheKey = `POST /address-balance ${String(address || '').trim()}`;
     return await this.makeRequest('/address-balance', {
       method: 'POST',
-      body: JSON.stringify({ address })
+      body: JSON.stringify({ address }),
+      cacheTtlMs: 60000,
+      cacheKey
     });
   }
 
@@ -129,7 +238,7 @@ class MagnusmasterAPI {
    * 💳 Obtener balance de la wallet principal
    */
   async getWalletBalance() {
-    return await this.makeRequest('/balance');
+    return await this.makeRequest('/balance', { cacheTtlMs: 30000 });
   }
 
   /**
@@ -143,7 +252,7 @@ class MagnusmasterAPI {
    * 📊 Obtener información del sistema
    */
   async getSystemInfo() {
-    return await this.makeRequest('/system-info');
+    return await this.makeRequest('/system-info', { cacheTtlMs: 30000 });
   }
 
   /**
