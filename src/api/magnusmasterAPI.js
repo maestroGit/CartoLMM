@@ -231,7 +231,9 @@ class MagnusmasterAPI {
    * 🏦 Obtener UTXOs de una dirección
    */
   async getUTXOBalance(address) {
-    return await this.makeRequest(`/utxo-balance/${address}`);
+    const safeAddress = encodeURIComponent(String(address || '').trim());
+    const cacheKey = `GET /utxo-balance ${String(address || '').trim()}`;
+    return await this.makeRequest(`/utxo-balance/${safeAddress}`, { cacheTtlMs: 60000, cacheKey });
   }
 
   /**

@@ -255,10 +255,10 @@
   --error-red: #EF4444;
   --neutral-gray: #6B7280;
   --background-dark: #1F2937;
-  --background-light: #F9FAFB;
-  --text-primary: #1F2937;
+  --background-light: #2F1D25;
+  --text-primary: #fafcfe;
   --text-secondary: #6B7280;
-  --border-color: #E5E7EB;
+  --border-color: #FF9702;
   
   /* Layout */
   --header-height: 72px;
@@ -431,7 +431,7 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
 
 /* Sidebar Panel */
 .sidebar-panel {
-  background: white;
+  background: #2B0F13;
   border-left: 1px solid var(--border-color);
   overflow-y: auto;
   padding: 0.75rem;
@@ -491,7 +491,7 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
 }
 
 .metric-card {
-  background: white;
+  background:var(--background-dark);
   padding: 0.5rem;
   border-radius: var(--border-radius);
   text-align: center;
@@ -508,7 +508,7 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
   display: block;
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--wine-red);
+  color: var(--text-primary);
   margin-bottom: 0.15rem;
   line-height: 1.2;
 }

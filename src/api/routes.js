@@ -35,6 +35,9 @@ export async function setupAPIRoutes(app) {
     
     // API: Balance de dirección
     app.get('/api/balance', handleGetBalance);
+
+    // API: UTXOs de dirección
+    app.get('/api/utxo-balance', handleGetUTXOBalance);
     
     // API: Verificar QR proof
     app.post('/api/verify-qr-proof', handleVerifyQR);
@@ -750,4 +753,46 @@ function handleAPIError(res, error, message) {
         details: error.message,
         timestamp: new Date().toISOString()
     });
+}
+
+/**
+ * Handler: UTXOs/balance por dirección
+ */
+async function handleGetUTXOBalance(req, res) {
+    try {
+        const { address } = req.query;
+        if (!address) {
+            return res.status(400).json({
+                success: false,
+                error: 'Dirección requerida',
+                code: 'MISSING_ADDRESS'
+            });
+        }
+
+        const response = await magnusmasterClient.getUTXOBalance(address);
+
+        if (response && response.success) {
+            const raw = response.data;
+            // Normalizar: puede venir como array o como objeto { utxos, balance }
+            const utxos = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.utxos) ? raw.utxos : []);
+            const balance = raw && typeof raw.balance !== 'undefined'
+                ? raw.balance
+                : utxos.reduce((sum, u) => sum + (Number(u.amount) || 0), 0);
+
+            return res.json({
+                success: true,
+                data: { utxos, balance },
+                timestamp: response.timestamp || new Date().toISOString()
+            });
+        }
+
+        // Fallback seguro
+        return res.json({
+            success: true,
+            data: { utxos: [], balance: 0 },
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        handleAPIError(res, error, 'Error obteniendo UTXOs');
+    }
 }

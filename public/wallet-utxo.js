@@ -373,16 +373,17 @@ if (modal && closeBtn) {
 // --- Utilidades para descifrado y fetch UTXOs ---
 async function fetchUTXOs(address) {
   try {
-    const base = location.port && location.port !== "3000"
-      ? `${location.protocol}//${location.hostname}:3000`
-      : "";
-    const url = `${base}/utxo-balance/${encodeURIComponent(address)}`;
+    const url = `/api/utxo-balance?address=${encodeURIComponent(address)}`;
     console.log('[WALLET][FETCH UTXOS] URL:', url);
     const res = await fetch(url);
     if (!res.ok) throw new Error("Failed to fetch utxos: " + res.status);
     const data = await res.json();
     console.log('[WALLET][FETCH UTXOS] Data:', data);
-    // Normalizar formato: array o { utxos: [...] }
+    // Normalizar formato: { success, data: { utxos } } o legacy
+    if (data && data.success && data.data) {
+      if (Array.isArray(data.data)) return data.data;
+      if (data.data && Array.isArray(data.data.utxos)) return data.data.utxos;
+    }
     if (Array.isArray(data)) return data;
     if (data && Array.isArray(data.utxos)) return data.utxos;
     return [];

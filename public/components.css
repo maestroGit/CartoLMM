@@ -1627,28 +1627,28 @@ kbd {
 }
 
 .metric-card {
-  background: linear-gradient(135deg, #f8f9ff, #e8eaff);
+  background: #2F1D25;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid rgba(139, 0, 0, 0.1);
+  border: 1px solid #FF9800;
 }
 
 .metric-card h4 {
   margin: 0 0 8px 0;
   font-size: 14px;
-  color: #8b0000;
+  color: white;
 }
 
 .metric-card p {
   margin: 3px 0;
   font-size: 12px;
-  color: #666;
+  color:whitesmoke;
 }
 
 /* Counters */
 .counter {
   font-weight: bold;
-  color: #8b0000;
+  color: white;
   transition: all 0.3s ease;
 }
 
