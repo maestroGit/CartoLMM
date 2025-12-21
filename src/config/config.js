@@ -2,6 +2,20 @@
  * Configuración central para CartoLMM
  */
 
+function parseOrigins(value) {
+    if (!value) return '*';
+    const trimmed = String(value).trim();
+    if (trimmed === '*') return '*';
+
+    const origins = trimmed
+        .split(',')
+        .map(o => o.trim())
+        .filter(Boolean);
+
+    if (origins.length === 0) return '*';
+    return origins.length === 1 ? origins[0] : origins;
+}
+
 export const config = {
     // Servidor
     port: process.env.PORT || 8080,
@@ -14,7 +28,7 @@ export const config = {
     
     // WebSocket
     socketCors: {
-        origin: process.env.CORS_ORIGIN || "*",
+        origin: parseOrigins(process.env.SOCKET_CORS_ORIGIN || process.env.CORS_ORIGIN || '*'),
         methods: ["GET", "POST"]
     },
     

@@ -1,0 +1,20 @@
+# Deploy SEENODE - Archivo de configuración de entorno
+VITE_BLOCKCHAIN_API_URL=http://localhost:3000
+
+BLOCKCHAIN_API_URL=http://localhost:3000
+PORT=8080
+NODE_ENV=production
+HOST=0.0.0.0
+...
+
+# 🔗 URL de la API de magnumsmaster Blockchain (ajusta según despliegue)
+BLOCKCHAIN_URL=http://localhost:3001
+
+# 🕐 Timeout de Peticiones API (ms)
+API_TIMEOUT=30000
+
+# 🔐 CORS Origin (ajusta según dominio real)
+CORS_ORIGIN=http://localhost:8080
+
+# 📊 WebSocket CORS (ajusta según dominio real)
+SOCKET_CORS_ORIGIN=http://localhost:8080
