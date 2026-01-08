@@ -613,24 +613,12 @@ function handleBodegaSelected(bodega) {
 
         const btnCustodiado = document.createElement('button');
         btnCustodiado.textContent = 'Custodiado';
-        btnCustodiado.style.background = '#8B0000';
-        btnCustodiado.style.color = '#fff';
-        btnCustodiado.style.padding = '12px 32px';
-        btnCustodiado.style.border = 'none';
-        btnCustodiado.style.borderRadius = '8px';
-        btnCustodiado.style.fontSize = '1.2em';
-        btnCustodiado.style.cursor = 'pointer';
+        btnCustodiado.className = 'modal-action-btn modal-action-btn--custodiado';
         btnCustodiado.onclick = () => console.log('Consulta existencias');
 
         const btnDisponible = document.createElement('button');
         btnDisponible.textContent = 'Disponible';
-        btnDisponible.style.background = '#FFA500';
-        btnDisponible.style.color = '#fff';
-        btnDisponible.style.padding = '12px 32px';
-        btnDisponible.style.border = 'none';
-        btnDisponible.style.borderRadius = '8px';
-        btnDisponible.style.fontSize = '1.2em';
-        btnDisponible.style.cursor = 'pointer';
+        btnDisponible.className = 'modal-action-btn modal-action-btn--disponible';
         btnDisponible.onclick = () => console.log('Consulta disponibilidad');
 
         actions.appendChild(btnCustodiado);

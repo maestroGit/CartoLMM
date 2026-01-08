@@ -22,6 +22,24 @@
   background: #84152E;
   color: #111;
 }
+
+/* Botones de acciones en el modal de bodega: consistentes con el resto */
+.modal-action-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.05s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.modal-action-btn:active { transform: translateY(1px); }
+.modal-action-btn--custodiado { background: #8B0000; color: #fff; }
+.modal-action-btn--custodiado:hover { background: #6f0000; }
+.modal-action-btn--disponible { background: #FFA500; color: #fff; }
+.modal-action-btn--disponible:hover { background: #e18f00; }
 /* Estilo global para wallet-input */
 .wallet-input {
   border: 2px solid #FFA726;
@@ -1669,7 +1687,7 @@ kbd {
 }
 
 .last-block-info {
-  background: linear-gradient(135deg, #f0f8ff, #e6f3ff);
+  background: #2F1D25;
   padding: 15px;
   border-radius: 8px;
   border: 1px solid rgba(139, 0, 0, 0.2);

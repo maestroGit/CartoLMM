@@ -40,7 +40,7 @@
   "wallets": [
     {
       "id": "w_012",
-      "address": "04e2c80d051e0fce2174b51eeda98d7ed0827fc36f76ca73965ee6e2410f964ef3cb9ac4bef843466111bc7e679a3844098e33dabe85e1ef154acf9c9b524578f8",
+      "address": "047dfe8622c894037f9504b1aaeb85270a714cb4bf3b0fd50d370408487d12b1067e9d02fc0c297f3a0ac93b080b85562d808e50c72943808ba60e726936140a2a",
       "status": "active",
       "usuarioId": "oauth_012",
       "fechaVinculacion": "2025-03-02T12:00:00Z",
@@ -224,7 +224,7 @@
     "registrado": true,
     "fechaRegistro": "2025-02-28T10:00:00Z"
     ,"userCard": {
-      "img": "/public/images/iconoBWred.png"
+      "img": "/public/images/BWworld-whaite.jpg"
     }
   },
   {
