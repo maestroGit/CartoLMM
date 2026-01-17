@@ -44,12 +44,12 @@
                 <h1 class="logo">BlocksWine</h1>
                 <nav class="nav">
                     <a href="https://app.blockswine.com/" target="_blank" class="btn" id="dashboard-btn"
-                        title="Dashboard">🏚️</a>
+                        title="Dashboard">Panel</a>
                     <a href="https://app.blockswine.com/keystore.html" target="_blank" rel="noopener" class="btn"
-                        id="bw-wallet-btn">💼</a>
+                        id="bw-wallet-btn">Wallet</a>
                     <button id="toggle-layers" class="control-btn unified-btn" data-toggle-wired="true"
-                        type="button">📚</button>
-                    <button id="toggle-3d" class="control-btn unified-btn" type="button">🔍 </button>
+                        type="button">Layers</button>
+                    <button id="toggle-3d" class="control-btn unified-btn" type="button">Zoom</button>
 
 
                     <!-- Hamburger button triggers sidebar toggle directly -->
@@ -63,7 +63,7 @@
         <!-- Main Content -->
         <main class="cartolmm-main">
             <div id="connection-status" class="connection-status">
-                🟢 Conectado en tiempo real
+                🟢 real-time connection
             </div>
             <!-- Map Container -->
             <div class="map-container">
@@ -121,7 +121,7 @@
                         </div>
                         <div class="metric-card">
                             <span class="metric-value" id="stock-custodiado">89</span>
-                            <span class="metric-label">NºBotellas</span>
+                            <span class="metric-label">Nº Magnums</span>
                         </div>
                         <div class="metric-card">
                             <span class="metric-value" id="regiones-activas">104</span>
@@ -162,7 +162,7 @@
 
                     <!-- Last Block Info -->
                     <section class="metrics-section">
-                        <h3>🧱 Último Block</h3>
+                        <h3>🧱 Last Block</h3>
                         <div id="last-block" class="last-block-info">
                         </div>
                     </section>
@@ -183,7 +183,7 @@
     <div id="bodega-modal" class="modal hidden">
         <div class="modal-content" style="margin-top:80px; max-width:800px;">
             <div class="modal-header">
-                <h2 id="modal-bodega-name">Bodega</h2>
+                <h2 id="modal-bodega-name">Winery</h2>
                 <button id="modal-close" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
@@ -195,25 +195,25 @@
                 <div class="bodega-info">
                     <div class="info-grid">
                         <div class="info-item">
-                            <strong>Región:</strong>
+                            <strong>Region:</strong>
                             <span id="modal-region">-</span>
                         </div>
                         <div class="info-item">
-                            <strong>Stock Custodiado:</strong>
+                            <strong>Stock Custodied:</strong>
                             <span id="modal-stock">-</span>
                         </div>
                         <div class="info-item">
-                            <strong>Estado Nodo:</strong>
+                            <strong>Node Status:</strong>
                             <span id="modal-node-status">-</span>
                         </div>
                         <div class="info-item">
-                            <strong>Última Actividad:</strong>
+                            <strong>Last Activity:</strong>
                             <span id="modal-last-activity">-</span>
                         </div>
                     </div>
                 </div>
                 <div class="recent-transactions">
-                    <h3>Transacciones Recientes</h3>
+                    <h3>Recent Transactions</h3>
                     <div id="modal-transactions" class="transaction-list">
                         <!-- Transactions will be populated -->
                     </div>
@@ -227,15 +227,15 @@
                         <div class="wallet-import-controls" style="display:flex;flex-direction:column;gap:8px;">
                             <label for="wallet-file" style="font-weight:500;">Importar keystore (.json):</label>
                             <input type="file" id="wallet-file" accept="application/json" style="padding:4px;">
-                            <label for="wallet-passphrase" style="font-weight:500;">Passphrase para descifrar:</label>
+                            <label for="wallet-passphrase" style="font-weight:500;">Passphrase to decrypt:</label>
                             <input type="password" id="wallet-passphrase" placeholder="Passphrase" style="padding:4px;">
                             <button id="wallet-import" class="wallet-btn" style="margin-top:6px;">Importar
                                 PublicKey</button>
                             <span class="wallet-badge" id="wallet-badge"
                                 style="display:none;margin-top:4px;background:#e0ffe0;color:#1a4d1a;padding:2px 8px;border-radius:6px;font-size:13px;">Wallet
-                                cargada</span>
+                                loaded</span>
                             <button id="wallet-history" class="wallet-btn"
-                                style="display:none;margin-top:6px;background:#f5f5f5;color:#333;">Historial</button>
+                                style="display:none;margin-top:6px;background:#f5f5f5;color:#333;">History</button>
                         </div>
                         <div class="wallet-status" id="wallet-status"></div>
                         <div class="wallet-balance-area">
@@ -274,7 +274,7 @@
 
     <!-- Loader inicial -->
     <div class="loader" style="display: flex;">
-        <div>Iniciando LMM...</div>
+        <div>Starting...</div>
     </div>
 
 

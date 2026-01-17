@@ -1139,7 +1139,7 @@
 }
 
 .loader::after {
-  content: "Cargando CartoLMM...";
+  content: "Loading BlocksWine Map...";
   font-size: 18px;
   font-weight: 500;
 }

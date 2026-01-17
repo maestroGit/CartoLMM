@@ -250,7 +250,7 @@ function showWelcomeMessage() {
     const notification = document.createElement('div');
     notification.className = 'notification success welcome';
     notification.innerHTML = `
-        <h3>🍷 ¡Bienvenido a CartoLMM!</h3>
+        <h3>🍷 ¡Bienvenido a BlocksWine Map!</h3>
         <p>Sistema de visualización blockchain para bodegas de vino</p>
         <small>Presiona 'H' para ver atajos de teclado</small>
     `;
