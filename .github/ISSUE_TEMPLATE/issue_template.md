@@ -1,3 +1,10 @@
+---
+name: General Issue
+about: Usa este template para reportar bugs, pedir características o consultar.
+title: ""
+labels: ""
+assignees: ""
+---
 ## 📋 Issue Description
 
 <!-- Describe the issue clearly and concisely -->
