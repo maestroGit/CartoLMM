@@ -277,8 +277,21 @@
         <div>Starting...</div>
     </div>
 
-
-    <!-- Página minimalista: sin scripts inline -->
+    <!-- Debug: log when #transactions-counter changes -->
+    <script>
+        (function () {
+            const el = document.getElementById('transactions-counter');
+            if (el) {
+                let last = el.textContent;
+                const observer = new MutationObserver(() => {
+                    if (el.textContent !== last) {
+                        console.log('[DEBUG] transactions-counter cambió:', last, '→', el.textContent);
+                        last = el.textContent;
+                    }
+                });
+                observer.observe(el, { childList: true, characterData: true, subtree: true });
+            }
+        })();
+    </script>
 </body>
-
 </html>
