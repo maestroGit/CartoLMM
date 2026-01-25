@@ -87,10 +87,12 @@ class UserMarker {
 
     const wallets = this.data.wallets && this.data.wallets.length > 0
       ? this.data.wallets.map((w, idx) => `
-          <div class="wallet-item">
+          <div class="wallet-item" style="display:flex;align-items:center;gap:8px;">
             <code style="word-break:break-all;white-space:pre-wrap;user-select:all;">${w.address}</code>
-            <button class="balance-btn-user-popup" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Balance</button>
-            <div class="wallet-balance-result" id="wallet-balance-result-${this.data.id || idx}"></div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <button class="balance-btn-user-popup" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Balance</button>
+              <div class="wallet-balance-result" id="wallet-balance-result-${this.data.id || idx}"></div>
+            </div>
           </div>
         `).join('')
       : '<p style="color: #999;">Sin wallets registradas</p>';
@@ -128,19 +130,19 @@ class UserMarker {
         <div class="user-card-img-wrapper">
           <img src="${finalImgSrc}" alt="${this.data.nombre}" class="user-card-img" />
         </div>
-        <div class="user-card-name">${this.data.nombre}</div>
-        <div class="user-card-description">${this.data.descripcion || ''}
-        </div>
+
         <div class="user-card-social">
           <a href="https://x.com/" target="_blank" title="X" style="display:inline-block;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#222" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M17.53 7.477l-4.06 4.06 4.06 4.06-1.06 1.06-4.06-4.06-4.06 4.06-1.06-1.06 4.06-4.06-4.06-4.06 1.06-1.06 4.06 4.06 4.06-4.06z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fffefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M17.53 7.477l-4.06 4.06 4.06 4.06-1.06 1.06-4.06-4.06-4.06 4.06-1.06-1.06 4.06-4.06-4.06-4.06 1.06-1.06 4.06 4.06 4.06-4.06z"/></svg>
           </a>
           <a href="https://instagram.com/" target="_blank" title="Instagram" style="display:inline-block;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#E1306C" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.242-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.783 2.295 7.149 2.233 8.415 2.175 8.795 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.363 3.678 1.344c-.98.98-1.213 2.092-1.272 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.613.059 1.281.292 2.393 1.272 3.373.98.98 2.092 1.213 3.373 1.272C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.292 3.373-1.272.98-.98 1.213-2.092 1.272-3.373.059-1.281.072-1.69.072-7.613 0-5.923-.013-6.332-.072-7.613-.059-1.281-.292-2.393-1.272-3.373-.98-.98-2.092-1.213-3.373-1.272C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fefefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.242-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.783 2.295 7.149 2.233 8.415 2.175 8.795 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.363 3.678 1.344c-.98.98-1.213 2.092-1.272 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.613.059 1.281.292 2.393 1.272 3.373.98.98 2.092 1.213 3.373 1.272C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.292 3.373-1.272.98-.98 1.213-2.092 1.272-3.373.059-1.281.072-1.69.072-7.613 0-5.923-.013-6.332-.072-7.613-.059-1.281-.292-2.393-1.272-3.373-.98-.98-2.092-1.213-3.373-1.272C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>
           </a>
           <a href="https://youtube.com/" target="_blank" title="YouTube" style="display:inline-block;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#c4302b" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a2.998 2.998 0 0 0-2.115-2.115C19.633 3.5 12 3.5 12 3.5s-7.633 0-9.383.571a2.998 2.998 0 0 0-2.115 2.115C0 7.937 0 12 0 12s0 4.063.502 5.814a2.998 2.998 0 0 0 2.115 2.115C4.367 20.5 12 20.5 12 20.5s7.633 0 9.383-.571a2.998 2.998 0 0 0 2.115-2.115C24 16.063 24 12 24 12s0-4.063-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fefefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a2.998 2.998 0 0 0-2.115-2.115C19.633 3.5 12 3.5 12 3.5s-7.633 0-9.383.571a2.998 2.998 0 0 0-2.115 2.115C0 7.937 0 12 0 12s0 4.063.502 5.814a2.998 2.998 0 0 0 2.115 2.115C4.367 20.5 12 20.5 12 20.5s7.633 0 9.383-.571a2.998 2.998 0 0 0 2.115-2.115C24 16.063 24 12 24 12s0-4.063-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
           </a>
+        </div>
+                <div class="user-card-description">${this.data.descripcion || ''}
         </div>
         </div>
       </div>
@@ -152,13 +154,12 @@ class UserMarker {
         <h3${userType === 'bodega' ? ' class="bodega-img-title"' : ''}>${this.data.nombre}</h3>
         ${userType !== 'bodega' ? blockchainStatus : ''}
         <div class="wallets-section">
-          <strong>Wallets:</strong>
           ${wallets}
         </div>
         <!-- Wallet UTXO UI (colapsable) -->
         ${userType !== 'bodega' ? `
         <details style="margin:10px 0 0 0;">
-          <summary style="cursor:pointer;font-weight:500;">Abrir gestión de wallet UTXO</summary>
+          <summary style="cursor:pointer;font-weight:500;">Open wallet</summary>
           <div class="wallet-section" style="width:100%;max-width:420px;margin:0 auto;">
             <div class="wallet-import-controls" style="display:flex;flex-direction:column;gap:8px;">
               <label for="wallet-file-${this.data.id || userType}" style="font-weight:500;">Importar keystore (.json):</label>
@@ -171,7 +172,7 @@ class UserMarker {
               <input type="password" id="wallet-passphrase-${this.data.id || userType}" placeholder="Passphrase" class="wallet-input">
               <button id="wallet-import" class="wallet-btn">Importar PublicKey</button>
               <button id="wallet-reset" class="wallet-btn" style="display:none;">Cambiar wallet</button>
-              <span class="wallet-badge" id="wallet-badge" style="display:none;">Wallet cargada</span>
+              <span class="wallet-badge" id="wallet-badge" style="display:none;">Wallet loaded</span>
               <button id="wallet-history" class="wallet-btn" style="display:none;">Historial</button>
             </div>
             <div class="wallet-status" id="wallet-status"></div>
@@ -187,10 +188,9 @@ class UserMarker {
         ` : ''}
         <!-- /Wallet UTXO UI -->
         <div class="footer-popup">
-          <p class="footer-popup-item">Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()}</p>
+          <p class="footer-popup-item">Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()} - ${categorias}</p>
           <p class="footer-popup-item"><strong>Email:</strong> ${this.data.email}</p>
           ${userType === 'bodega' ? `<p class=\"footer-popup-item\"><strong>Web:</strong> <a href=\"https://${this.data.web}\" target=\"_blank\" rel=\"noopener\">${this.data.web}</a></p>` : ''}
-          <p class="footer-popup-item"><strong>Categorías:</strong> ${categorias}</p>
           ${userType === 'bodega' && this.data.blockchainActive ? `<p class=\"footer-popup-item\">🟢 Blockchain activa</p>` : ''}
         </div>
       </div>

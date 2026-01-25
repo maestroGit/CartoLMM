@@ -142,8 +142,11 @@
   .user-card-social {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 10px;
     margin-bottom: 8px;
+    background: #2F1D25;
+    border-radius: 8px;
   }
   .user-card-social a svg {
     width: 22px !important;
