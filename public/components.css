@@ -1,3 +1,22 @@
+/* ...existing code... */
+
+/* === MEDIA QUERIES AL FINAL PARA PRIORIDAD === */
+@media (max-width: 600px) {
+  .user-card-img-wrapper {
+    width: 180px;
+    height: 180px;
+  }
+  .user-card-img {
+    width: 100%;
+    height: 100%;
+  }
+}
+@media (max-width: 600px) {
+  .user-card {
+    padding-top: 2px;
+    padding-bottom: 6px;
+  }
+}
 /* Estilo para el estado del wallet */
 .wallet-status {
   margin-top: 1px;
@@ -2019,7 +2038,7 @@ kbd {
 .peer-leaflet-popup .user-popup,
 .peer-leaflet-popup .wallets-section {
   padding: 0px 10px 0px 10px;
-  margin: 6px 0 4px 0;
+  margin: 2px 0 4px 0;
   border-radius: 10px;
   background: #2B0F13;
   box-sizing: border-box;
@@ -2124,10 +2143,18 @@ kbd {
 }
 
 .leaflet-popup-content {
-  padding: 2px 18px 2px 18px !important;
-  min-width: 400px;
-  max-width: 800px;
+  padding: 2px 8px 2px 8px !important;
+  min-width: 0;
+  max-width: 95vw;
+  width: 100%;
   box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .leaflet-popup-content {
+    max-width: 98vw;
+    padding: 2px 2vw !important;
+  }
 }
 
 .peer-popup {
@@ -2206,7 +2233,7 @@ kbd {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 16px 0 8px 0;
+  padding: 8px 0 8px 0;
 }
 .user-card-img-wrapper {
   width: 144px;
