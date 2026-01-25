@@ -130,7 +130,7 @@ class UserMarker {
         <div class="user-card-img-wrapper">
           <img src="${finalImgSrc}" alt="${this.data.nombre}" class="user-card-img" />
         </div>
-
+        <div class="user-popup-nombre">${this.data.nombre}</div>
         <div class="user-card-social">
           <a href="https://x.com/" target="_blank" title="X" style="display:inline-block;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="#fffefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M17.53 7.477l-4.06 4.06 4.06 4.06-1.06 1.06-4.06-4.06-4.06 4.06-1.06-1.06 4.06-4.06-4.06-4.06 1.06-1.06 4.06 4.06 4.06-4.06z"/></svg>
@@ -151,14 +151,15 @@ class UserMarker {
       <div class="user-popup" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${finalImgSrc}" data-img-bottle="${this.data['img-bottle'] || ''}">
         ${userCard}
         ${userType === 'bodega' ? imagenDivBodega : ''}
-        <h3${userType === 'bodega' ? ' class="bodega-img-title"' : ''}>${this.data.nombre}</h3>
+        ${userType === 'bodega' ? `<h3 class="bodega-img-title">${this.data.nombre}</h3>` : ''}
+       
         ${userType !== 'bodega' ? blockchainStatus : ''}
         <div class="wallets-section">
           ${wallets}
         </div>
         <!-- Wallet UTXO UI (colapsable) -->
         ${userType !== 'bodega' ? `
-        <details style="margin:10px 0 0 0;">
+        <details style="margin:2px 0 0 0;">
           <summary style="cursor:pointer;font-weight:500;">Open wallet</summary>
           <div class="wallet-section" style="width:100%;max-width:420px;margin:0 auto;">
             <div class="wallet-import-controls" style="display:flex;flex-direction:column;gap:8px;">

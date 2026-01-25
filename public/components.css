@@ -143,7 +143,7 @@
 }
 .wallet-item code {
   width: 100%;
-  max-width: 400px;
+ 
   box-sizing: border-box;
   display: inline-block;
   word-break: break-all;
@@ -2042,7 +2042,20 @@ kbd {
   border-radius: 10px;
   background: #2B0F13;
   box-sizing: border-box;
-  color: #FFD7B3;
+  color: #ffffff;
+}
+
+.user-popup-nombre {
+  font-size: 1.25em;
+  font-weight: 700;
+  color: #FFD54F;
+  text-align: center;
+  margin: 8px 0 4px 0;
+  letter-spacing: 0.5px;
+  background: #2B0F13;
+  border-radius: 6px;
+  padding: 4px 12px;
+  box-shadow: 0 2px 8px #0002;
 }
 
 /* .peer-leaflet-popup h3,
@@ -2210,13 +2223,10 @@ kbd {
 .peer-leaflet-popup,
 .user-custom-popup {
   max-width: 800px !important;
-  min-width: 380px !important;
+  min-width: 350px !important;
   border-radius: 12px !important;
-  background: #f7931a !important;
   box-shadow: 0 2px 16px rgba(0,0,0,0.10) !important;
   padding: 2px 2px 2px 2px !important;
-  color: #FFD7B3 !important;
-  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif !important;
 }
 
 /* Unificar estilo de la punta del popup con la paleta burdeos */
