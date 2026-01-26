@@ -379,14 +379,20 @@ async function fetchUTXOs(address) {
     if (!res.ok) throw new Error("Failed to fetch utxos: " + res.status);
     const data = await res.json();
     console.log('[WALLET][FETCH UTXOS] Data:', data);
-    // Normalizar formato: { success, data: { utxos } } o legacy
+    // Nueva estructura: { success, data: { utxos, utxosPendientes } }
     if (data && data.success && data.data) {
-      if (Array.isArray(data.data)) return data.data;
-      if (data.data && Array.isArray(data.data.utxos)) return data.data.utxos;
+      if (Array.isArray(data.data.utxos) || Array.isArray(data.data.utxosPendientes)) {
+        return {
+          utxos: Array.isArray(data.data.utxos) ? data.data.utxos : [],
+          utxosPendientes: Array.isArray(data.data.utxosPendientes) ? data.data.utxosPendientes : [],
+        };
+      }
+      // Legacy: si solo hay un array
+      if (Array.isArray(data.data)) return { utxos: data.data, utxosPendientes: [] };
     }
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.utxos)) return data.utxos;
-    return [];
+    if (Array.isArray(data)) return { utxos: data, utxosPendientes: [] };
+    if (data && Array.isArray(data.utxos)) return { utxos: data.utxos, utxosPendientes: [] };
+    return { utxos: [], utxosPendientes: [] };
   } catch (err) {
     console.error('[WALLET][FETCH UTXOS][ERROR]', err);
     return [];
@@ -395,111 +401,53 @@ async function fetchUTXOs(address) {
 
 // --- Importar wallet: descifrado y visualización ---
 document.getElementById('wallet-import').addEventListener('click', async () => {
-  const fileInput = document.getElementById('wallet-file');
-  const passInput = document.getElementById('wallet-passphrase');
-  const badge = document.getElementById('wallet-badge');
-  const resetBtn = document.getElementById('wallet-reset');
-  const historyBtn = document.getElementById('wallet-history');
-  const statusEl = document.getElementById('wallet-status');
-  const balanceEl = document.getElementById('wallet-balance');
-  const utxoListEl = document.getElementById('wallet-utxo-list');
-  console.log('[WALLET][IMPORT] Click en importar wallet');
-  badge.style.display = 'none';
-  resetBtn.style.display = 'none';
-  historyBtn.style.display = 'none';
-  statusEl.textContent = '';
-  balanceEl.textContent = '0';
-  utxoListEl.innerHTML = '';
-  if (!fileInput.files[0]) {
-    statusEl.textContent = 'Selecciona un archivo de keystore (.json)';
-    console.warn('[WALLET][IMPORT][ERROR] No file selected');
-    return;
-  }
-  if (!passInput.value) {
-    statusEl.textContent = 'Introduce la passphrase para descifrar el keystore';
-    console.warn('[WALLET][IMPORT][ERROR] No passphrase');
-    return;
-  }
-  try {
-    console.log('[WALLET][IMPORT] Iniciando importación de wallet...');
-    const raw = await fileInput.files[0].text();
-    console.log('[WALLET][IMPORT] Keystore file loaded');
-    const data = JSON.parse(raw);
-    // --- Derivar clave con PBKDF2 (demo simplificado) ---
-    const passBuf = new TextEncoder().encode(passInput.value);
-    const salt = data.kdfParams?.salt ? hexToBuf(data.kdfParams.salt) : crypto.getRandomValues(new Uint8Array(16));
-    const passKey = await crypto.subtle.importKey(
-      "raw", passBuf, { name: "PBKDF2" }, false, ["deriveBits"]
-    );
-    const derived = await crypto.subtle.deriveBits(
-      { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
-      passKey, 256
-    );
-    const keyBytes = new Uint8Array(derived);
-    // --- Descifrar clave privada ---
-    const iv = hexToBuf(data.cipherParams.iv);
-    const ct = hexToBuf(data.encryptedPrivateKey);
-    const cryptoKey = await crypto.subtle.importKey(
-      "raw", keyBytes, "AES-GCM", false, ["decrypt"]
-    );
-    let priv;
-    try {
-      console.log('[WALLET][IMPORT] Intentando descifrar clave privada...');
-      const pt = await crypto.subtle.decrypt(
-        { name: "AES-GCM", iv }, cryptoKey, ct
-      );
-      priv = new TextDecoder().decode(pt);
-      console.log('[WALLET][IMPORT] Descifrado exitoso.');
+      const { utxos, utxosPendientes } = await fetchUTXOs(walletState.pub);
+      walletState.utxos = utxos;
+      walletState.utxosPendientes = utxosPendientes;
+      let total = 0;
+      utxoListEl.innerHTML = '';
+      // Mostrar UTXOs disponibles
+      if (Array.isArray(utxos) && utxos.length > 0) {
+        const title = document.createElement('div');
+        title.innerHTML = '<b>UTXOs Disponibles</b>';
+        utxoListEl.appendChild(title);
+        utxos.forEach((u, i) => {
+          total += u.amount || 0;
+          const div = document.createElement('div');
+          div.className = 'utxo-container wallet-utxo-container';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.className = 'utxo-checkbox';
+          cb.id = 'utxo_' + i;
+          cb.dataset.txid = u.txId;
+          cb.dataset.outputindex = u.outputIndex;
+          cb.dataset.amount = u.amount;
+          cb.dataset.address = u.address;
+          const label = document.createElement('label');
+          label.htmlFor = cb.id;
+          label.style = 'flex:1;cursor:pointer;';
+          label.innerHTML = `<span style=\"font-weight:500;\">${u.amount}</span> <span class=\"wallet-utxo-label\">${u.txId} #${u.outputIndex}</span>`;
+          div.appendChild(cb);
+          div.appendChild(label);
+          utxoListEl.appendChild(div);
+        });
+      } else {
+        utxoListEl.innerHTML += '<span class=\"muted\">No hay UTXOs disponibles.</span>';
+      }
+      // Mostrar UTXOs pendientes
+      if (Array.isArray(utxosPendientes) && utxosPendientes.length > 0) {
+        const title = document.createElement('div');
+        title.innerHTML = '<b>UTXOs Pendientes</b>';
+        utxoListEl.appendChild(title);
+        utxosPendientes.forEach((u, i) => {
+          const div = document.createElement('div');
+          div.className = 'utxo-container wallet-utxo-container utxo-pending';
+          const label = document.createElement('span');
+          label.innerHTML = `<span style=\"font-weight:500;\">${u.amount}</span> <span class=\"wallet-utxo-label\">${u.txId} #${u.outputIndex}</span>`;
+          div.appendChild(label);
+          utxoListEl.appendChild(div);
+        });
+      }
+      balanceEl.textContent = String(total);
+      console.log('[WALLET][IMPORT][POPUP] Wallet importada y UTXOs mostrados.');
     } catch (decryptErr) {
-      // Passphrase incorrecta o keystore corrupto
-      statusEl.textContent = '❌ Passphrase incorrecta o keystore inválido';
-      statusEl.style.color = '#c00';
-      showToast('❌ Passphrase incorrecta o keystore inválido');
-      console.error('[WALLET][IMPORT][DECRYPT ERROR]', decryptErr);
-      console.log('[WALLET][IMPORT] Lanzando toast de error de passphrase.');
-      return;
-    }
-    walletState.priv = priv;
-    walletState.pub = data.publicKey;
-    walletState.loaded = true;
-    console.log('[WALLET][IMPORT] Wallet importada. PublicKey:', walletState.pub);
-    badge.style.display = '';
-    resetBtn.style.display = '';
-    historyBtn.style.display = '';
-    statusEl.textContent = 'Wallet cargada';
-    statusEl.style.color = '#2a2';
-    // --- Fetch y mostrar UTXOs ---
-    const utxos = await fetchUTXOs(walletState.pub);
-    walletState.utxos = utxos;
-    let total = 0;
-    utxoListEl.innerHTML = '';
-    if (Array.isArray(utxos) && utxos.length > 0) {
-      console.log('[WALLET][IMPORT] UTXOs recibidos:', utxos);
-      utxos.forEach((u, i) => {
-        total += u.amount || 0;
-        const div = document.createElement('div');
-        div.className = 'wallet-utxo-item';
-        div.innerHTML = `<span style=\"font-weight:500;\">${u.amount}</span> <span style=\"color:#888;word-break:break-all;\">${u.txId} #${u.outputIndex}</span>`;
-        utxoListEl.appendChild(div);
-      });
-    } else {
-      console.log('[WALLET][IMPORT] No hay UTXOs disponibles');
-      utxoListEl.innerHTML = '<span class=\"muted\">No hay UTXOs disponibles.</span>';
-    }
-    balanceEl.textContent = String(total);
-    console.log('[WALLET][IMPORT] Balance calculado:', total);
-  } catch (err) {
-    statusEl.textContent = 'Error al importar wallet: ' + (err && err.message);
-    statusEl.style.color = '#c00';
-    console.error('[WALLET][IMPORT][ERROR]', err);
-    resetWalletUI();
-    showToast('Error al importar wallet');
-    console.log('[WALLET][IMPORT] Lanzando toast de error general.');
-  }
-});
-
-
-// --- Hex helpers ---
-function hexToBuf(hex) {
-  return new Uint8Array(hex.match(/.{1,2}/g).map((h) => parseInt(h, 16)));
-}

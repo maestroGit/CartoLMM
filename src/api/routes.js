@@ -773,15 +773,14 @@ async function handleGetUTXOBalance(req, res) {
 
         if (response && response.success) {
             const raw = response.data;
-            // Normalizar: puede venir como array o como objeto { utxos, balance }
-            const utxos = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.utxos) ? raw.utxos : []);
-            const balance = raw && typeof raw.balance !== 'undefined'
-                ? raw.balance
-                : utxos.reduce((sum, u) => sum + (Number(u.amount) || 0), 0);
+            // Nueva estructura: { address, balance, utxosDisponibles, utxosPendientes }
+            const utxos = Array.isArray(raw.utxosDisponibles) ? raw.utxosDisponibles : [];
+            const utxosPendientes = Array.isArray(raw.utxosPendientes) ? raw.utxosPendientes : [];
+            const balance = typeof raw.balance !== 'undefined' ? raw.balance : utxos.reduce((sum, u) => sum + (Number(u.amount) || 0), 0);
 
             return res.json({
                 success: true,
-                data: { utxos, balance },
+                data: { utxos, utxosPendientes, balance },
                 timestamp: response.timestamp || new Date().toISOString()
             });
         }
@@ -789,7 +788,7 @@ async function handleGetUTXOBalance(req, res) {
         // Fallback seguro
         return res.json({
             success: true,
-            data: { utxos: [], balance: 0 },
+            data: { utxos: [], utxosPendientes: [], balance: 0 },
             timestamp: new Date().toISOString()
         });
     } catch (error) {
