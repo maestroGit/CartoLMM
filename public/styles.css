@@ -1,3 +1,8 @@
+
+/* Forzar centrado de los popups de Leaflet */
+.leaflet-popup-content-wrapper {
+  text-align: center !important;
+}
 .metric-grid {
   background: #220F17 !important;
   border-radius: 14px;
@@ -343,9 +348,9 @@ body {
 .logo-icon.white { filter: invert(1) brightness(1.35) contrast(1.05); background-color: rgba(255,255,255,0.12); padding:6px; border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,0.35); transition: transform 420ms cubic-bezier(.2,.9,.2,1); }
 .logo-icon.white:hover { transform: scale(1.08) rotate(8deg); }
 .nav { margin-left:auto; display:flex; gap:6px; }
-.nav .btn, .control-btn.unified-btn { display:inline-block; padding:10px 16px; border-radius:8px; text-decoration:none; background: var(--brand-accent); color:#08101a; font-weight:600; border:1px solid rgba(0,0,0,0.08); transition: all .25s ease; font-size:.85rem; line-height:1; }
-.nav .btn:hover, .nav .btn:focus, .control-btn.unified-btn:hover, .control-btn.unified-btn:focus { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff; outline:none; }
-.nav .btn.active { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff; border:1px solid rgba(var(--btn-hover-start-rgb),.9); }
+.nav .btn, .control-btn.unified-btn { display:inline-block; padding:10px 16px; border-radius:8px; text-decoration:none; background: var(--brand-accent); color:#fff !important; font-weight:600; border:1px solid rgba(0,0,0,0.08); transition: all .25s ease; font-size:.85rem; line-height:1; }
+.nav .btn:hover, .nav .btn:focus, .control-btn.unified-btn:hover, .control-btn.unified-btn:focus { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff !important; outline:none; }
+.nav .btn.active { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff !important; border:1px solid rgba(var(--btn-hover-start-rgb),.9); }
 
 /* Hide old themed header background while transitioning */
 .cartolmm-header { background: none; box-shadow:none; padding:0; }
@@ -716,6 +721,7 @@ html, body, #cartolmm-app, .map-container, .leaflet-map {
 .leaflet-popup-content-wrapper {
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-lg);
+  text-align: center;
 }
 
 .leaflet-popup-content {
