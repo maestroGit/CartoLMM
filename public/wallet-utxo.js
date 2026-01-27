@@ -450,4 +450,5 @@ document.getElementById('wallet-import').addEventListener('click', async () => {
       }
       balanceEl.textContent = String(total);
       console.log('[WALLET][IMPORT][POPUP] Wallet importada y UTXOs mostrados.');
-    } catch (decryptErr) {
+
+});
