@@ -1,6 +1,11 @@
   // --- Insertar card de usuario al inicio del popup ---
 console.log('[WALLET][INIT] wallet-utxo.js cargado y ejecutándose');
 
+// --- Helper para convertir hex a buffer ---
+function hexToBuf(hex) {
+  return new Uint8Array(hex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
+}
+
 // --- Inicialización dinámica en popups de Leaflet ---
 function initWalletPopupLogic(popupNode) {
     // Buscar el nodo .user-popup para obtener los atributos correctos
@@ -140,11 +145,26 @@ function initWalletPopupLogic(popupNode) {
       statusEl.textContent = 'Wallet cargada';
       statusEl.style.color = '#2a2';
       // --- Fetch y mostrar UTXOs ---
-      const utxos = await fetchUTXOs(walletState.pub);
+      const utxoResult = await fetchUTXOs(walletState.pub);
+      // Nueva estructura: { utxos, utxosPendientes }
+      const utxos = utxoResult?.utxos || (Array.isArray(utxoResult) ? utxoResult : []);
+      const utxosPendientes = utxoResult?.utxosPendientes || [];
       walletState.utxos = utxos;
+      walletState.utxosPendientes = utxosPendientes;
       let total = 0;
       utxoListEl.innerHTML = '';
+      
+      // Renderizar UTXOs disponibles
       if (Array.isArray(utxos) && utxos.length > 0) {
+        // Encabezado de UTXOs disponibles
+        const availableHeader = document.createElement('div');
+        availableHeader.style.fontWeight = 'bold';
+        availableHeader.style.color = '#5fd3a5';
+        availableHeader.style.marginBottom = '8px';
+        availableHeader.style.fontSize = '0.95em';
+        availableHeader.textContent = 'Disponibles:';
+        utxoListEl.appendChild(availableHeader);
+        
         utxos.forEach((u, i) => {
           total += u.amount || 0;
           const div = document.createElement('div');
@@ -249,9 +269,49 @@ function initWalletPopupLogic(popupNode) {
           }
           utxoListEl.appendChild(div);
         });
-      } else {
+      }
+      
+      // Renderizar UTXOs pendientes
+      if (Array.isArray(utxosPendientes) && utxosPendientes.length > 0) {
+        // Encabezado de UTXOs pendientes
+        const pendingHeader = document.createElement('div');
+        pendingHeader.style.fontWeight = 'bold';
+        pendingHeader.style.color = '#fdb45d';
+        pendingHeader.style.marginTop = '16px';
+        pendingHeader.style.marginBottom = '8px';
+        pendingHeader.style.fontSize = '0.95em';
+        pendingHeader.textContent = 'Pendientes:';
+        utxoListEl.appendChild(pendingHeader);
+        
+        utxosPendientes.forEach((u, i) => {
+          // No se suman al total porque están pendientes
+          const div = document.createElement('div');
+          div.className = 'utxo-container wallet-utxo-container';
+          div.style.opacity = '0.7';
+          
+          // Etiqueta de pendiente en lugar de checkbox
+          const pendingLabel = document.createElement('span');
+          pendingLabel.style.color = '#fdb45d';
+          pendingLabel.style.fontSize = '0.85em';
+          pendingLabel.style.fontWeight = 'bold';
+          pendingLabel.textContent = '[PENDIENTE]';
+          
+          // Label
+          const label = document.createElement('label');
+          label.style = 'flex:1;cursor:pointer;display:flex;align-items:center;gap:8px;';
+          label.innerHTML = `<span style=\"font-weight:500;\">${u.amount}</span> <span class=\"wallet-utxo-label\">${u.txId} #${u.outputIndex}</span>`;
+          label.prepend(pendingLabel);
+          
+          div.appendChild(label);
+          utxoListEl.appendChild(div);
+        });
+      }
+      
+      // Mostrar mensaje si no hay UTXOs
+      if ((!Array.isArray(utxos) || utxos.length === 0) && (!Array.isArray(utxosPendientes) || utxosPendientes.length === 0)) {
         utxoListEl.innerHTML = '<span class=\"muted\">No hay UTXOs disponibles.</span>';
       }
+      
       balanceEl.textContent = String(total);
       console.log('[WALLET][IMPORT][POPUP] Wallet importada y UTXOs mostrados.');
     } catch (err) {
