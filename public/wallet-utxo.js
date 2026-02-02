@@ -394,13 +394,14 @@ let walletState = {
   pub: null,
   priv: null,
   utxos: [],
+  utxosPendientes: [],
   loaded: false
 };
 
 // --- Limpiar estado y UI ---
 function resetWalletUI() {
   console.log('[WALLET][RESET] Limpiando estado y UI');
-  walletState = { pub: null, priv: null, utxos: [], loaded: false };
+  walletState = { pub: null, priv: null, utxos: [], utxosPendientes: [], loaded: false };
   document.getElementById('wallet-file').value = '';
   document.getElementById('wallet-passphrase').value = '';
   document.getElementById('wallet-badge').style.display = 'none';
