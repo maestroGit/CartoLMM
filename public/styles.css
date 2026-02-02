@@ -23,13 +23,11 @@
     top: 8px !important;
     right: 8px !important;
     z-index: 3000 !important;
-    font-size: 1.7em !important;
     background: var(--brand-accent) !important;
-    color: #1F2937 !important;
+    color: #fff !important;
     border-radius: 50% !important;
     width: 48px !important;
     height: 48px !important;
-    line-height: 48px !important;
     box-shadow: 0 2px 12px #0003 !important;
     display: flex !important;
     align-items: center !important;
@@ -39,25 +37,43 @@
     transition: background 0.2s, color 0.2s;
     padding: 0 !important;
     text-align: center !important;
+    cursor: pointer !important;
   }
-  #toggle-metrics::after {
+  #toggle-metrics span {
+    display: inline-block;
+    position: relative;
+    width: 24px;
+    height: 16px;
+  }
+  #toggle-metrics span::before,
+  #toggle-metrics span::after,
+  #toggle-metrics span {
     content: '';
-    display: inline-block;
-    width: 2px;
-    height: 100%;
-    vertical-align: middle;
+    display: block;
+    height: 2px;
+    background: #fff !important;
+    border-radius: 1px;
+    margin: 4px 0;
+    transition: all 0.3s;
   }
-  #toggle-metrics span, #toggle-metrics svg, #toggle-metrics i {
-    margin-left: 2px !important;
-    margin-right: 0 !important;
-    display: inline-block;
-    text-align: center;
-    width: 100%;
+  #toggle-metrics span::before {
+    content: '';
+  }
+  #toggle-metrics span::after {
+    content: '';
   }
   #toggle-metrics:active, #toggle-metrics:focus {
     background: #fff !important;
     color: var(--brand-accent) !important;
     outline: 2px solid var(--brand-accent) !important;
+  }
+  #toggle-metrics:active span,
+  #toggle-metrics:active span::before,
+  #toggle-metrics:active span::after,
+  #toggle-metrics:focus span,
+  #toggle-metrics:focus span::before,
+  #toggle-metrics:focus span::after {
+    background: var(--brand-accent) !important;
   }
 }
 @media (max-width: 700px) {
@@ -348,7 +364,7 @@ body {
 .logo-icon.white { filter: invert(1) brightness(1.35) contrast(1.05); background-color: rgba(255,255,255,0.12); padding:6px; border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,0.35); transition: transform 420ms cubic-bezier(.2,.9,.2,1); }
 .logo-icon.white:hover { transform: scale(1.08) rotate(8deg); }
 .nav { margin-left:auto; display:flex; gap:6px; }
-.nav .btn, .control-btn.unified-btn { display:inline-block; padding:10px 16px; border-radius:8px; text-decoration:none; background: var(--brand-accent); color:#fff !important; font-weight:600; border:1px solid rgba(0,0,0,0.08); transition: all .25s ease; font-size:.85rem; line-height:1; }
+.nav .btn, .control-btn.unified-btn { display:inline-block; padding:10px 16px; border-radius:8px; text-decoration:none; background: none; color:#fff !important; font-weight:600; border:1px solid rgba(0,0,0,0.08); transition: all .25s ease; font-size:.85rem; line-height:1; }
 .nav .btn:hover, .nav .btn:focus, .control-btn.unified-btn:hover, .control-btn.unified-btn:focus { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff !important; outline:none; }
 .nav .btn.active { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff !important; border:1px solid rgba(var(--btn-hover-start-rgb),.9); }
 
@@ -357,7 +373,7 @@ body {
 
 /* Map control button reset to unified style */
 .header-controls { gap:6px; }
-.header-controls .control-btn { background: var(--brand-accent); border:1px solid rgba(0,0,0,0.08); color:#08101a; font-weight:600; padding:10px 14px; border-radius:8px; font-size:.75rem; }
+.header-controls .control-btn { background: none; border:1px solid rgba(0,0,0,0.08); color:#08101a; font-weight:600; padding:10px 14px; border-radius:8px; font-size:.75rem; }
 .header-controls .control-btn:hover { background: linear-gradient(180deg,var(--btn-hover-start) 0%,var(--btn-hover-end) 100%); color:#fff; }
 
 
