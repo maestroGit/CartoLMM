@@ -160,25 +160,24 @@ class UserMarker {
         <!-- Wallet UTXO UI (colapsable) -->
         ${userType !== 'bodega' ? `
         <details style="margin:2px 0 0 0;">
-          <summary style="cursor:pointer;font-weight:500;">Open wallet</summary>
+          <summary style="cursor:pointer;font-weight:510;">Wallet</summary>
           <div class="wallet-section" style="width:100%;max-width:420px;margin:0 auto;">
             <div class="wallet-import-controls" style="display:flex;flex-direction:column;gap:8px;">
-              <label for="wallet-file-${this.data.id || userType}" style="font-weight:500;">Importar keystore (.json):</label>
+              <label for="wallet-file-${this.data.id || userType}" </label>
               <div class="custom-file-input-wrapper">
                 <input type="file" id="wallet-file-${this.data.id || userType}" accept="application/json" style="display:none;">
-                <button type="button" id="wallet-file-btn-${this.data.id || userType}" class="wallet-btn">Seleccionar archivo</button>
+                <button type="button" id="wallet-file-btn-${this.data.id || userType}" class="wallet-btn">Select file</button>
                 <span id="wallet-file-name-${this.data.id || userType}" class="wallet-file-name" style="margin-left:10px;color:#FFA726;font-size:0.95em;"></span>
               </div>
-              <label for="wallet-passphrase-${this.data.id || userType}" style="font-weight:500;">Passphrase para descifrar:</label>
+              <label for="wallet-passphrase-${this.data.id || userType}" style="font-weight:500;">Passphrase</label>
               <input type="password" id="wallet-passphrase-${this.data.id || userType}" placeholder="Passphrase" class="wallet-input">
-              <button id="wallet-import" class="wallet-btn">Importar PublicKey</button>
-              <button id="wallet-reset" class="wallet-btn" style="display:none;">Cambiar wallet</button>
+              <button id="wallet-import" class="wallet-btn">Import PublicKey</button>
+              <button id="wallet-reset" class="wallet-btn" style="display:none;">Change wallet</button>
               <span class="wallet-badge" id="wallet-badge" style="display:none;">Wallet loaded</span>
-              <button id="wallet-history" class="wallet-btn" style="display:none;">Historial</button>
+              <button id="wallet-history" class="wallet-btn" style="display:none;">History</button>
             </div>
             <div class="wallet-status" id="wallet-status"></div>
             <div class="wallet-balance-area" style="margin-top:10px;">
-              <strong>Balance:</strong> <span id="wallet-balance">0</span>
             </div>
             <div class="wallet-utxos-area" style="margin-top:10px;">
               <strong>UTXOs:</strong>

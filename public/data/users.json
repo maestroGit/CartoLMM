@@ -345,6 +345,38 @@
 } 
   ,
   {
+  "id": "oauth_025",
+  "provider": "google",
+  "nombre": "FyA",
+  "descripcion": "Fya bodegas",
+  "web": "www.fya.com/",
+  "email": "hotel@fya.com",
+  "localizacion": {
+    "direccion": "Valcavado de Roa, Pedrosa de Duero, Burgos, España",
+    "lat": 42.41917,
+    "lng": -2.55410
+  },
+  "categorias": ["bodega"],
+  "img-bottle": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSweEJzGEKi4-xmkx_avZr7W4bb8drFvXKUK0NARnFaQskuCib8SueKdonI5gFm57bV88_Hpn3GNuuQ-SJmTkMgPGwyPT-YeOGpe8qBdMkdMGPteEbMellHagONSZ6JypzUd3gkS8g=s680-w680-h510-rw",
+  "wallets": [
+    {
+      "id": "w_025",
+      "address": "",
+      "status": "active",
+      "usuarioId": "oauth_025",
+      "fechaVinculacion": "2025-04-14T09:00:00Z",
+      "type": "bodega"
+    }
+  ],
+  "blockchainActive": true,
+  "registrado": true,
+  "fechaRegistro": "2025-04-14T08:45:00Z"
+    ,"userCard": {
+      "img": "/public/images/fya.png"
+    }
+} 
+  ,
+  {
     "id": "oauth_014",
     "provider": "google",
     "nombre": "Arctic Cellars",

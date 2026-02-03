@@ -74,11 +74,11 @@
   background-color: #FFA726 !important;
   color: #2B0F13 !important;
   border: none !important;
-  border-radius: 8px !important;
-  padding: 12px 28px !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  box-shadow: 0 2px 8px #FFA72644 !important;
+  border-radius: 6px !important;
+  padding: 4px 14px !important;
+  font-size: 0.98em !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
   cursor: pointer !important;
   transition: background-color 0.3s, color 0.3s !important;
 }
