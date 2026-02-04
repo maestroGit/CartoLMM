@@ -81,14 +81,33 @@ class UserMarker {
   }
 
   attachPopup() {
+        // Inyectar CSS para ajustar el fondo blanco del wrapper en modo claro y evitar el saliente
+        if (!document.getElementById('user-popup-media-style')) {
+          const style = document.createElement('style');
+          style.id = 'user-popup-media-style';
+          style.innerHTML = `
+            @media (prefers-color-scheme: light) {
+              .peer-leaflet-popup .leaflet-popup-content-wrapper {
+                background: rgba(255,255,255,0.95) !important;
+                color: #1F2937;
+                max-width: 370px !important;
+                min-width: 270px !important;
+                width: 370px !important;
+                box-sizing: border-box;
+                padding: 0 !important;
+              }
+            }
+          `;
+          document.head.appendChild(style);
+        }
     const categorias = this.data.categorias
       .map(cat => `<span class="categoria-tag categoria-${cat}">${cat}</span>`)
       .join(' ');
 
     const wallets = this.data.wallets && this.data.wallets.length > 0
       ? this.data.wallets.map((w, idx) => `
-          <div class="wallet-item" style="display:flex;align-items:center;gap:8px;">
-            <code style="word-break:break-all;white-space:pre-wrap;user-select:all;">${w.address}</code>
+          <div class="wallet-item" style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+            <code style="word-break:break-all;white-space:pre-wrap;user-select:all;margin-bottom:0;">${w.address}</code>
             <div style="display:flex;align-items:center;gap:6px;">
               <button class="balance-btn-user-popup" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Balance</button>
               <div class="wallet-balance-result" id="wallet-balance-result-${this.data.id || idx}"></div>
@@ -153,7 +172,6 @@ class UserMarker {
         ${userType === 'bodega' ? imagenDivBodega : ''}
         ${userType === 'bodega' ? `<h3 class="bodega-img-title">${this.data.nombre}</h3>` : ''}
        
-        ${userType !== 'bodega' ? blockchainStatus : ''}
         <div class="wallets-section">
           ${wallets}
         </div>
@@ -169,15 +187,18 @@ class UserMarker {
                 <button type="button" id="wallet-file-btn-${this.data.id || userType}" class="wallet-btn">Select file</button>
                 <span id="wallet-file-name-${this.data.id || userType}" class="wallet-file-name" style="margin-left:10px;color:#FFA726;font-size:0.95em;"></span>
               </div>
-              <label for="wallet-passphrase-${this.data.id || userType}" style="font-weight:500;">Passphrase</label>
-              <input type="password" id="wallet-passphrase-${this.data.id || userType}" placeholder="Passphrase" class="wallet-input">
-              <button id="wallet-import" class="wallet-btn">Import PublicKey</button>
+              <div class="wallet-import-group" id="wallet-import-group-${this.data.id || userType}">
+                <label for="wallet-passphrase-${this.data.id || userType}" style="font-weight:500;">Passphrase</label>
+                <input type="password" id="wallet-passphrase-${this.data.id || userType}" placeholder="Passphrase" class="wallet-input">
+                <button id="wallet-import" class="wallet-btn">Import PublicKey</button>
+              </div>
               <button id="wallet-reset" class="wallet-btn" style="display:none;">Change wallet</button>
               <span class="wallet-badge" id="wallet-badge" style="display:none;">Wallet loaded</span>
               <button id="wallet-history" class="wallet-btn" style="display:none;">History</button>
             </div>
             <div class="wallet-status" id="wallet-status"></div>
             <div class="wallet-balance-area" style="margin-top:10px;">
+              <strong>Balance:</strong> <span id="wallet-balance">0</span>
             </div>
             <div class="wallet-utxos-area" style="margin-top:10px;">
               <strong>UTXOs:</strong>
@@ -191,18 +212,81 @@ class UserMarker {
           <p class="footer-popup-item">Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()} - ${categorias}</p>
           <p class="footer-popup-item"><strong>Email:</strong> ${this.data.email}</p>
           ${userType === 'bodega' ? `<p class=\"footer-popup-item\"><strong>Web:</strong> <a href=\"https://${this.data.web}\" target=\"_blank\" rel=\"noopener\">${this.data.web}</a></p>` : ''}
-          ${userType === 'bodega' && this.data.blockchainActive ? `<p class=\"footer-popup-item\">🟢 Blockchain activa</p>` : ''}
+          ${(userType === 'bodega' || userType === 'winelover') && this.data.blockchainActive ? `<p class=\"footer-popup-item\">🟢 Blockchain activa</p>` : ''}
         </div>
       </div>
     `;
 
     this.marker.bindPopup(popupContent, {
-      maxWidth: 800,
-      minWidth: 440,
-      className: 'peer-leaflet-popup user-custom-popup'
+      maxWidth: 370,
+      minWidth: 270,
+      className: 'peer-leaflet-popup user-custom-popup',
     });
+
+    // Inyectar CSS para forzar el ancho de todos los popups y reducir espacio entre wallet y descripción
+    if (!document.getElementById('user-popup-width-style')) {
+      const style = document.createElement('style');
+      style.id = 'user-popup-width-style';
+      style.innerHTML = `
+        .leaflet-popup-content,
+        .leaflet-popup-content .user-popup {
+          max-width: 370px !important;
+          min-width: 270px !important;
+          width: 370px !important;
+          box-sizing: border-box;
+          overflow-x: hidden !important;
+        }
+        .user-popup {
+          width: 370px !important;
+          max-width: 370px !important;
+          min-width: 270px !important;
+          box-sizing: border-box;
+        }
+        .leaflet-popup-content-wrapper.peer-leaflet-popup.user-custom-popup {
+          padding: 0;
+        }
+        .wallet-item code {
+          word-break: break-all;
+          white-space: normal !important;
+          overflow-x: auto;
+          width: 100%;
+          max-width: 100%;
+          display: block;
+          margin-bottom: 0 !important;
+          box-sizing: border-box;
+        }
+        .user-card-description {
+          margin-top: 6px !important;
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        .wallet-item {
+          margin-bottom: 2px !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Inyectar CSS para ajustar el ancho del popup al de .user-popup
+    if (!document.getElementById('user-popup-width-style')) {
+      const style = document.createElement('style');
+      style.id = 'user-popup-width-style';
+      style.innerHTML = `
+        .leaflet-popup-content .user-popup {
+          max-width: 370px !important;
+          min-width: 270px !important;
+          width: 370px !important;
+          box-sizing: border-box;
+        }
+        .leaflet-popup-content-wrapper.peer-leaflet-popup.user-custom-popup {
+          padding: 0;
+        }
+      `;
+      document.head.appendChild(style);
+    }
     // File input custom trigger logic: usar evento popupopen para asegurar funcionalidad
-    this.marker.on('popupopen', function() {
+    this.marker.on('popupopen', function(e) {
       setTimeout(() => {
         // Usar el id guardado en el marcador
         const id = this._userUniqueId;
@@ -221,7 +305,46 @@ class UserMarker {
             console.log('[UserMarker][popupopen] file selected:', fileInput.files[0]);
           };
         }
-      }, 100);
+
+        // Lógica para ocultar campos de passphrase/import si la wallet está cargada
+        const importGroup = document.getElementById('wallet-import-group-' + id);
+        const walletStatus = document.getElementById('wallet-status');
+        function updateImportGroupVisibility() {
+          if (walletStatus && /wallet\s*cargada/i.test(walletStatus.textContent) && importGroup) {
+            importGroup.style.display = 'none';
+          } else if (importGroup) {
+            importGroup.style.display = '';
+          }
+        }
+        updateImportGroupVisibility();
+        // Observar cambios en el wallet-status
+        if (walletStatus && typeof MutationObserver !== 'undefined') {
+          const observer = new MutationObserver(() => {
+            updateImportGroupVisibility();
+          });
+          observer.observe(walletStatus, { childList: true, subtree: true, characterData: true });
+        }
+
+        // Centrar verticalmente la popup en la vista
+        try {
+          const map = e.target._map;
+          const popup = map._popup;
+          if (popup && popup._container) {
+            const popupRect = popup._container.getBoundingClientRect();
+            const mapRect = map.getContainer().getBoundingClientRect();
+            // Diferencia entre el centro de la popup y el centro del mapa
+            const popupCenterY = popupRect.top + popupRect.height / 2;
+            const mapCenterY = mapRect.top + mapRect.height / 2;
+            const offsetY = popupCenterY - mapCenterY;
+            // Panear el mapa para centrar la popup verticalmente
+            if (Math.abs(offsetY) > 10) {
+              map.panBy([0, offsetY], {animate: true});
+            }
+          }
+        } catch (err) {
+          console.warn('[UserMarker][popupopen] Error centrando popup:', err);
+        }
+      }, 120);
     });
 
     // Inyectar función global para obtener balance si no existe
