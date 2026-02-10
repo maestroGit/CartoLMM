@@ -79,6 +79,19 @@ function initWalletPopupLogic(popupNode) {
     if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
     if (balanceEl) balanceEl.textContent = '0';
     if (utxoListEl) utxoListEl.innerHTML = '';
+    
+    // Volver a mostrar el contenedor del botón "Select file"
+    const fileInputWrapper = fileInput?.closest('.custom-file-input-wrapper');
+    if (fileInputWrapper) {
+      fileInputWrapper.style.display = '';
+      console.log('[WALLET][RESET] Botón "Select file" restaurado');
+    }
+    // Volver a mostrar el grupo de import (si es necesario)
+    const importGroup = popupNode.querySelector('.wallet-import-group');
+    if (importGroup) {
+      importGroup.style.display = 'none'; // Mantener oculto hasta que se seleccione archivo
+      console.log('[WALLET][RESET] Grupo de import oculto hasta selección de archivo');
+    }
   }
   resetWalletUI();
 
@@ -144,6 +157,20 @@ function initWalletPopupLogic(popupNode) {
       historyBtn.style.display = '';
       statusEl.textContent = 'Wallet cargada';
       statusEl.style.color = '#2a2';
+      
+      // Ocultar el contenedor del botón "Select file" para limpiar la UI
+      const fileInputWrapper = fileInput?.closest('.custom-file-input-wrapper');
+      if (fileInputWrapper) {
+        fileInputWrapper.style.display = 'none';
+        console.log('[WALLET][UI] Botón "Select file" ocultado tras carga exitosa');
+      }
+      // Ocultar también el grupo de import (passphrase + botón Import)
+      const importGroup = popupNode.querySelector('.wallet-import-group');
+      if (importGroup) {
+        importGroup.style.display = 'none';
+        console.log('[WALLET][UI] Grupo de import ocultado tras carga exitosa');
+      }
+      
       // --- Fetch y mostrar UTXOs ---
       const utxoResult = await fetchUTXOs(walletState.pub);
       // Nueva estructura: { utxos, utxosPendientes }
@@ -158,17 +185,56 @@ function initWalletPopupLogic(popupNode) {
       if (Array.isArray(utxos) && utxos.length > 0) {
         // Encabezado de UTXOs disponibles
         const availableHeader = document.createElement('div');
-        availableHeader.style.fontWeight = 'bold';
-        availableHeader.style.color = '#5fd3a5';
-        availableHeader.style.marginBottom = '8px';
-        availableHeader.style.fontSize = '0.95em';
-        availableHeader.textContent = 'Disponibles:';
+        availableHeader.style.cssText = `
+          font-weight: 700;
+          color: #5fd3a5;
+          margin-bottom: 16px;
+          margin-top: 8px;
+          font-size: 16px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid rgba(95,211,165,0.3);
+        `;
+        availableHeader.textContent = '✓ Disponibles';
         utxoListEl.appendChild(availableHeader);
         
         utxos.forEach((u, i) => {
           total += u.amount || 0;
           const div = document.createElement('div');
           div.className = 'utxo-container wallet-utxo-container';
+          
+          // Estilos mejorados para dar más protagonismo
+          div.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, rgba(95,211,165,0.1) 0%, rgba(95,211,165,0.05) 100%);
+            border: 2px solid rgba(95,211,165,0.3);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+          `;
+          
+          // Hover effect
+          div.onmouseenter = () => {
+            div.style.transform = 'translateY(-2px)';
+            div.style.boxShadow = '0 6px 20px rgba(95,211,165,0.3)';
+            div.style.borderColor = 'rgba(95,211,165,0.6)';
+          };
+          div.onmouseleave = () => {
+            div.style.transform = 'translateY(0)';
+            div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            div.style.borderColor = 'rgba(95,211,165,0.3)';
+          };
+          
+          // Fila superior: checkbox + monto destacado
+          const topRow = document.createElement('div');
+          topRow.style.cssText = 'display: flex; align-items: center; width: 100%; gap: 12px; justify-content: center;';
+          
           // Checkbox
           const cb = document.createElement('input');
           cb.type = 'checkbox';
@@ -178,84 +244,126 @@ function initWalletPopupLogic(popupNode) {
           cb.dataset.outputindex = u.outputIndex;
           cb.dataset.amount = u.amount;
           cb.dataset.address = u.address;
-          // Label
-          const label = document.createElement('label');
-          label.htmlFor = cb.id;
-          label.style = 'flex:1;cursor:pointer;';
-          label.innerHTML = `<span style=\"font-weight:500;\">${u.amount}</span> <span class=\"wallet-utxo-label\">${u.txId} #${u.outputIndex}</span>`;
-          // Burn button
+          cb.style.cssText = 'width: 20px; height: 20px; cursor: pointer; accent-color: #5fd3a5;';
+          
+          // Badge del monto (destacado)
+          const amountBadge = document.createElement('div');
+          amountBadge.style.cssText = `
+            font-size: 24px;
+            font-weight: 700;
+            color: #5fd3a5;
+            text-shadow: 0 2px 8px rgba(95,211,165,0.3);
+            letter-spacing: 0.5px;
+          `;
+          amountBadge.textContent = `${u.amount} LMM`;
+          
+          topRow.appendChild(cb);
+          topRow.appendChild(amountBadge);
+          
+          // Info del UTXO (txId + outputIndex) - más compacto
+          const infoRow = document.createElement('div');
+          infoRow.style.cssText = `
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            word-break: break-all;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            max-width: 100%;
+          `;
+          infoRow.textContent = `${u.txId.substring(0, 20)}...${u.txId.substring(u.txId.length - 20)} #${u.outputIndex}`;
+          
+          // Botón Burn (solo si no es winelover con imagen)
           const burnBtn = document.createElement('button');
           burnBtn.textContent = 'Burn';
           burnBtn.className = 'burn-btn';
-          burnBtn.style = 'margin-left:8px;padding:2px 10px;border-radius:4px;background:#c00;color:#fff;border:none;cursor:pointer;';
+          burnBtn.style.cssText = `
+            padding: 8px 24px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #c00 0%, #a00 100%);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(204,0,0,0.3);
+          `;
+          burnBtn.onmouseenter = () => {
+            burnBtn.style.transform = 'scale(1.05)';
+            burnBtn.style.boxShadow = '0 4px 12px rgba(204,0,0,0.5)';
+          };
+          burnBtn.onmouseleave = () => {
+            burnBtn.style.transform = 'scale(1)';
+            burnBtn.style.boxShadow = '0 2px 8px rgba(204,0,0,0.3)';
+          };
           burnBtn.onclick = (e) => {
             e.preventDefault();
             showToast('Funcionalidad Burn no implementada en esta demo');
           };
-          // Si es winelover, añadir la imagen y botón Move después del botón Burn
+          
+          // Estructura común: topRow + infoRow
+          div.appendChild(topRow);
+          div.appendChild(infoRow);
+          
+          // Si es winelover, añadir la imagen y botón Move
           if (userType === 'winelover' && userImg) {
             console.log(`[UTXO][${i}] Añadiendo imagen y botón Move para winelover`, {userImg, utxo: u});
-            // Estructura: checkbox + label + imagen + botones alineados
-            div.style.display = 'flex';
-            div.style.flexDirection = 'column';
-            div.style.alignItems = 'center';
-            div.style.gap = '8px';
-
-            // Fila principal: checkbox y label
-            const row = document.createElement('div');
-            row.style.display = 'flex';
-            row.style.alignItems = 'center';
-            row.style.width = '100%';
-            row.style.gap = '10px';
-
-            // Importe
-            const amountSpan = document.createElement('span');
-            amountSpan.style.fontWeight = '500';
-            amountSpan.textContent = u.amount;
-
-            row.appendChild(cb);
-            row.appendChild(amountSpan);
-            div.appendChild(row);
-
-            // Public key debajo
-            const pubkeyRow = document.createElement('div');
-            pubkeyRow.className = 'wallet-utxo-label';
-            pubkeyRow.style.marginTop = '2px';
-            pubkeyRow.style.fontSize = '0.98em';
-            pubkeyRow.style.wordBreak = 'break-all';
-            pubkeyRow.textContent = `${u.txId} #${u.outputIndex}`;
-            div.appendChild(pubkeyRow);
-
+            
             // Imagen de la botella (img-bottle)
             const imgDiv = document.createElement('div');
-            imgDiv.className = 'user-bottle-img-wrapper bodega-img-full';
-            imgDiv.innerHTML = `<img src="${userBottleImg || '/public/images/default-bottle.png'}" alt="Imagen botella o icono" onclick="window.showZoomImage && window.showZoomImage('${userBottleImg || '/public/images/default-bottle.png'}')">`;
+            imgDiv.className = 'user-bottle-img-wrapper';
+            imgDiv.style.cssText = 'width: 100%; margin-top: 8px; text-align: center;';
+            imgDiv.innerHTML = `<img src="${userBottleImg || '/public/images/default-bottle.png'}" 
+              alt="Imagen botella o icono" 
+              style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);"
+              onclick="window.showZoomImage && window.showZoomImage('${userBottleImg || '/public/images/default-bottle.png'}')">`;
             div.appendChild(imgDiv);
 
-            // Fila de botones: Burn y Move alineados y del mismo tamaño
+            // Fila de botones: Burn y Move alineados
             const btnRow = document.createElement('div');
-            btnRow.style.display = 'flex';
-            btnRow.style.justifyContent = 'center';
-            btnRow.style.alignItems = 'center';
-            btnRow.style.width = '100%';
-            btnRow.style.gap = '8px';
+            btnRow.style.cssText = 'display: flex; justify-content: center; align-items: center; width: 100%; gap: 12px; margin-top: 12px;';
 
-            // Unificar estilos de tamaño
-            burnBtn.style.padding = '6px 22px';
-            burnBtn.style.fontSize = '15px';
-            burnBtn.style.fontWeight = '600';
-            burnBtn.style.margin = '0';
-            burnBtn.style.maxWidth = '';
+            // Actualizar estilos del burnBtn para que coincida con moveBtn
+            burnBtn.style.cssText = `
+              padding: 8px 24px;
+              border-radius: 8px;
+              background: linear-gradient(135deg, #c00 0%, #a00 100%);
+              color: #fff;
+              border: none;
+              cursor: pointer;
+              font-weight: 600;
+              font-size: 14px;
+              transition: all 0.3s ease;
+              box-shadow: 0 2px 8px rgba(204,0,0,0.3);
+            `;
 
             const moveBtn = document.createElement('button');
             moveBtn.className = 'move-btn-user-popup';
             moveBtn.textContent = 'Move';
-            moveBtn.style.padding = '6px 22px';
-            moveBtn.style.fontSize = '15px';
-            moveBtn.style.fontWeight = '600';
-            moveBtn.style.margin = '0';
-            moveBtn.style.maxWidth = '';
-            moveBtn.onclick = () => window.open(`${apiBaseUrl}/demo-wallet/web-demo.html`,'_blank');
+            moveBtn.style.cssText = `
+              padding: 8px 24px;
+              border-radius: 8px;
+              background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);
+              color: #fff;
+              border: none;
+              cursor: pointer;
+              font-weight: 600;
+              font-size: 14px;
+              transition: all 0.3s ease;
+              box-shadow: 0 2px 8px rgba(255,167,38,0.3);
+            `;
+            moveBtn.onmouseenter = () => {
+              moveBtn.style.transform = 'scale(1.05)';
+              moveBtn.style.boxShadow = '0 4px 12px rgba(255,167,38,0.5)';
+            };
+            moveBtn.onmouseleave = () => {
+              moveBtn.style.transform = 'scale(1)';
+              moveBtn.style.boxShadow = '0 2px 8px rgba(255,167,38,0.3)';
+            };
+            moveBtn.onclick = () => window.open(`http://localhost:3000/demo-wallet/web-demo.html`,'_blank');
 
             btnRow.appendChild(burnBtn);
             btnRow.appendChild(moveBtn);
@@ -263,10 +371,13 @@ function initWalletPopupLogic(popupNode) {
 
             console.log(`[UTXO][${i}] Imagen y botones alineados añadidos al contenedor`, div);
           } else {
-            div.appendChild(cb);
-            div.appendChild(label);
-            div.appendChild(burnBtn);
+            // Para bodegas u otros: solo agregar el botón Burn
+            const btnContainer = document.createElement('div');
+            btnContainer.style.cssText = 'width: 100%; display: flex; justify-content: center; margin-top: 8px;';
+            btnContainer.appendChild(burnBtn);
+            div.appendChild(btnContainer);
           }
+          
           utxoListEl.appendChild(div);
         });
       }
@@ -275,34 +386,84 @@ function initWalletPopupLogic(popupNode) {
       if (Array.isArray(utxosPendientes) && utxosPendientes.length > 0) {
         // Encabezado de UTXOs pendientes
         const pendingHeader = document.createElement('div');
-        pendingHeader.style.fontWeight = 'bold';
-        pendingHeader.style.color = '#fdb45d';
-        pendingHeader.style.marginTop = '16px';
-        pendingHeader.style.marginBottom = '8px';
-        pendingHeader.style.fontSize = '0.95em';
-        pendingHeader.textContent = 'Pendientes:';
+        pendingHeader.style.cssText = `
+          font-weight: 700;
+          color: #fdb45d;
+          margin-bottom: 16px;
+          margin-top: 20px;
+          font-size: 16px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid rgba(253,180,93,0.3);
+        `;
+        pendingHeader.textContent = '⏳ Pendientes';
         utxoListEl.appendChild(pendingHeader);
         
         utxosPendientes.forEach((u, i) => {
           // No se suman al total porque están pendientes
           const div = document.createElement('div');
           div.className = 'utxo-container wallet-utxo-container';
-          div.style.opacity = '0.7';
           
-          // Etiqueta de pendiente en lugar de checkbox
-          const pendingLabel = document.createElement('span');
-          pendingLabel.style.color = '#fdb45d';
-          pendingLabel.style.fontSize = '0.85em';
-          pendingLabel.style.fontWeight = 'bold';
-          pendingLabel.textContent = '[PENDIENTE]';
+          // Estilos mejorados para UTXOs pendientes (tema naranja/amarillo)
+          div.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, rgba(253,180,93,0.15) 0%, rgba(253,180,93,0.05) 100%);
+            border: 2px solid rgba(253,180,93,0.4);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(253,180,93,0.2);
+            opacity: 0.85;
+          `;
           
-          // Label
-          const label = document.createElement('label');
-          label.style = 'flex:1;cursor:pointer;display:flex;align-items:center;gap:8px;';
-          label.innerHTML = `<span style=\"font-weight:500;\">${u.amount}</span> <span class=\"wallet-utxo-label\">${u.txId} #${u.outputIndex}</span>`;
-          label.prepend(pendingLabel);
+          // Badge de "PENDIENTE"
+          const pendingBadge = document.createElement('div');
+          pendingBadge.style.cssText = `
+            background: linear-gradient(135deg, #fdb45d 0%, #FB8C00 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(253,180,93,0.4);
+          `;
+          pendingBadge.textContent = 'Pendiente';
           
-          div.appendChild(label);
+          // Fila del monto
+          const amountRow = document.createElement('div');
+          amountRow.style.cssText = `
+            font-size: 22px;
+            font-weight: 700;
+            color: #fdb45d;
+            text-shadow: 0 2px 8px rgba(253,180,93,0.3);
+            letter-spacing: 0.5px;
+          `;
+          amountRow.textContent = `${u.amount} LMM`;
+          
+          // Info del UTXO (txId + outputIndex)
+          const infoRow = document.createElement('div');
+          infoRow.style.cssText = `
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            word-break: break-all;
+            padding: 8px 12px;
+            background: rgba(253,180,93,0.1);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            max-width: 100%;
+          `;
+          infoRow.textContent = `${u.txId.substring(0, 20)}...${u.txId.substring(u.txId.length - 20)} #${u.outputIndex}`;
+          
+          div.appendChild(pendingBadge);
+          div.appendChild(amountRow);
+          div.appendChild(infoRow);
           utxoListEl.appendChild(div);
         });
       }

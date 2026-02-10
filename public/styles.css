@@ -1,3 +1,16 @@
+/* Unificar tamaño de imagen en popup de bodega */
+.bodega-img-full img {
+  width: 320px !important;
+  max-width: 90vw !important;
+  height: 220px !important;
+  max-height: 220px !important;
+  object-fit: contain !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px #0003 !important;
+  background: #2B0F13 !important;
+  display: block !important;
+  margin: 0 auto !important;
+}
 
 /* Forzar centrado de los popups de Leaflet */
 .leaflet-popup-content-wrapper {

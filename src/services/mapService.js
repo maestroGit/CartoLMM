@@ -11,7 +11,7 @@ class MapService {
         this.animations = [];
         this.peerManager = null; // Se inicializará después de crear el mapa
         this.defaultCenter = [41.4168, -1.7038]; // Centro de la vista mapa
-        this.defaultZoom = 3;
+        this.defaultZoom = 2;
     }
 
     /**

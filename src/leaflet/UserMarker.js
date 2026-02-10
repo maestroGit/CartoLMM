@@ -228,22 +228,33 @@ class UserMarker {
       const style = document.createElement('style');
       style.id = 'user-popup-width-style';
       style.innerHTML = `
-        .leaflet-popup-content,
-        .leaflet-popup-content .user-popup {
+        .leaflet-popup-content {
           max-width: 370px !important;
           min-width: 270px !important;
           width: 370px !important;
-          box-sizing: border-box;
+          box-sizing: border-box !important;
           overflow-x: hidden !important;
+          padding: 0 !important;
+          margin: 0 !important;
         }
         .user-popup {
           width: 370px !important;
           max-width: 370px !important;
           min-width: 270px !important;
-          box-sizing: border-box;
+          box-sizing: border-box !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          overflow-x: hidden !important;
         }
-        .leaflet-popup-content-wrapper.peer-leaflet-popup.user-custom-popup {
-          padding: 0;
+        .leaflet-popup-content-wrapper {
+          padding: 0 !important;
+          box-sizing: border-box !important;
+        }
+        .peer-leaflet-popup .leaflet-popup-content-wrapper {
+          width: 370px !important;
+          max-width: 370px !important;
+          min-width: 270px !important;
+          padding: 0 !important;
         }
         .wallet-item code {
           word-break: break-all;
@@ -354,9 +365,15 @@ class UserMarker {
           console.warn('[Balance] No address provided');
           return;
         }
+        console.log('[Balance] btn recibido:', btn);
         const resultDiv = btn.nextElementSibling;
+        console.log('[Balance] resultDiv (nextElementSibling):', resultDiv);
+        
         if (resultDiv) {
           resultDiv.textContent = 'Consultando...';
+          console.log('[Balance] Texto inicial establecido: "Consultando..."');
+        } else {
+          console.error('[Balance] ❌ No se encontró resultDiv (nextElementSibling del botón)');
         }
         console.log('[Balance] Solicitando balance para address:', address);
           fetch(`/api/balance?address=${encodeURIComponent(address)}`)
@@ -381,14 +398,29 @@ class UserMarker {
                 return;
               }
               console.log('[Balance] Respuesta JSON:', data);
+              console.log('[Balance] resultDiv existe:', !!resultDiv);
+              console.log('[Balance] resultDiv element:', resultDiv);
+              
               if (resultDiv) {
+                console.log('[Balance] Validando datos...');
+                console.log('[Balance] - data existe:', !!data);
+                console.log('[Balance] - data.success:', data?.success);
+                console.log('[Balance] - data.data existe:', !!data?.data);
+                console.log('[Balance] - data.data.balance:', data?.data?.balance);
+                console.log('[Balance] - typeof balance:', typeof data?.data?.balance);
+                
                 if (data && data.success && data.data && typeof data.data.balance !== 'undefined') {
+                  console.log('[Balance] ✅ Actualizando DOM con balance:', data.data.balance);
                   resultDiv.textContent = data.data.balance;
                   resultDiv.style.color = '#222';
+                  console.log('[Balance] ✅ DOM actualizado. Nuevo texto:', resultDiv.textContent);
                 } else {
+                  console.warn('[Balance] ⚠️ Condición fallida, mostrando "Balance no disponible"');
                   resultDiv.textContent = 'Balance no disponible';
                   resultDiv.style.color = '#a22';
                 }
+              } else {
+                console.error('[Balance] ❌ resultDiv no encontrado en el DOM');
               }
             })
             .catch((err) => {

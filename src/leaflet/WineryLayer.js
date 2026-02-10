@@ -1,80 +1,92 @@
-// WineryLayer.js
-// Capa Leaflet para mostrar bodegas (amenity=winery) como puntos usando Overpass API
-
+// WineryLayer.js (Leaflet Skill: leaflet-maps)
 export class WineryLayer {
   constructor(map) {
     this.map = map;
     this.layer = L.layerGroup();
     this.visible = false;
-
-    // Enganchar eventos para cargar/limpiar bodegas al activar/desactivar la capa
-    this.layer.on('add', () => {
-      this.show();
-    });
-    this.layer.on('remove', () => {
-      this.hide();
-    });
+    // Hooks de ciclo de vida
+    this.layer.on('add', () => this.show());
+    this.layer.on('remove', () => this.hide());
   }
 
+  // Query robusta: node/way amenity=winery, building=winery, craft=winery, industrial=winery
   async fetchWineries(bounds) {
     const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
     const query = `
       [out:json][timeout:25];
       (
-        node["amenity"="winery"](${bbox});
+        node["amenity"~"winery|cellar"](${bbox});
+        way["amenity"~"winery|cellar"](${bbox});
         node["building"="winery"](${bbox});
-        node["building"="celler"](${bbox});
+        way["building"="winery"](${bbox});
         node["craft"="winery"](${bbox});
+        way["craft"="winery"](${bbox});
+        node["industrial"="winery"](${bbox});
+        way["industrial"="winery"](${bbox});
       );
-      out body;
+      out center;
     `;
     const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
     const response = await fetch(url);
-    const data = await response.json();
-    return data;
+    if (!response.ok) throw new Error('Error en Overpass API');
+    return await response.json();
   }
 
   async show() {
     if (!this.map) return;
+    // Optimización: solo cargar si zoom > 12
+    if (this.map.getZoom() < 12) {
+      if (window.hideLoader) window.hideLoader();
+      console.warn('Zoom demasiado bajo para cargar bodegas');
+      return;
+    }
     const bounds = this.map.getBounds();
     this.layer.clearLayers();
-    if (window.showLoader) window.showLoader('Cargando bodegas...');
+    if (window.showLoader) window.showLoader('Buscando bodegas oficiales...');
     try {
       const data = await this.fetchWineries(bounds);
-      if (data.elements && data.elements.length > 0) {
-        data.elements.forEach(el => {
-          if (el.type === 'node' && el.lat && el.lon) {
-            const marker = L.marker([el.lat, el.lon], {
-              title: el.tags && el.tags.name ? el.tags.name : 'Bodega',
-              icon: L.divIcon({
-                className: 'winery-marker',
-                html: '<span class="winery-marker">🍷</span>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-              })
-            });
-            marker.bindPopup(`<strong>${el.tags && el.tags.name ? el.tags.name : 'Bodega'}</strong>`, {
-              maxWidth: 500,
-              minWidth: 340,
-              className: 'peer-leaflet-popup'
-            });
-            this.layer.addLayer(marker);
-          }
-        });
-      }
+      (data.elements || []).forEach(el => {
+        // Overpass 'out center' nos da lat/lon incluso para polígonos (ways)
+        const lat = el.lat || (el.center && el.center.lat);
+        const lon = el.lon || (el.center && el.center.lon);
+        if (lat && lon) {
+          const tags = el.tags || {};
+          const name = tags.name || 'Bodega sin nombre';
+          const website = tags.website ? `<br><a href="${tags.website}" target="_blank" rel="noopener">🌐 Web oficial</a>` : '';
+          // Icono personalizado 🍷
+          const marker = L.marker([lat, lon], {
+            icon: L.divIcon({
+              className: 'winery-marker',
+              html: '<span class="winery-marker">🍷</span>',
+              iconSize: [30, 30],
+              iconAnchor: [15, 15]
+            })
+          });
+          // Popup estilizado + integración blockchain
+          marker.bindPopup(`
+            <div class="winery-popup">
+              <strong style="color: #722f37; font-size: 1.1em;">${name}</strong>
+              <p style="margin: 5px 0; font-size: 0.9em;">📍 Fuente: OpenStreetMap${website}</p>
+              <hr>
+              <button class="btn-blockchain" onclick="window.verifyWinery && window.verifyWinery('${name.replace(/'/g, "\\'")}')">
+                Verificar en Blockchain
+              </button>
+            </div>
+          `, { className: 'peer-leaflet-popup' });
+          this.layer.addLayer(marker);
+        }
+      });
       this.layer.addTo(this.map);
       this.visible = true;
     } catch (e) {
-      console.error('Error cargando bodegas:', e);
+      console.error('Error en WineryLayer:', e);
     } finally {
       if (window.hideLoader) window.hideLoader();
     }
   }
 
   hide() {
-    if (this.map && this.visible) {
-      this.map.removeLayer(this.layer);
-      this.visible = false;
-    }
+    this.visible = false;
+    this.layer.clearLayers();
   }
 }

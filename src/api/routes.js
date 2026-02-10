@@ -6,9 +6,11 @@
 // import { mockData } from '../config/config.js';
 import MagnusmasterAPI from './magnusmasterAPI.js';
 import coordinateService from '../services/coordinateService.js';
+import { config } from '../config/config.js';
 
-// Instancia global del cliente API
-const magnusmasterClient = new MagnusmasterAPI();
+// Instancias de clientes API para magnumsmaster (relay) y magnumslocal (nodo local)
+const magnusmasterClient = new MagnusmasterAPI(config.blockchainApiUrl); // Relay principal (puerto 3001)
+const magnumslocalClient = new MagnusmasterAPI(config.blockchainLocalUrl);  // Nodo local (puerto 6001)
 
 /**
  * Configurar todas las rutas API
@@ -422,9 +424,28 @@ async function handleGetPeers(req, res) {
 
 /**
  * Handler: Pool de transacciones
+ * Intenta obtener datos reales de magnumsmaster, fallback a mock si no disponible
  */
 async function handleGetTransactions(req, res) {
     try {
+        // 1. Intentar obtener transacciones reales de magnumsmaster
+        const response = await magnusmasterClient.getTransactionsPool();
+        console.log(`[API] /api/transactions - respuesta de magnumsmaster:`, response.success ? '✅ OK' : `⚠️ ERROR: ${response.error}`);
+        
+        if (response && response.success && Array.isArray(response.data)) {
+            // Datos reales disponibles
+            return res.json({
+                success: true,
+                data: response.data,
+                count: response.data.length,
+                pendingCount: response.data.filter(t => t.status === 'pending').length,
+                source: 'magnumsmaster',
+                timestamp: response.timestamp || new Date().toISOString()
+            });
+        }
+
+        // 2. Fallback a mock data si magnumsmaster no responde
+        console.warn(`⚠️ [API] /api/transactions - Usando fallback a mock data. Razón: ${response.error || 'Sin datos'}`);
         const mockTransactions = [
             {
                 id: 'tx_pending_001',
@@ -463,20 +484,25 @@ async function handleGetTransactions(req, res) {
             data: mockTransactions,
             count: mockTransactions.length,
             pendingCount: mockTransactions.filter(t => t.status === 'pending').length,
+            source: 'mock',
+            warning: 'Backend magnumsmaster no disponible',
             timestamp: new Date().toISOString()
         });
     } catch (error) {
+        console.error(`❌ [API] /api/transactions - Error:`, error.message);
         handleAPIError(res, error, 'Error obteniendo transacciones');
     }
 }
 
 /**
  * Handler: Balance de dirección
+ * Obtiene balance por dirección con fallback a datos mock
  */
 async function handleGetBalance(req, res) {
     try {
         const { address } = req.query;
         console.log(`[API] /api/balance - address recibida:`, address);
+        
         if (!address) {
             return res.status(400).json({
                 success: false,
@@ -485,33 +511,77 @@ async function handleGetBalance(req, res) {
             });
         }
 
-        // Llama siempre a magnumsmaster para obtener el balance real
-        // Asegura que la dirección se envía como POST JSON
-        const response = await magnusmasterClient.getAddressBalance(address);
-        console.log(`[API] /api/balance - respuesta de magnumsmaster:`, response);
-        if (response && response.success && response.data) {
-            // Si hay datos reales, devuélvelos tal cual
-            return res.json({
-                success: true,
-                data: response.data,
-                timestamp: response.timestamp || new Date().toISOString()
-            });
-        } else {
-            // Si no hay datos reales, devuelve balance cero
+        // Estrategia dual: Intentar primero magnumsmaster (relay), luego magnumslocal
+        // Usar /utxo-balance en lugar de /wallet/address-balance (está roto en producción)
+        console.log(`🔍 [Balance] Consultando magnumsmaster (relay principal)...`);
+        const relayResponse = await magnusmasterClient.getUTXOBalance(address);
+        
+        if (relayResponse && relayResponse.success && relayResponse.data) {
+            console.log(`✅ [Balance] Respuesta exitosa desde magnumsmaster (relay)`);
+            console.log(`📊 [Balance] Datos recibidos:`, relayResponse.data);
+            // Extraer balance de la estructura de UTXOs
+            const utxoData = relayResponse.data;
+            const balance = utxoData.balance || 0; // Campo correcto del backend
+            const utxosCount = (utxoData.utxosDisponibles?.length || 0) + (utxoData.utxosPendientes?.length || 0);
+            console.log(`💰 [Balance] Balance extraído: ${balance}, UTXOs: ${utxosCount}`);
             return res.json({
                 success: true,
                 data: {
                     address: address,
-                    balance: 0,
-                    balanceFormatted: '0 LMM',
-                    lastUpdated: new Date().toISOString(),
-                    transactionCount: 0,
+                    balance: balance,
+                    balanceFormatted: `${balance} LMM`,
+                    lastUpdated: relayResponse.timestamp || new Date().toISOString(),
+                    transactionCount: utxosCount,
                     type: address.includes('bodega') ? 'winery' : 'customer'
                 },
-                timestamp: new Date().toISOString()
+                source: 'magnumsmaster-relay',
+                timestamp: relayResponse.timestamp || new Date().toISOString()
             });
         }
+        console.warn(`⚠️ [Balance] magnumsmaster no disponible. Intentando magnumslocal...`);
+
+        // Segundo intento: magnumslocal (nodo local)
+        const localResponse = await magnumslocalClient.getUTXOBalance(address);
+        
+        if (localResponse && localResponse.success && localResponse.data) {
+            console.log(`✅ [Balance] Respuesta exitosa desde magnumslocal`);
+            const utxoData = localResponse.data;
+            const balance = utxoData.balance || 0; // Campo correcto del backend
+            const utxosCount = (utxoData.utxosDisponibles?.length || 0) + (utxoData.utxosPendientes?.length || 0);
+            return res.json({
+                success: true,
+                data: {
+                    address: address,
+                    balance: balance,
+                    balanceFormatted: `${balance} LMM`,
+                    lastUpdated: localResponse.timestamp || new Date().toISOString(),
+                    transactionCount: utxosCount,
+                    type: address.includes('bodega') ? 'winery' : 'customer'
+                },
+                source: 'magnumslocal',
+                timestamp: localResponse.timestamp || new Date().toISOString()
+            });
+        }
+        console.warn(`⚠️ [Balance] Ambos backends no disponibles`);
+
+        // Fallback: balance cero si ambos backends fallan
+        console.warn(`⚠️ [API] /api/balance - Usando fallback. Relay: ${relayResponse.error || 'Sin datos'}, Local: ${localResponse.error || 'Sin datos'}`);
+        return res.json({
+            success: true,
+            data: {
+                address: address,
+                balance: 0,
+                balanceFormatted: '0 LMM',
+                lastUpdated: new Date().toISOString(),
+                transactionCount: 0,
+                type: address.includes('bodega') ? 'winery' : 'customer'
+            },
+            source: 'fallback',
+            warning: 'Both backends unavailable',
+            timestamp: new Date().toISOString()
+        });
     } catch (error) {
+        console.error(`❌ [API] /api/balance - Error:`, error.message);
         handleAPIError(res, error, 'Error obteniendo balance');
     }
 }
@@ -600,51 +670,76 @@ async function handleGetStatus(req, res) {
 
 /**
  * Handler: Métricas del dashboard
+ * Obtiene métricas combinadas de múltiples endpoints con manejo robusto de fallbacks
  */
 async function handleGetDashboardMetrics(req, res) {
     try {
-        // 1. Obtenemos la info de sistema para capturar la IP/URL real
+        console.log(`[API] /api/dashboard-metrics - Iniciando obtención de métricas...`);
+        
+        // 1. Obtener info de sistema para capturar IP/URL real
         const systemInfoResponse = await magnusmasterClient.getSystemInfo();
         const nodeHttpUrl = systemInfoResponse?.data?.blockchain?.server?.httpUrl || '';
+        console.log(`[API] /api/dashboard-metrics - systemInfo:`, systemInfoResponse.success ? '✅' : '⚠️');
 
-        // 2. Luego, obtenemos las métricas dashboard
+        // 2. Obtener métricas dashboard consolidadas
         const metricsResponse = await magnusmasterClient.getDashboardMetrics();
+        console.log(`[API] /api/dashboard-metrics - getDashboardMetrics:`, metricsResponse.success ? '✅' : '⚠️');
 
-        if (metricsResponse.success) {
-            // 3. Nos aseguramos de que la estructura network exista
-            if (!metricsResponse.metrics.network) {
-                metricsResponse.metrics.network = {};
+        if (metricsResponse.success && metricsResponse.metrics) {
+            // Validar estructura y agregar URL del nodo
+            const metrics = metricsResponse.metrics;
+            
+            // Asegurar que network existe
+            if (!metrics.network) {
+                metrics.network = {};
             }
-            // 4. Añadimos el campo con la IP/URL detectada
-            metricsResponse.metrics.network.nodeHttpUrl = nodeHttpUrl;
+            
+            // Agregar URL detectada del nodo
+            metrics.network.nodeHttpUrl = nodeHttpUrl;
+            
+            // Validar que todas las métricas existan
+            const validatedMetrics = {
+                blocks: metrics.blocks || { success: false, data: null },
+                transactions: metrics.transactions || { success: false, data: null },
+                systemInfo: metrics.systemInfo || { success: false, data: null },
+                balance: metrics.balance || { success: false, data: null },
+                connectionStatus: metrics.connectionStatus || false,
+                network: metrics.network || {},
+                lastUpdate: new Date().toISOString()
+            };
 
-            res.json({
+            console.log(`✅ [API] /api/dashboard-metrics - Métricas obtenidas exitosamente`);
+            return res.json({
                 success: true,
-                data: metricsResponse.metrics,
+                data: validatedMetrics,
                 source: 'magnumsmaster',
                 errors: metricsResponse.errors || [],
                 timestamp: new Date().toISOString()
             });
         } else {
             // Fallback a métricas mock en caso de error
+            console.warn(`⚠️ [API] /api/dashboard-metrics - Usando fallback a mock. Razón: ${metricsResponse.error || 'Sin datos'}`);
+            
             const mockMetrics = {
-                blocks: { success: true, data: { length: 42 } },
-                transactions: { success: true, data: { length: 15 } },
-                systemInfo: { success: true, data: { status: 'mock' } },
-                balance: { success: true, data: { balance: 1000 } },
+                blocks: { success: true, data: { length: 42, lastBlock: { timestamp: new Date().toISOString() } } },
+                transactions: { success: true, data: { length: 15, pending: 3 } },
+                systemInfo: { success: true, data: { status: 'operational', uptime: process.uptime() } },
+                balance: { success: true, data: { balance: 1000, currency: 'LMM' } },
                 connectionStatus: false,
-                lastUpdate: new Date().toISOString(),
-                network: { nodeHttpUrl: nodeHttpUrl } // Incluimos también la url en mocks
+                network: { nodeHttpUrl: nodeHttpUrl || 'unknown' },
+                lastUpdate: new Date().toISOString()
             };
 
-            res.json({
+            return res.json({
                 success: true,
                 data: mockMetrics,
                 source: 'mock',
+                warning: 'Backend magnumsmaster no disponible - usando datos fallback',
                 timestamp: new Date().toISOString()
             });
         }
     } catch (error) {
+        console.error(`❌ [API] /api/dashboard-metrics - Error:`, error.message);
         handleAPIError(res, error, 'Error obteniendo métricas del dashboard');
     }
 }
@@ -695,11 +790,13 @@ async function handleGetGeographicData(req, res) {
 
 /**
  * Handler: Estado de conexión con magnumsmaster
+ * Verifica salud y disponibilidad de endpoints
  */
 async function handleGetMagnusmasterStatus(req, res) {
     try {
         const connectionStatus = magnusmasterClient.getConnectionStatus();
         const healthCheck = await magnusmasterClient.checkHealth();
+        console.log(`[API] /api/magnumsmaster-status - healthCheck:`, healthCheck.connected ? '✅' : '⚠️');
         
         res.json({
             success: true,
@@ -709,13 +806,19 @@ async function handleGetMagnusmasterStatus(req, res) {
                 endpoints: {
                     blocks: `${connectionStatus.baseURL}/blocks`,
                     transactions: `${connectionStatus.baseURL}/transactionsPool`,
-                    balance: `${connectionStatus.baseURL}/balance`,
-                    systemInfo: `${connectionStatus.baseURL}/system-info`
+                    transactionCreate: `${connectionStatus.baseURL}/transaction`,
+                    balanceAddress: `${connectionStatus.baseURL}/wallet/address-balance`,
+                    balanceWallet: `${connectionStatus.baseURL}/wallet/balance`,
+                    publicKey: `${connectionStatus.baseURL}/wallet/public-key`,
+                    systemInfo: `${connectionStatus.baseURL}/system-info`,
+                    utxoBalance: `${connectionStatus.baseURL}/utxo-balance/:address`,
+                    utxoGlobal: `${connectionStatus.baseURL}/utxo-balance/global`
                 }
             },
             timestamp: new Date().toISOString()
         });
     } catch (error) {
+        console.error(`❌ [API] /api/magnumsmaster-status - Error:`, error.message);
         handleAPIError(res, error, 'Error verificando estado de magnumsmaster');
     }
 }
@@ -757,10 +860,13 @@ function handleAPIError(res, error, message) {
 
 /**
  * Handler: UTXOs/balance por dirección
+ * Obtiene UTXOs disponibles y pendientes por dirección con validación robusta
  */
 async function handleGetUTXOBalance(req, res) {
     try {
         const { address } = req.query;
+        console.log(`[API] /api/utxo-balance - address:`, address);
+        
         if (!address) {
             return res.status(400).json({
                 success: false,
@@ -770,28 +876,51 @@ async function handleGetUTXOBalance(req, res) {
         }
 
         const response = await magnusmasterClient.getUTXOBalance(address);
+        console.log(`[API] /api/utxo-balance - respuesta:`, response.success ? '✅' : `⚠️ ${response.error}`);
 
-        if (response && response.success) {
+        if (response && response.success && response.data) {
             const raw = response.data;
-            // Nueva estructura: { address, balance, utxosDisponibles, utxosPendientes }
-            const utxos = Array.isArray(raw.utxosDisponibles) ? raw.utxosDisponibles : [];
+            
+            // Validar y normalizar estructura
+            const utxos = Array.isArray(raw.utxosDisponibles) ? raw.utxosDisponibles : (Array.isArray(raw.utxos) ? raw.utxos : []);
             const utxosPendientes = Array.isArray(raw.utxosPendientes) ? raw.utxosPendientes : [];
             const balance = typeof raw.balance !== 'undefined' ? raw.balance : utxos.reduce((sum, u) => sum + (Number(u.amount) || 0), 0);
 
+            console.log(`✅ [API] /api/utxo-balance - Datos obtenidos: ${utxos.length} disponibles, ${utxosPendientes.length} pendientes, balance: ${balance}`);
+            
             return res.json({
                 success: true,
-                data: { utxos, utxosPendientes, balance },
+                data: { 
+                    address,
+                    utxos, 
+                    utxosPendientes, 
+                    balance,
+                    count: utxos.length,
+                    pendingCount: utxosPendientes.length
+                },
+                source: 'magnumsmaster',
                 timestamp: response.timestamp || new Date().toISOString()
             });
         }
 
         // Fallback seguro
+        console.warn(`⚠️ [API] /api/utxo-balance - Usando fallback. Razón: ${response.error || 'Sin datos'}`);
         return res.json({
             success: true,
-            data: { utxos: [], utxosPendientes: [], balance: 0 },
+            data: { 
+                address,
+                utxos: [], 
+                utxosPendientes: [], 
+                balance: 0,
+                count: 0,
+                pendingCount: 0
+            },
+            source: 'fallback',
+            warning: 'No UTXOs found or backend unavailable',
             timestamp: new Date().toISOString()
         });
     } catch (error) {
+        console.error(`❌ [API] /api/utxo-balance - Error:`, error.message);
         handleAPIError(res, error, 'Error obteniendo UTXOs');
     }
 }

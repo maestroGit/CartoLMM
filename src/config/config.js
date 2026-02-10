@@ -22,9 +22,10 @@ export const config = {
     host: process.env.HOST || '0.0.0.0',
     nodeEnv: process.env.NODE_ENV || 'development',
     
-    // APIs
-    blockchainApiUrl: process.env.BLOCKCHAIN_API_URL || 'http://localhost:3000',
-    apiTimeout: parseInt(process.env.API_TIMEOUT) || 5000,
+    // APIs - magnumsmaster (relay principal) y magnumslocal (nodo local)
+    blockchainApiUrl: process.env.BLOCKCHAIN_API_URL || 'https://app.blockswine.com', // magnumsmaster producción
+    blockchainLocalUrl: process.env.BLOCKCHAIN_LOCAL_URL || 'http://localhost:6001', // magnumslocal
+    apiTimeout: parseInt(process.env.API_TIMEOUT) || 10000, // 10s para requests remotos
     
     // WebSocket
     socketCors: {

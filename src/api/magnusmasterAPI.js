@@ -218,8 +218,8 @@ class MagnusmasterAPI {
    * 💰 Obtener balance de una dirección específica
    */
   async getAddressBalance(address) {
-    const cacheKey = `POST /address-balance ${String(address || '').trim()}`;
-    return await this.makeRequest('/address-balance', {
+    const cacheKey = `POST /wallet/address-balance ${String(address || '').trim()}`;
+    return await this.makeRequest('/wallet/address-balance', {
       method: 'POST',
       body: JSON.stringify({ address }),
       cacheTtlMs: 60000,
@@ -240,14 +240,14 @@ class MagnusmasterAPI {
    * 💳 Obtener balance de la wallet principal
    */
   async getWalletBalance() {
-    return await this.makeRequest('/balance', { cacheTtlMs: 30000 });
+    return await this.makeRequest('/wallet/balance', { cacheTtlMs: 30000 });
   }
 
   /**
    * 🔑 Obtener clave pública del nodo
    */
   async getPublicKey() {
-    return await this.makeRequest('/public-key');
+    return await this.makeRequest('/wallet/public-key');
   }
 
   /**
