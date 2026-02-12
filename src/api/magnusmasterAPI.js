@@ -17,7 +17,7 @@ class MagnusmasterAPI {
     this.retryDelay = 4000; // 4 segundos entre reintentos para mayor estabilidad
     this.cache = new Map();
     this.inflight = new Map();
-    console.log(`🌐 MagnusmasterAPI: Usando baseURL para magnumsmaster: ${this.baseURL}`);
+    // console.log(`🌐 MagnusmasterAPI: Usando baseURL para magnumsmaster: ${this.baseURL}`);
   }
 
   getCacheEntry(key) {
@@ -77,7 +77,7 @@ class MagnusmasterAPI {
         this.isConnected = true;
         this.lastError = null;
         const data = await response.json();
-        console.log('✅ Conexión con magnumsmaster establecida:', data);
+        // console.log('✅ Conexión con magnumsmaster establecida:', data);
         return { connected: true, data };
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -85,7 +85,7 @@ class MagnusmasterAPI {
     } catch (error) {
       this.isConnected = false;
       this.lastError = error.message;
-      console.error('❌ Error conectando con magnumsmaster:', error.message);
+      // console.error('❌ Error conectando con magnumsmaster:', error.message);
       return { connected: false, error: error.message };
     }
   }

@@ -17,7 +17,7 @@ const magnumslocalClient = new MagnusmasterAPI(config.blockchainLocalUrl);  // N
  */
 export async function setupAPIRoutes(app) {
     // Inicializar conexión con magnumsmaster
-    console.log('🔌 Inicializando conexión con magnumsmaster...');
+    // console.log('🔌 Inicializando conexión con magnumsmaster...');
     const connected = await magnusmasterClient.initialize();
     
     if (connected) {
@@ -59,7 +59,7 @@ export async function setupAPIRoutes(app) {
     // API: Proxy a /system-info de magnumsmaster
     app.get('/api/system-info', handleGetSystemInfo);
     
-    console.log('✅ API Routes configuradas');
+    // console.log('✅ API Routes configuradas');
 }
 
 /**
@@ -81,7 +81,7 @@ async function handleGetBlocks(req, res) {
         }
         
         // Fallback a datos mock si magnumsmaster no está disponible
-        console.log('⚠️ Usando datos mock para bloques:', blocksResponse.error);
+        // console.log('⚠️ Usando datos mock para bloques:', blocksResponse.error);
         const mockBlocks = [
             {
                 index: 0,

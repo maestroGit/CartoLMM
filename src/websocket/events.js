@@ -15,15 +15,15 @@ let connectedClients = new Set();
  * Configurar WebSocket events con integración magnumsmaster
  */
 export const setupWebSocket = (io) => {
-  console.log("🔌 Configurando WebSocket con integración blockchain...");
+  // console.log("🔌 Configurando WebSocket con integración blockchain...");
   globalIO = io;
   io.on("connection", (socket) => {
-    console.log("🔗 Cliente conectado:", socket.id);
+    // console.log("🔗 Cliente conectado:", socket.id);
     const clientIp = socket.handshake.address;
     const userAgent = socket.handshake.headers["user-agent"];
-    console.log(
-      `🔗 Cliente conectado: ${socket.id} | IP: ${clientIp} | User-Agent: ${userAgent}`
-    );
+    // console.log(
+    //   `🔗 Cliente conectado: ${socket.id} | IP: ${clientIp} | User-Agent: ${userAgent}`
+    // );
     connectedClients.add(socket.id);
     initializeClientConnection(socket);
     setupClientEventHandlers(socket);
@@ -31,12 +31,12 @@ export const setupWebSocket = (io) => {
     // --- SIMULACIÓN DE TRANSACCIONES MOCK ---
     // startSimulationMode();
     socket.on("disconnect", () => {
-      console.log("❌ Cliente desconectado:", socket.id);
+      // console.log("❌ Cliente desconectado:", socket.id);
       cleanupClient(socket.id);
     });
   });
   initializeMagnusmasterIntegration();
-  console.log("✅ WebSocket configurado con integración blockchain");
+  // console.log("✅ WebSocket configurado con integración blockchain");
   return io;
 };
 
@@ -71,17 +71,17 @@ const initializeClientConnection = async (socket) => {
           },
           timestamp: new Date().toISOString(),
         });
-        console.log(
-          `[WS] Enviado blockchain:initial-data a ${socket.id} - Bloques: ${blocksRes.data.length}, TX: ${txRes.data.length}`
-        );
+        // console.log(
+        //   `[WS] Enviado blockchain:initial-data a ${socket.id} - Bloques: ${blocksRes.data.length}, TX: ${txRes.data.length}`
+        // );
       } else {
-        console.warn(
-          `[WS] No se pudieron obtener datos iniciales para ${socket.id}`
-        );
+        // console.warn(
+        //   `[WS] No se pudieron obtener datos iniciales para ${socket.id}`
+        // );
       }
     }
 
-    console.log(`✅ Cliente ${socket.id} inicializado`);
+    // console.log(`✅ Cliente ${socket.id} inicializado`);
   } catch (error) {
     console.error("❌ Error inicializando cliente:", error);
     socket.emit("system:error", {
@@ -104,17 +104,17 @@ const initializeMagnusmasterIntegration = async () => {
 
     const connected = await magnusmasterAPI.initialize();
     if (connected) {
-      console.log("✅ WebSocket integrado con magnumsmaster");
+      // console.log("✅ WebSocket integrado con magnumsmaster");
       startGlobalBlockchainMonitoring();
     } else {
-      console.log("⚠️ WebSocket en modo standalone (sin magnumsmaster)");
+      // console.log("⚠️ WebSocket en modo standalone (sin magnumsmaster)");
       // startSimulationMode(); // Simulación desactivada
     }
   } catch (error) {
-    console.warn(
-      "⚠️ No se pudo integrar magnumsmaster, usando simulación:",
-      error.message
-    );
+    // console.warn(
+    //   "⚠️ No se pudo integrar magnumsmaster, usando simulación:",
+    //   error.message
+    // );
     // startSimulationMode(); // Simulación desactivada
   }
 };
@@ -123,7 +123,7 @@ const initializeMagnusmasterIntegration = async () => {
  * 🌐 Iniciar monitoreo global de blockchain
  */
 const startGlobalBlockchainMonitoring = () => {
-  console.log("📡 Iniciando monitoreo blockchain global...");
+  // console.log("📡 Iniciando monitoreo blockchain global...");
 
   // Monitorear cambios en bloques cada 30 segundos
   const blockMonitor = setInterval(async () => {
@@ -157,7 +157,7 @@ const startGlobalBlockchainMonitoring = () => {
         });
       }
     } catch (error) {
-      console.error("Error monitoreando transacciones:", error);
+  console.log("Error monitoreando transacciones:", error);
     }
   }, 30000);
 
@@ -187,7 +187,7 @@ const startGlobalBlockchainMonitoring = () => {
  * 🎭 Iniciar modo simulación (sin magnumsmaster)
  */
 const startSimulationMode = () => {
-  console.log("🎬 Iniciando modo simulación blockchain...");
+    console.log("🎬 Iniciando modo simulación blockchain...");
 
   const simulationInterval = setInterval(() => {
     if (connectedClients.size === 0) return;
@@ -240,7 +240,7 @@ const startRealTimeUpdates = (socket) => {
 const broadcastToAllClients = (eventName, data) => {
   if (globalIO && connectedClients.size > 0) {
     globalIO.emit(eventName, data);
-    console.log(`📡 ${eventName} enviado a ${connectedClients.size} clientes`);
+    // console.log(`📡 ${eventName} enviado a ${connectedClients.size} clientes`);
   }
 };
 
@@ -387,7 +387,7 @@ const emitNewTransaction = (socket) => {
   };
 
   socket.emit("blockchain:newTransaction", newTransaction);
-  console.log("📡 Nueva transacción emitida:", newTransaction.id);
+  // console.log("📡 Nueva transacción emitida:", newTransaction.id);
 };
 
 /**
@@ -407,7 +407,7 @@ const emitNewBlock = (socket) => {
   };
 
   socket.emit("blockchain:newBlock", newBlock);
-  console.log("🔗 Nuevo bloque emitido:", newBlock.index);
+  // console.log("🔗 Nuevo bloque emitido:", newBlock.index);
 };
 
 /**
@@ -434,9 +434,9 @@ const emitPeerEvent = (socket) => {
   };
 
   socket.emit("blockchain:peerEvent", peerEvent);
-  console.log(
-    `🌐 Evento peer emitido: ${peerEvent.type} - ${peerEvent.peer.id}`
-  );
+  // console.log(
+  //   `🌐 Evento peer emitido: ${peerEvent.type} - ${peerEvent.peer.id}`
+  // );
 };
 
 /**
