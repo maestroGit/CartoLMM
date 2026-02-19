@@ -51,9 +51,13 @@ class DashboardService {
   // Carga usuarios registrados en el mapa
   async loadUsersOnMap() {
     if (window.userService) {
+      console.log("👥 [UserService] Cargando usuarios para el mapa...");
       const users = await window.userService.loadUsers();
-      window.userService.renderUsersOnMap(users);
+      await window.userService.renderUsersOnMap(users);
+      return;
     }
+
+    console.warn("⚠️ [UserService] userService no inicializado, no se cargan usuarios");
   }
   /**
    * Inicializa todos los servicios necesarios
@@ -70,6 +74,8 @@ class DashboardService {
       window.userService = new window.UserService();
       window.userService.initialize(window.mapService.map);
       console.log("✅ UserService inicializado");
+    } else {
+      console.warn("⚠️ UserService no disponible o mapa no inicializado");
     }
 
     // Inicializar blockchain (si falla, no usar datos mock)
@@ -110,6 +116,7 @@ class DashboardService {
       }
       // Cargar usuarios registrados en el mapa
       if (this.loadUsersOnMap) {
+        console.log("👥 [UserService] Lanzando carga de usuarios...");
         await this.loadUsersOnMap();
       }
 

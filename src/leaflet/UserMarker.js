@@ -14,13 +14,18 @@ class UserMarker {
 
   createMarker() {
     console.log('[UserMarker] createMarker', this.data.localizacion);
+    
+    // Validar que el usuario tenga coordenadas
+    if (!this.data.localizacion || 
+        typeof this.data.localizacion.lat === 'undefined' || 
+        typeof this.data.localizacion.lng === 'undefined') {
+      console.warn('[UserMarker] Usuario sin coordenadas, no se puede crear marcador:', this.data.nombre);
+      return;
+    }
+    
     const icon = this.createIcon();
     
-    const uniqueId = this.data.id || (this.data.categorias && this.data.categorias.includes('wine_lover')
-      ? 'winelover'
-      : (this.data.categorias && this.data.categorias.includes('bodega')
-        ? 'bodega'
-        : 'otro'));
+    const uniqueId = this.data.id || this.data.role || 'unknown';
     this.marker = L.marker([this.data.localizacion.lat, this.data.localizacion.lng], {
       icon: icon,
       title: this.data.nombre
@@ -38,19 +43,31 @@ class UserMarker {
   }
 
   createIcon() {
-    console.log('[UserMarker] createIcon', this.data.categorias);
-    const primaryCategory = this.data.categorias[0];
-    const hasMultipleCategories = this.data.categorias.length > 1;
+    console.log('[UserMarker] createIcon - role:', this.data.role, 'categorias:', this.data.categorias);
+    
+    // Usar role primero (de magnumsmaster), luego categorias como fallback
+    let userType = this.data.role || 'unknown';
+    
+    // Fallback a categorias si role no está disponible
+    if (!userType || userType === 'unknown') {
+      if (Array.isArray(this.data.categorias) && this.data.categorias.length > 0) {
+        userType = this.data.categorias[0];
+      } else {
+        userType = 'default';
+      }
+    }
 
-    // Emojis según categoría
+    // Emojis según tipo de usuario
     const iconMap = {
-      bodega: '🍇',
-      wine_lover: '🍷',
-      minero: '⛏️',
-      default: '👤'
+      wine_lover: '🍷',       // Amante del vino
+      bodega: '🍇',           // Bodega/Productor
+      winery: '🍇',           // Alias de bodega
+      minero: '⛏️',           // Minero
+      default: '🍷',          // Por defecto
+      unknown: '🍷'           // Desconocido
     };
 
-    const emoji = iconMap[primaryCategory] || iconMap.default;
+    const emoji = iconMap[userType] || iconMap.default;
 
     // Badge si tiene blockchain activo
     const blockchainBadge = this.data.blockchainActive 
@@ -59,12 +76,13 @@ class UserMarker {
 
     // Badge de múltiples categorías: si es minero, mostrar ⛏️
     let multiBadge = '';
-    if (hasMultipleCategories && this.data.categorias.includes('minero')) {
+    if (Array.isArray(this.data.categorias) && this.data.categorias.length > 1 && 
+        this.data.categorias.includes('minero')) {
       multiBadge = '<div class="user-multi-badge">⛏️</div>';
     }
 
     const html = `
-      <div class="user-marker user-marker-${primaryCategory}">
+      <div class="user-marker user-marker-${userType}">
         ${emoji}
         ${blockchainBadge}
         ${multiBadge}
@@ -100,7 +118,13 @@ class UserMarker {
           `;
           document.head.appendChild(style);
         }
-    const categorias = this.data.categorias
+    const roleCategory = this.data.role === 'winery'
+      ? 'bodega'
+      : (this.data.role === 'wine_lover' ? 'wine_lover' : null);
+    const categoriasList = Array.isArray(this.data.categorias) && this.data.categorias.length > 0
+      ? this.data.categorias
+      : (roleCategory ? [roleCategory] : []);
+    const categorias = categoriasList
       .map(cat => `<span class="categoria-tag categoria-${cat}">${cat}</span>`)
       .join(' ');
 
@@ -124,12 +148,17 @@ class UserMarker {
       ? `<p><strong>Web:</strong> <a href="https://${this.data.web}" target="_blank" rel="noopener">${this.data.web}</a></p>`
       : '';
 
-    // Imagen: usar campo this.data.userCard.img si existe y no está vacío, si no usar iconoBWred.png o dejar en blanco
+    // Imagen: para winelover sin imagen personalizada, usar imagen fija por defecto
     let imagenSrc = '';
+    const isWineLover = categoriasList && categoriasList.includes('wine_lover');
     if (this.data.userCard && this.data.userCard.img && this.data.userCard.img.trim() !== '') {
       imagenSrc = this.data.userCard.img;
+    } else if (this.data.img_bottle && this.data.img_bottle.trim() !== '') {
+      imagenSrc = this.data.img_bottle;
+    } else if (isWineLover) {
+      imagenSrc = '/public/images/20220704_174927.jpg';
     } else {
-      imagenSrc = '/public/images/iconoBWred.png';
+      imagenSrc = '/images/iconoBWred.png';
     }
     const isExternal = imagenSrc.startsWith('http://') || imagenSrc.startsWith('https://');
     const finalImgSrc = isExternal ? imagenSrc : imagenSrc;
@@ -142,7 +171,9 @@ class UserMarker {
     // Para wine_lover: imagen + botón Move
     const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\">${moveBtn}</div>`;
 
-        const userType = this.data.categorias && this.data.categorias.includes('wine_lover') ? 'winelover' : (this.data.categorias && this.data.categorias.includes('bodega') ? 'bodega' : 'otro');
+        const userType = categoriasList.includes('wine_lover')
+          ? 'winelover'
+          : (categoriasList.includes('bodega') ? 'bodega' : 'otro');
         const uniqueId = this.data.id || userType;
     const userCard = (userType === 'winelover' && finalImgSrc && this.data.nombre) ? `
       <div class="user-card">
@@ -209,7 +240,7 @@ class UserMarker {
         ` : ''}
         <!-- /Wallet UTXO UI -->
         <div class="footer-popup">
-          <p class="footer-popup-item">Registrado: ${new Date(this.data.fechaRegistro).toLocaleDateString()} - ${categorias}</p>
+          <p class="footer-popup-item">Registrado: ${this.formatRegistroFecha()} - ${categorias}</p>
           <p class="footer-popup-item"><strong>Email:</strong> ${this.data.email}</p>
           ${userType === 'bodega' ? `<p class=\"footer-popup-item\"><strong>Web:</strong> <a href=\"https://${this.data.web}\" target=\"_blank\" rel=\"noopener\">${this.data.web}</a></p>` : ''}
           ${(userType === 'bodega' || userType === 'winelover') && this.data.blockchainActive ? `<p class=\"footer-popup-item\">🟢 Blockchain activa</p>` : ''}
@@ -222,7 +253,6 @@ class UserMarker {
       minWidth: 270,
       className: 'peer-leaflet-popup user-custom-popup',
     });
-
     // Inyectar CSS para forzar el ancho de todos los popups y reducir espacio entre wallet y descripción
     if (!document.getElementById('user-popup-width-style')) {
       const style = document.createElement('style');
@@ -432,6 +462,20 @@ class UserMarker {
             });
       };
     }
+  }
+
+  formatRegistroFecha() {
+    const rawFecha = this.data.fechaRegistro || this.data.fecha_registro;
+    if (!rawFecha) {
+      return 'N/D';
+    }
+
+    const parsed = new Date(rawFecha);
+    if (Number.isNaN(parsed.getTime())) {
+      return 'N/D';
+    }
+
+    return parsed.toLocaleDateString();
   }
 
   updateData(newData) {

@@ -201,7 +201,22 @@ class MagnusmasterAPI {
    */
     async getBlocks() {
       const response = await this.makeRequest('/blocks', { cacheTtlMs: 30000 });
-      console.log('[MagnusmasterAPI] Respuesta de /blocks:', response);
+      
+      // Log simplificado: solo información resumida
+      if (response.success && response.data && Array.isArray(response.data)) {
+        const blocks = response.data;
+        const count = blocks.length;
+        if (count > 0) {
+          const first = blocks[0];
+          const last = blocks[count - 1];
+          console.log(`[MagnusmasterAPI] ⛓️  ${count} bloques cargados | Primero: ${first.hash?.substring(0, 12)}... | Último: ${last.hash?.substring(0, 12)}...`);
+        } else {
+          console.log('[MagnusmasterAPI] ⛓️  0 bloques disponibles');
+        }
+      } else if (!response.success) {
+        console.log('[MagnusmasterAPI] ❌ Error obteniendo bloques:', response.error);
+      }
+      
       return response;
     }
 
@@ -210,7 +225,15 @@ class MagnusmasterAPI {
    */
     async getTransactionsPool() {
       const response = await this.makeRequest('/transactionsPool', { cacheTtlMs: 10000 });
-      console.log('[MagnusmasterAPI] Respuesta de /transactionsPool:', response);
+      
+      // Log simplificado: solo contador
+      if (response.success && response.data && Array.isArray(response.data)) {
+        const count = response.data.length;
+        console.log(`[MagnusmasterAPI] 🏊‍♂️ Pool: ${count} transacción${count !== 1 ? 'es' : ''} pendiente${count !== 1 ? 's' : ''}`);
+      } else if (!response.success) {
+        console.log('[MagnusmasterAPI] ❌ Error obteniendo pool:', response.error);
+      }
+      
       return response;
     }
 

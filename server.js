@@ -69,6 +69,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 // (Opcional) Servir también public y src si necesitas acceso directo a esos recursos
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'public/images'))); // ✨ Agregar esta línea
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
 // Función principal async
@@ -87,8 +88,15 @@ async function startServer() {
         // Configurar rutas API (async)
         await setupAPIRoutes(app);
 
-        // Para cualquier ruta NO-API, servir index.html (SPA).
-        // Importante: debe estar DESPUÉS de registrar /api/* para no devolver HTML en endpoints JSON.
+        // Servir archivos HTML adicionales desde public/ (list-winery.html, etc.)
+        // IMPORTANTE: Debe estar ANTES del catch-all para que los .html sean accesibles
+        app.use(express.static(path.join(__dirname, 'public'), {
+            extensions: ['html'],
+            index: false  // No servir index.html automáticamente
+        }));
+
+        // Para cualquier ruta NO-API y NO-archivo-estático, servir index.html (SPA).
+        // Importante: debe estar DESPUÉS de registrar /api/* y archivos estáticos
         app.get(/^\/(?!api\/).*/, (req, res) => {
             const distIndex = path.join(__dirname, 'dist', 'index.html');
             const publicIndex = path.join(__dirname, 'public', 'index.html');
@@ -121,6 +129,9 @@ async function startServer() {
             console.log(`📝 Logging: ${config.logLevel}`);
             console.log('');
             console.log('🔍 APIs disponibles:');
+            console.log('   GET /api/users - Usuarios (proxy a magnumslocal)');
+            console.log('   GET /api/users/:id - Usuario por ID');
+            console.log('   GET /api/users/stats - Estadísticas de usuarios');
             console.log('   GET /api/blocks - Información de bloques');
             console.log('   GET /api/peers - Información de nodos');
             console.log('   GET /api/transactions - Pool de transacciones');

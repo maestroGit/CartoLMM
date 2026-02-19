@@ -6,6 +6,7 @@
 // import { mockData } from '../config/config.js';
 import MagnusmasterAPI from './magnusmasterAPI.js';
 import coordinateService from '../services/coordinateService.js';
+import userRoutes from './routes/userRoutes.js';
 import { config } from '../config/config.js';
 
 // Instancias de clientes API para magnumsmaster (relay) y magnumslocal (nodo local)
@@ -59,7 +60,10 @@ export async function setupAPIRoutes(app) {
     // API: Proxy a /system-info de magnumsmaster
     app.get('/api/system-info', handleGetSystemInfo);
     
-    // console.log('✅ API Routes configuradas');
+    // === USUARIOS (Proxy a magnumslocal) ===
+    app.use('/api/users', userRoutes);
+    
+    console.log('✅ API Routes configuradas (incluyendo /api/users)');
 }
 
 /**

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://lh3.googleusercontent.com https://developers.google.com;">
+    <title>Winery - CartoLMM</title>
+
+    <link rel="stylesheet" type="text/css" href="base.css" />
+    <link rel="stylesheet" type="text/css" href="components.css" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <link rel="stylesheet" href="list-winery.css" />
+    <link rel="icon" href="./images/favicon.png" type="image/png">
+  </head>
+  <body>
+    <!-- Cabecera de navegación -->
+    <header class="site-header">
+      <div class="container">
+        <h1 class="logo">
+          <img
+            src="images/iconoBWred.png"
+            alt="BlocksWine logo"
+            class="logo-icon white"
+          />BlocksWine
+        </h1>
+        <nav class="nav">
+          <a class="btn" href="/"
+            ><span class="metric-value">Map</span></a
+          >
+          <a class="btn" href="https://app.blockswine.com/" target="_blank" rel="noopener noreferrer"
+            ><span class="metric-value">Panel</span></a
+          >
+          <a class="btn" href="https://app.blockswine.com/keystore.html" target="_blank" rel="noopener noreferrer"
+            ><span class="metric-value">Wallet</span></a
+          >
+          <a class="btn active" href="/list-winery.html"
+            ><span class="metric-value">Winery</span></a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main class="winery-main">
+      <div class="winery-container">
+        <!-- Header de la sección -->
+        <div class="winery-header-section">
+          <div class="winery-header-card">
+            <p class="winery-subtitle">Wineries on the BlocksWine Network</p>
+          </div>
+        </div>
+
+        <!-- Filtros avanzados -->
+        <div class="winery-filters-panel">
+          <div class="winery-filters-grid">
+            <!-- Búsqueda por nombre/email -->
+            <div class="filter-group">
+              <label for="searchWinery">🔍 Search</label>
+              <input 
+                type="text" 
+                id="searchWinery" 
+                class="winery-filter-input"
+                placeholder="Name or email..."
+                aria-label="Search winery by name or email"
+              />
+            </div>
+
+            <!-- Filtro KYC Status -->
+            <div class="filter-group">
+              <label for="kycStatus">KYC Status</label>
+              <select id="kycStatus" class="winery-filter-select" aria-label="Filter by KYC status">
+                <option value="">All</option>
+                <option value="none">To verify</option>
+                <option value="verified">Verified</option>
+                <option value="rejected">Rejected</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+
+            <!-- Filtro Suscripción -->
+            <div class="filter-group">
+              <label for="subscriptionStatus">Subscription</label>
+              <select id="subscriptionStatus" class="winery-filter-select" aria-label="Filter by subscription status">
+                <option value="">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <!-- Filtro DO -->
+            <div class="filter-group">
+              <label for="doFilter">DO</label>
+              <select id="doFilter" class="winery-filter-select" multiple size="1" aria-label="Filtrar por denominacion de origen">
+                <option value="" disabled>Selecciona DO</option>
+                <option value="do_rioja">DO Rioja</option>
+                <option value="doca_rioja">DOCa Rioja</option>
+                <option value="do_ribera_duero">DO Ribera del Duero</option>
+                <option value="do_ribeiro">DO Ribeiro</option>
+                <option value="do_rueda">DO Rueda</option>
+                <option value="do_ribera_sacra">DO Ribeira Sacra</option>
+                <option value="do_priorat">DO Priorat</option>
+                <option value="do_penedes">DO Penedes</option>
+                <option value="do_rias_baixas">DO Rias Baixas</option>
+                <option value="do_jerez">DO Jerez</option>
+              </select>
+            </div>
+
+            <!-- Filtro Uva -->
+            <div class="filter-group">
+              <label for="uvaFilter">Grape</label>
+              <select id="uvaFilter" class="winery-filter-select" multiple size="1" aria-label="Filter by grape variety">
+                <option value="" disabled>Select grape</option>
+                <option value="uva_tempranillo">Tempranillo</option>
+                <option value="uva_garnacha">Garnacha</option>
+                <option value="uva_albarino">Albarino</option>
+                <option value="uva_verdejo">Verdejo</option>
+                <option value="uva_mencia">Mencia</option>
+                <option value="uva_cabernet">Cabernet</option>
+                <option value="uva_merlot">Merlot</option>
+                <option value="uva_syrah">Syrah</option>
+                <option value="uva_chardonnay">Chardonnay</option>
+                <option value="uva_sauvignon_blanc">Sauvignon Blanc</option>
+              </select>
+            </div>
+
+            <!-- Filtro Estilo -->
+            <div class="filter-group">
+              <label for="estiloFilter">Style</label>
+              <select id="estiloFilter" class="winery-filter-select" multiple size="1" aria-label="Filter by style">
+                <option value="" disabled>Select style</option>
+                <option value="estilo_tinto">Red</option>
+                <option value="estilo_blanco">White</option>
+                <option value="estilo_rosado">Rosé</option>
+                <option value="estilo_espumoso">Sparkling</option>
+                <option value="estilo_dulce">Sweet</option>
+                <option value="estilo_fortificado">Fortified</option>
+                <option value="estilo_natural">Natural</option>
+              </select>
+            </div>
+
+            <!-- Filtro Medalla -->
+            <div class="filter-group">
+              <label for="medallaFilter">Medal</label>
+              <select id="medallaFilter" class="winery-filter-select" multiple size="1" aria-label="Filter by medal">
+                <option value="" disabled>Select medal</option>
+                <option value="medalla_oro">Gold</option>
+                <option value="medalla_plata">Silver</option>
+                <option value="medalla_bronce">Bronze</option>
+              </select>
+            </div>
+
+            <!-- Ordenamiento -->
+            <div class="filter-group">
+              <label for="sortBy">Sort by</label>
+              <select id="sortBy" class="winery-filter-select" aria-label="Sort results">
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="created-newest">Newest</option>
+                <option value="created-oldest">Oldest</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="winery-filters-actions">
+            <button id="searchButton" class="btn primary">Search Wineries</button>
+            <button id="resetButton" class="btn secondary">Clear Filters</button>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div id="loadingState" class="winery-loading hidden">
+          <div class="loader"></div>
+          <p>Loading wineries...</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorState" class="winery-error hidden">
+          <div class="error-content">
+            <h3>⚠️ Error loading wineries</h3>
+            <p id="errorMessage">Failed to load wineries. Please try again.</p>
+            <button id="retryButton" class="btn primary">Retry</button>
+          </div>
+        </div>
+
+        <!-- Winery list -->
+        <div id="wineryListContainer" class="winery-list-grid">
+          <!-- Will be dynamically filled with JS -->
+        </div>
+
+        <!-- Empty state -->
+        <div id="emptyState" class="winery-empty hidden">
+          <div class="empty-content">
+            <h3>📭 No wineries available</h3>
+            <p>No wineries matching your search were found.</p>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div id="paginationContainer" class="winery-pagination">
+          <!-- Will be dynamically filled with JS -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal de detalles de bodega -->
+    <div id="wineryDetailModal" class="modal hidden">
+      <div class="modal-content winery-modal-content">
+        <button class="modal-close" id="closeWineryModal" aria-label="Cerrar">&times;</button>
+        <div class="winery-detail-header">
+          <h2 id="modalWineryName">Name of the Winery</h2>
+          <p id="modalWineryRole" class="winery-role-badge">Winery</p>
+        </div>
+        <div class="winery-detail-body">
+          <div class="detail-group">
+            <label>Email:</label>
+            <p id="modalWineryEmail">email@example.com</p>
+          </div>
+          <div class="detail-group">
+            <label>User ID:</label>
+            <p id="modalWineryId">user_id_123</p>
+          </div>
+          <div class="detail-group">
+            <label>Provider:</label>
+            <p id="modalWineryProvider">email</p>
+          </div>
+          <div class="detail-group">
+            <label>KYC Status:</label>
+            <p id="modalWineryKYC">Pending</p>
+          </div>
+          <div class="detail-group">
+            <label>Categories:</label>
+            <p id="modalWineryCategories">-</p>
+          </div>
+          <div class="detail-group">
+            <label>Badges:</label>
+            <p id="modalWineryBadges">-</p>
+          </div>
+          <div class="detail-group">
+            <label>🏅 Denominations of Origin:</label>
+            <p id="modalWineryDenominaciones">-</p>
+          </div>
+          <div class="detail-group">
+            <label>🍇 Grape Varieties:</label>
+            <p id="modalWineryVariedades">-</p>
+          </div>
+          <div class="detail-group">
+            <label>🍷 Wine Types:</label>
+            <p id="modalWineryTipos">-</p>
+          </div>
+          <div class="detail-group">
+            <label>Subscription Status:</label>
+            <p id="modalWinerySubscription">active</p>
+          </div>
+          <div class="detail-group">
+            <label>Registration Year:</label>
+            <p id="modalWineryCreated">2026-02-12</p>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="closeWineryModalBtn" class="btn primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script type="module" src="list-winery.js"></script>
+  </body>
+</html>
