@@ -1,3 +1,22 @@
+/* ==== EXTRAS PARA ELIMINAR INLINE STYLE DE IMÁGENES DE BODEGA ==== */
+.bottle-img-modal {
+  margin-bottom: 16px;
+  text-align: center;
+}
+.bottle-img {
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px #0003;
+  background: #2B0F13;
+}
+.bottle-img-card {
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px #0003;
+  background: #2B0F13;
+}
 /* list-winery.css
  * Estilos para la página de listado de bodegas
  * Sigue el patrón BlocksWine con tema oscuro

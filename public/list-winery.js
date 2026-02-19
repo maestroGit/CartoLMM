@@ -415,7 +415,7 @@ class WineryListManager {
     const imgSrc = (winery.userCard && winery.userCard.img) || winery["img-bottle"] || winery.img || '/images/default-bottle.png';
     return `
       <div class="winery-card">
-        <div class="user-bottle-img-wrapper bodega-img-full"><img src="${imgSrc}" alt="Imagen botella o icono" style="max-height:180px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage('${imgSrc}')"></div>
+        <div class="user-bottle-img-wrapper bodega-img-full"><img src="${imgSrc}" alt="Imagen botella o icono" class="bottle-img-card" onclick="window.showZoomImage && window.showZoomImage('${imgSrc}')"></div>
         <div class="winery-card-header">
           <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
           <span class="winery-role-badge">Bodega</span>
@@ -465,7 +465,7 @@ class WineryListManager {
 
     // Imagen de la bodega en el modal
     let imgSrc = (winery.userCard && winery.userCard.img) || winery["img-bottle"] || winery.img || '/images/default-bottle.png';
-    let imgHtml = `<div class="user-bottle-img-wrapper bodega-img-full" style="margin-bottom:16px;text-align:center;"><img src="${imgSrc}" alt="Imagen botella o icono" style="max-height:220px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage('${imgSrc}')"></div>`;
+    let imgHtml = `<div class="user-bottle-img-wrapper bodega-img-full bottle-img-modal"><img src="${imgSrc}" alt="Imagen botella o icono" class="bottle-img" onclick="window.showZoomImage && window.showZoomImage('${imgSrc}')"></div>`;
     // Insertar imagen arriba del modal
     const modalHeader = document.querySelector('.winery-detail-header');
     if (modalHeader && !modalHeader.querySelector('img')) {
