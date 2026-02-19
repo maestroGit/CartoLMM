@@ -108,7 +108,7 @@ class UserService {
     }
 
     try {
-      await import('/src/leaflet/UserMarker.js');
+      await import('../leaflet/UserMarker.js');
     } catch (error) {
       console.error('❌ Error cargando UserMarker:', error);
       return false;
