@@ -13,6 +13,11 @@ class DashboardService {
       totalBlocks: 0,
       activeNodes: 0,
       pendingTransactions: 0,
+      totalWineLovers: null,
+      totalDoRegions: null,
+      totalMagnums: null,
+      totalGrapeTypes: null,
+      totalWineTypes: null,
       networkStatus: "disconnected",
     };
     this.updateInterval = null;
@@ -422,6 +427,24 @@ class DashboardService {
    * Actualiza métricas del sistema
    */
   updateMetrics(bodegasData = null, blockchainData = null) {
+    // Compatibilidad: en varios flujos se invoca updateMetrics(payload)
+    // donde payload es el objeto de métricas del backend (/api/dashboard-metrics).
+    // Si detectamos ese shape, lo tratamos como blockchainData.
+    if (
+      !blockchainData &&
+      bodegasData &&
+      typeof bodegasData === "object" &&
+      (
+        "blocks" in bodegasData ||
+        "transactions" in bodegasData ||
+        "network" in bodegasData ||
+        "business" in bodegasData
+      )
+    ) {
+      blockchainData = bodegasData;
+      bodegasData = null;
+    }
+
     if (bodegasData) {
       const bodegasArray = Array.isArray(bodegasData.bodegas)
         ? bodegasData.bodegas
@@ -467,6 +490,41 @@ class DashboardService {
         this.metrics.pendingTransactions =
           blockchainData.network.totalTransactions;
       }
+
+      // Métricas de negocio (BD): wineries, wine lovers, D.O., magnums
+      if (blockchainData.business) {
+        const business = blockchainData.business;
+        if (typeof business.wineries === "number") {
+          this.metrics.totalBodegas = business.wineries;
+        } else {
+          this.metrics.totalBodegas = null;
+        }
+        if (typeof business.wineLovers === "number") {
+          this.metrics.totalWineLovers = business.wineLovers;
+        } else {
+          this.metrics.totalWineLovers = null;
+        }
+        if (typeof business.doRegions === "number") {
+          this.metrics.totalDoRegions = business.doRegions;
+        } else {
+          this.metrics.totalDoRegions = null;
+        }
+        if (typeof business.magnums === "number") {
+          this.metrics.totalMagnums = business.magnums;
+        } else {
+          this.metrics.totalMagnums = null;
+        }
+        if (typeof business.grapeTypes === "number") {
+          this.metrics.totalGrapeTypes = business.grapeTypes;
+        } else {
+          this.metrics.totalGrapeTypes = null;
+        }
+        if (typeof business.wineTypes === "number") {
+          this.metrics.totalWineTypes = business.wineTypes;
+        } else {
+          this.metrics.totalWineTypes = null;
+        }
+      }
     }
 
     this.metrics.networkStatus = window.blockchainService.isConnected
@@ -506,6 +564,49 @@ class DashboardService {
         ".pending-transactions .metric-value",
         this.metrics.pendingTransactions
       );
+
+    // Métricas de negocio en sidebar
+    const wineriesEl = document.getElementById("total-bodegas");
+    if (wineriesEl) {
+      wineriesEl.textContent = Number.isFinite(this.metrics.totalBodegas)
+        ? String(this.metrics.totalBodegas)
+        : "-";
+    }
+
+    const magnumsEl = document.getElementById("stock-custodiado");
+    if (magnumsEl) {
+      magnumsEl.textContent = Number.isFinite(this.metrics.totalMagnums)
+        ? String(this.metrics.totalMagnums)
+        : "-";
+    }
+
+    const wineLoversEl = document.getElementById("wine-lovers-total");
+    if (wineLoversEl) {
+      wineLoversEl.textContent = Number.isFinite(this.metrics.totalWineLovers)
+        ? String(this.metrics.totalWineLovers)
+        : "-";
+    }
+
+    const doRegionsEl = document.getElementById("do-regions-total");
+    if (doRegionsEl) {
+      doRegionsEl.textContent = Number.isFinite(this.metrics.totalDoRegions)
+        ? String(this.metrics.totalDoRegions)
+        : "-";
+    }
+
+    const grapeTypesEl = document.getElementById("grape-types-total");
+    if (grapeTypesEl) {
+      grapeTypesEl.textContent = Number.isFinite(this.metrics.totalGrapeTypes)
+        ? String(this.metrics.totalGrapeTypes)
+        : "-";
+    }
+
+    const wineTypesEl = document.getElementById("wine-types-total");
+    if (wineTypesEl) {
+      wineTypesEl.textContent = Number.isFinite(this.metrics.totalWineTypes)
+        ? String(this.metrics.totalWineTypes)
+        : "-";
+    }
 
     // Actualizar estado de conexión
     const statusElement = document.querySelector(

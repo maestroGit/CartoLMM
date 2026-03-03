@@ -46,6 +46,8 @@ body {
   height: auto !important;
   min-height: 100% !important;
   max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
 body {
@@ -55,11 +57,13 @@ body {
 }
 
 /* ===== MAIN CONTAINER ===== */
+/* Ensure main page scrolls vertically */
 .winery-main {
   min-height: 100vh;
   margin-top: 0;
   padding: calc(var(--header-height) + 20px) 20px 20px;
   overflow-x: hidden;
+  overflow-y: auto;
   width: 100%;
   box-sizing: border-box;
 }
@@ -580,10 +584,11 @@ body {
 }
 
 /* ===== MODAL OVERRIDES ===== */
+/* Ensure modal always scrolls if content overflows */
 .winery-modal-content {
   max-width: 500px;
   max-height: 80vh;
-  overflow-y: auto;
+  overflow-y: auto !important;
 }
 
 .winery-detail-header {

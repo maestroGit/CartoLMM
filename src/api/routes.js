@@ -6,12 +6,14 @@
 // import { mockData } from '../config/config.js';
 import MagnusmasterAPI from './magnusmasterAPI.js';
 import coordinateService from '../services/coordinateService.js';
+import BusinessStatsService from '../services/businessStatsService.js';
 import userRoutes from './routes/userRoutes.js';
 import { config } from '../config/config.js';
 
 // Instancias de clientes API para magnumsmaster (relay) y magnumslocal (nodo local)
 const magnusmasterClient = new MagnusmasterAPI(config.blockchainApiUrl); // Relay principal (puerto 3001)
 const magnumslocalClient = new MagnusmasterAPI(config.blockchainLocalUrl);  // Nodo local (puerto 6001)
+const businessStatsService = new BusinessStatsService(config.blockchainLocalUrl);
 
 /**
  * Configurar todas las rutas API
@@ -679,6 +681,26 @@ async function handleGetStatus(req, res) {
 async function handleGetDashboardMetrics(req, res) {
     try {
         console.log(`[API] /api/dashboard-metrics - Iniciando obtención de métricas...`);
+
+        // 0. Métricas de negocio desde endpoints respaldados por BD (magnumslocal)
+        let businessStats = {
+            wineries: 0,
+            wineLovers: 0,
+            doRegions: 0,
+            grapeTypes: 0,
+            wineTypes: 0,
+            magnums: 0,
+            source: 'unavailable',
+            warnings: ['Business stats unavailable'],
+            lastUpdate: new Date().toISOString()
+        };
+
+        try {
+            businessStats = await businessStatsService.getStats();
+            console.log(`[API] /api/dashboard-metrics - businessStats: ✅`);
+        } catch (businessError) {
+            console.warn(`[API] /api/dashboard-metrics - businessStats: ⚠️`, businessError.message);
+        }
         
         // 1. Obtener info de sistema para capturar IP/URL real
         const systemInfoResponse = await magnusmasterClient.getSystemInfo();
@@ -709,6 +731,7 @@ async function handleGetDashboardMetrics(req, res) {
                 balance: metrics.balance || { success: false, data: null },
                 connectionStatus: metrics.connectionStatus || false,
                 network: metrics.network || {},
+                business: businessStats,
                 lastUpdate: new Date().toISOString()
             };
 
@@ -721,24 +744,25 @@ async function handleGetDashboardMetrics(req, res) {
                 timestamp: new Date().toISOString()
             });
         } else {
-            // Fallback a métricas mock en caso de error
-            console.warn(`⚠️ [API] /api/dashboard-metrics - Usando fallback a mock. Razón: ${metricsResponse.error || 'Sin datos'}`);
-            
-            const mockMetrics = {
-                blocks: { success: true, data: { length: 42, lastBlock: { timestamp: new Date().toISOString() } } },
-                transactions: { success: true, data: { length: 15, pending: 3 } },
-                systemInfo: { success: true, data: { status: 'operational', uptime: process.uptime() } },
-                balance: { success: true, data: { balance: 1000, currency: 'LMM' } },
+            // Sin datos reales: devolver estructura neutra (sin mock)
+            console.warn(`⚠️ [API] /api/dashboard-metrics - Sin datos reales. Razón: ${metricsResponse.error || 'Sin datos'}`);
+
+            const emptyMetrics = {
+                blocks: { success: false, data: null },
+                transactions: { success: false, data: null },
+                systemInfo: { success: false, data: null },
+                balance: { success: false, data: null },
                 connectionStatus: false,
-                network: { nodeHttpUrl: nodeHttpUrl || 'unknown' },
+                network: { nodeHttpUrl: nodeHttpUrl || null },
+                business: businessStats,
                 lastUpdate: new Date().toISOString()
             };
 
             return res.json({
                 success: true,
-                data: mockMetrics,
-                source: 'mock',
-                warning: 'Backend magnumsmaster no disponible - usando datos fallback',
+                data: emptyMetrics,
+                source: 'empty',
+                warning: 'Backend magnumsmaster no disponible - sin datos',
                 timestamp: new Date().toISOString()
             });
         }

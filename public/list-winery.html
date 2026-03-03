@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://lh3.googleusercontent.com https://developers.google.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:;">
     <title>Winery - CartoLMM</title>
 
     <link rel="stylesheet" type="text/css" href="base.css" />
@@ -91,17 +91,7 @@
             <div class="filter-group">
               <label for="doFilter">DO</label>
               <select id="doFilter" class="winery-filter-select" multiple size="1" aria-label="Filtrar por denominacion de origen">
-                <option value="" disabled>Selecciona DO</option>
-                <option value="do_rioja">DO Rioja</option>
-                <option value="doca_rioja">DOCa Rioja</option>
-                <option value="do_ribera_duero">DO Ribera del Duero</option>
-                <option value="do_ribeiro">DO Ribeiro</option>
-                <option value="do_rueda">DO Rueda</option>
-                <option value="do_ribera_sacra">DO Ribeira Sacra</option>
-                <option value="do_priorat">DO Priorat</option>
-                <option value="do_penedes">DO Penedes</option>
-                <option value="do_rias_baixas">DO Rias Baixas</option>
-                <option value="do_jerez">DO Jerez</option>
+                <option value="" disabled>Select DO</option>
               </select>
             </div>
 
@@ -110,16 +100,6 @@
               <label for="uvaFilter">Grape</label>
               <select id="uvaFilter" class="winery-filter-select" multiple size="1" aria-label="Filter by grape variety">
                 <option value="" disabled>Select grape</option>
-                <option value="uva_tempranillo">Tempranillo</option>
-                <option value="uva_garnacha">Garnacha</option>
-                <option value="uva_albarino">Albarino</option>
-                <option value="uva_verdejo">Verdejo</option>
-                <option value="uva_mencia">Mencia</option>
-                <option value="uva_cabernet">Cabernet</option>
-                <option value="uva_merlot">Merlot</option>
-                <option value="uva_syrah">Syrah</option>
-                <option value="uva_chardonnay">Chardonnay</option>
-                <option value="uva_sauvignon_blanc">Sauvignon Blanc</option>
               </select>
             </div>
 
@@ -128,13 +108,6 @@
               <label for="estiloFilter">Style</label>
               <select id="estiloFilter" class="winery-filter-select" multiple size="1" aria-label="Filter by style">
                 <option value="" disabled>Select style</option>
-                <option value="estilo_tinto">Red</option>
-                <option value="estilo_blanco">White</option>
-                <option value="estilo_rosado">Rosé</option>
-                <option value="estilo_espumoso">Sparkling</option>
-                <option value="estilo_dulce">Sweet</option>
-                <option value="estilo_fortificado">Fortified</option>
-                <option value="estilo_natural">Natural</option>
               </select>
             </div>
 

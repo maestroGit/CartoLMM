@@ -23,6 +23,7 @@ class WineryListManager {
 
     // Cache de labels para badges dinámicos
     this.badgeLabels = {};
+    this.catalogToastShown = false;
 
     this.init();
   }
@@ -31,6 +32,8 @@ class WineryListManager {
     this.setupEventListeners();
     this.syncHeaderOffset();
     window.addEventListener('resize', () => this.syncHeaderOffset());
+
+    await this.populateFilterOptions();
     
     // Cargar filtros desde URL
     this.loadFiltersFromURL();
@@ -39,6 +42,164 @@ class WineryListManager {
     if (this.hasSearched) {
       await this.loadWineries();
     }
+  }
+
+  async populateFilterOptions() {
+    try {
+      const catalog = await this.loadCatalogFromWineries();
+
+      this.populateSelect('doFilter', catalog.denominaciones, 'Select DO');
+      this.populateSelect('uvaFilter', catalog.variedades, 'Select grape');
+      this.populateSelect('estiloFilter', catalog.tiposVino, 'Select style');
+
+      this.setSelectAvailability('doFilter', catalog.denominaciones.length > 0, 'No DO available');
+      this.setSelectAvailability('uvaFilter', catalog.variedades.length > 0, 'No grapes available');
+      this.setSelectAvailability('estiloFilter', catalog.tiposVino.length > 0, 'No styles available');
+
+      const hasAnyCatalogData =
+        catalog.denominaciones.length > 0 ||
+        catalog.variedades.length > 0 ||
+        catalog.tiposVino.length > 0;
+
+      if (!hasAnyCatalogData) {
+        this.showCatalogToast('warning', 'Catalog is empty. Dynamic filters are disabled.');
+      }
+
+      console.log('✅ [CartoLMM Winery] Filtros dinámicos cargados:', {
+        denominaciones: catalog.denominaciones.length,
+        variedades: catalog.variedades.length,
+        tiposVino: catalog.tiposVino.length
+      });
+    } catch (error) {
+      console.error('❌ [CartoLMM Winery] Error cargando filtros dinámicos:', error);
+      this.setSelectAvailability('doFilter', false, 'Catalog unavailable');
+      this.setSelectAvailability('uvaFilter', false, 'Catalog unavailable');
+      this.setSelectAvailability('estiloFilter', false, 'Catalog unavailable');
+      this.showCatalogToast('error', 'Unable to load catalog. Dynamic filters are disabled.');
+    }
+  }
+
+  async loadCatalogFromWineries() {
+    const response = await fetch(`${API_BASE_URL}/api/users?role=winery&limit=500`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const payload = await response.json();
+    const wineries = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload?.users)
+          ? payload.users
+          : [];
+
+    const denominacionesById = new Map();
+    const variedadesByToken = new Map();
+    const tiposByToken = new Map();
+
+    wineries.forEach((winery) => {
+      const denominaciones = Array.isArray(winery?.denominaciones) ? winery.denominaciones : [];
+
+      denominaciones.forEach((do_) => {
+        if (do_?.id && do_?.nombre) {
+          denominacionesById.set(do_.id, {
+            value: `do_${do_.id}`,
+            label: `${do_.tipo || 'DO'} ${do_.nombre}`
+          });
+        }
+
+        const variedades = Array.isArray(do_?.variedades) ? do_.variedades : [];
+        variedades.forEach((variedad) => {
+          const nombre = variedad?.nombre;
+          if (!nombre) return;
+          const token = this.normalizeBadgeToken(nombre);
+          variedadesByToken.set(token, {
+            value: `uva_${token}`,
+            label: nombre
+          });
+        });
+
+        const tiposVino = Array.isArray(do_?.tipos_vino) ? do_?.tipos_vino : [];
+        tiposVino.forEach((tipo) => {
+          const nombre = tipo?.nombre;
+          if (!nombre) return;
+          const token = this.normalizeBadgeToken(nombre);
+          tiposByToken.set(token, {
+            value: `estilo_${token}`,
+            label: nombre
+          });
+        });
+      });
+    });
+
+    const denominaciones = Array.from(denominacionesById.values())
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+    const variedades = Array.from(variedadesByToken.values())
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+    const tiposVino = Array.from(tiposByToken.values())
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+
+    return { denominaciones, variedades, tiposVino };
+  }
+
+  populateSelect(selectId, options, placeholder) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    select.disabled = false;
+
+    select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+
+    options.forEach((option) => {
+      const optionElement = document.createElement('option');
+      optionElement.value = option.value;
+      optionElement.textContent = option.label;
+      select.appendChild(optionElement);
+
+      this.badgeLabels[option.value] = option.label;
+    });
+  }
+
+  setSelectAvailability(selectId, hasOptions, emptyMessage) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    if (hasOptions) {
+      select.disabled = false;
+      return;
+    }
+
+    select.disabled = true;
+    select.innerHTML = `<option value="" disabled selected>${emptyMessage}</option>`;
+  }
+
+  showCatalogToast(type, message) {
+    if (this.catalogToastShown) return;
+    this.catalogToastShown = true;
+
+    if (typeof window.showToast === 'function') {
+      window.showToast(message, type);
+      return;
+    }
+
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.remove();
+    }, 4500);
   }
 
   setupEventListeners() {
@@ -333,7 +494,7 @@ class WineryListManager {
       if (do_.variedades && Array.isArray(do_.variedades)) {
         do_.variedades.forEach(v => {
           if (v.nombre) {
-            const normalizedName = v.nombre.toLowerCase().replace(/\s+/g, '_');
+            const normalizedName = this.normalizeBadgeToken(v.nombre);
             badges.push(`uva_${normalizedName}`);
           }
         });
@@ -343,7 +504,7 @@ class WineryListManager {
       if (do_.tipos_vino && Array.isArray(do_.tipos_vino)) {
         do_.tipos_vino.forEach(t => {
           if (t.nombre) {
-            const normalizedName = t.nombre.toLowerCase().replace(/\s+/g, '_');
+            const normalizedName = this.normalizeBadgeToken(t.nombre);
             badges.push(`estilo_${normalizedName}`);
           }
         });
@@ -411,8 +572,7 @@ class WineryListManager {
     const denominacionesData = this.extractDenominacionesInfo(winery);
     const dosHtml = this.createDosSection(denominacionesData);
 
-    // Imagen de la bodega: userCard.img, img-bottle o fallback
-    const imgSrc = (winery.userCard && winery.userCard.img) || winery["img-bottle"] || winery.img || '/images/default-bottle.png';
+    const imgSrc = this.getWineryImageSrc(winery);
     return `
       <div class="winery-card">
         <div class="user-bottle-img-wrapper bodega-img-full"><img src="${imgSrc}" alt="Imagen botella o icono" class="bottle-img-card" onclick="window.showZoomImage && window.showZoomImage('${imgSrc}')"></div>
@@ -464,7 +624,7 @@ class WineryListManager {
     document.getElementById('modalWineryCreated').textContent = createdAt;
 
     // Imagen de la bodega en el modal
-    let imgSrc = (winery.userCard && winery.userCard.img) || winery["img-bottle"] || winery.img || '/images/default-bottle.png';
+    let imgSrc = this.getWineryImageSrc(winery);
     let imgHtml = `<div class="user-bottle-img-wrapper bodega-img-full bottle-img-modal"><img src="${imgSrc}" alt="Imagen botella o icono" class="bottle-img" onclick="window.showZoomImage && window.showZoomImage('${imgSrc}')"></div>`;
     // Insertar imagen arriba del modal
     const modalHeader = document.querySelector('.winery-detail-header');
@@ -622,6 +782,29 @@ class WineryListManager {
     };
 
     return labels[badge] || badge;
+  }
+
+  normalizeBadgeToken(text) {
+    if (!text) return '';
+
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  getWineryImageSrc(winery) {
+    const imageFromProfile = winery?.userCard?.img || winery?.usercard_img;
+    const imageFromBottle = winery?.img_bottle || winery?.imgBottle || winery?.['img-bottle'] || winery?.img;
+    const selected = imageFromProfile || imageFromBottle;
+
+    if (typeof selected === 'string' && selected.trim()) {
+      return selected.trim();
+    }
+
+    return '/images/default-bottle.png';
   }
 
   extractDenominacionesInfo(winery) {

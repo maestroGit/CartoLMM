@@ -5,11 +5,11 @@
 class CoordinateService {
   constructor() {
     this.cache = new Map();
-    this.useMockCoordinates = true; // Cambiar a false para usar GeoIP real
+    this.useMockCoordinates = false; // GeoIP real por defecto
     this.geoIPApiUrl = 'http://ip-api.com/json/';
     
-    // Coordenadas por defecto (Madrid)
-    this.defaultCoords = { lat: 40.4168, lng: -3.7038, city: 'Madrid' };
+    // Fallback explícito: sin coordenadas para evitar ubicaciones engañosas
+    this.unresolvedLocation = { lat: null, lng: null, city: 'No disponible', locationSource: 'unresolved' };
     
     // Regiones españolas para distribución mock
     this.mockRegions = [
@@ -52,13 +52,14 @@ class CoordinateService {
   assignMockCoordinates(peers) {
     console.log('[CoordinateService] Asignando coordenadas MOCK a peers (visualización, no reales)');
     return peers.map((peer, index) => {
-      // Nodo local siempre en Madrid
+      // Nodo local: mock explícito
       if (peer.isLocal) {
         return {
           ...peer,
-          lat: this.defaultCoords.lat,
-          lng: this.defaultCoords.lng,
-          city: this.defaultCoords.city
+          lat: this.mockRegions[0].lat,
+          lng: this.mockRegions[0].lng,
+          city: this.mockRegions[0].name,
+          locationSource: 'mock'
         };
       }
 
@@ -71,7 +72,8 @@ class CoordinateService {
         ...peer,
         lat: region.lat + latOffset,
         lng: region.lng + lngOffset,
-        city: region.name
+        city: region.name,
+        locationSource: 'mock'
       };
     });
   }
@@ -84,15 +86,14 @@ class CoordinateService {
   async assignGeoIPCoordinates(peers) {
     const enrichedPeers = await Promise.all(
       peers.map(async (peer) => {
-        // Nodo local usa coordenadas por defecto
-        if (peer.isLocal) {
+        const ip = peer.isLocal ? 'self' : this.extractIP(peer.httpUrl);
+
+        if (!ip) {
           return {
             ...peer,
-            ...this.defaultCoords
+            ...this.unresolvedLocation
           };
         }
-
-        const ip = this.extractIP(peer.httpUrl);
         
         // Verificar cache
         if (this.cache.has(ip)) {
@@ -107,7 +108,7 @@ class CoordinateService {
           return { ...peer, ...coords };
         } catch (error) {
           console.warn(`GeoIP failed para ${ip}:`, error.message);
-          return { ...peer, ...this.defaultCoords };
+          return { ...peer, ...this.unresolvedLocation };
         }
       })
     );
@@ -123,17 +124,13 @@ class CoordinateService {
   extractIP(url) {
     try {
       const urlObj = new URL(url);
-      const hostname = urlObj.hostname;
-      
-      // localhost o 127.0.0.1 → usar coordenadas por defecto
-      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.')) {
-        return 'localhost';
-      }
+      const hostname = (urlObj.hostname || '').trim().toLowerCase();
+      if (!hostname) return null;
       
       return hostname;
     } catch (error) {
       console.warn('CoordinateService: Error parseando URL', url);
-      return 'localhost';
+      return null;
     }
   }
 
@@ -143,9 +140,36 @@ class CoordinateService {
    * @returns {Promise<Object>} Coordenadas {lat, lng, city}
    */
   async geoIPLookup(ip) {
-    // IPs locales usan coordenadas por defecto
-    if (ip === 'localhost' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-      return this.defaultCoords;
+    // Nodo local: resolver IP pública del host que ejecuta CartoLMM
+    if (ip === 'self') {
+      const responseSelf = await fetch(this.geoIPApiUrl);
+      if (!responseSelf.ok) {
+        throw new Error(`GeoIP self HTTP error: ${responseSelf.status}`);
+      }
+      const dataSelf = await responseSelf.json();
+      if (dataSelf.status !== 'success') {
+        throw new Error(`GeoIP self lookup failed: ${dataSelf.message || 'Unknown error'}`);
+      }
+      return {
+        lat: dataSelf.lat,
+        lng: dataSelf.lon,
+        city: dataSelf.city || dataSelf.regionName || 'No disponible',
+        locationSource: 'geoip'
+      };
+    }
+
+    // IP privada/local: no geolocalizable por GeoIP público
+    if (
+      ip === 'localhost' ||
+      ip === '127.0.0.1' ||
+      ip.startsWith('192.168.') ||
+      ip.startsWith('10.') ||
+      ip.startsWith('172.16.') || ip.startsWith('172.17.') || ip.startsWith('172.18.') || ip.startsWith('172.19.') ||
+      ip.startsWith('172.20.') || ip.startsWith('172.21.') || ip.startsWith('172.22.') || ip.startsWith('172.23.') ||
+      ip.startsWith('172.24.') || ip.startsWith('172.25.') || ip.startsWith('172.26.') || ip.startsWith('172.27.') ||
+      ip.startsWith('172.28.') || ip.startsWith('172.29.') || ip.startsWith('172.30.') || ip.startsWith('172.31.')
+    ) {
+      throw new Error('IP privada/local no geolocalizable por GeoIP público');
     }
 
     const response = await fetch(`${this.geoIPApiUrl}${ip}`);
@@ -163,7 +187,8 @@ class CoordinateService {
     return {
       lat: data.lat,
       lng: data.lon,
-      city: data.city || 'Unknown'
+      city: data.city || data.regionName || 'No disponible',
+      locationSource: 'geoip'
     };
   }
 
