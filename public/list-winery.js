@@ -861,7 +861,7 @@ class WineryListManager {
 
     if (data.variedades.length > 0) {
       html += '<div class="winery-variedades-section">';
-      html += '<span class="winery-dos-label">🍇 Uvas:</span> ';
+      html += '<span class="winery-dos-label">🍇 Variedades:</span> ';
       html += data.variedades.slice(0, 3).map(v => 
         `<span class="winery-variedad-tag">${this.escapeHtml(v)}</span>`
       ).join('');
