@@ -202,7 +202,7 @@ async function handleGetPeers(req, res) {
     const p2pPeers = network.p2pPeers || []; // Array detallado si existe
 
     // Normalizar peersHttp: puede ser array de strings o array de objetos {nodeId, httpUrl, lastSeen}
-    const peersHttp = peersHttpRaw.map(peer => {
+        const peersHttp = peersHttpRaw.map(peer => {
       if (typeof peer === 'string') {
         return { httpUrl: peer, nodeId: null, lastSeen: null };
       } else if (peer && typeof peer === 'object') {
@@ -215,11 +215,44 @@ async function handleGetPeers(req, res) {
       return { httpUrl: 'unknown', nodeId: null, lastSeen: null };
     });
 
-    console.log(`📡 Consultando ${peersHttp.length} peers remotos...`);
+        // Fallback: cuando peersHttp no viene poblado, usar p2pPeers como fuente
+        // de URLs HTTP para no perder peers activos en visualizaciones.
+        const peersFromP2P = p2pPeers
+            .map((peer) => {
+                if (!peer || typeof peer !== 'object') return null;
+                const httpUrl =
+                    typeof peer.httpUrl === 'string' && peer.httpUrl.trim().length > 0
+                        ? peer.httpUrl.trim()
+                        : null;
+                if (!httpUrl) return null;
+                return {
+                    httpUrl,
+                    nodeId: peer.nodeId || null,
+                    lastSeen: peer.lastSeen || null,
+                };
+            })
+            .filter(Boolean);
+
+        const peersByHttpUrl = new Map();
+        [...peersHttp, ...peersFromP2P].forEach((peer) => {
+            const normalizedUrl =
+                typeof peer.httpUrl === 'string' ? peer.httpUrl.trim() : '';
+            if (!normalizedUrl || normalizedUrl === 'unknown') return;
+            if (!peersByHttpUrl.has(normalizedUrl)) {
+                peersByHttpUrl.set(normalizedUrl, {
+                    ...peer,
+                    httpUrl: normalizedUrl,
+                });
+            }
+        });
+
+        const mergedPeersHttp = Array.from(peersByHttpUrl.values());
+
+        console.log(`📡 Consultando ${mergedPeersHttp.length} peers remotos...`);
 
     // 4. Enriquecer cada peer con información detallada
     const peersDetailed = await Promise.allSettled(
-      peersHttp.map(async (peer, index) => {
+    mergedPeersHttp.map(async (peer, index) => {
         const startTime = Date.now();
         const peerHttpUrl = peer.httpUrl.trim(); // Eliminar espacios
         

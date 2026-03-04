@@ -103,6 +103,19 @@ class CoordinateService {
 
         // GeoIP lookup con fallback
         try {
+          if (!peer.isLocal && this.isPrivateOrLocalHost(ip)) {
+            const base = await this.geoIPLookup('self');
+            const offset = this.buildDeterministicOffset(`${peer.nodeId || ''}|${peer.httpUrl || ip}`);
+            const approxCoords = {
+              lat: base.lat + offset.lat,
+              lng: base.lng + offset.lng,
+              city: `${base.city} (aprox peer privado)`,
+              locationSource: 'geoip-private-approx'
+            };
+            this.cache.set(ip, approxCoords);
+            return { ...peer, ...approxCoords };
+          }
+
           const coords = await this.geoIPLookup(ip);
           this.cache.set(ip, coords);
           return { ...peer, ...coords };
@@ -134,6 +147,34 @@ class CoordinateService {
     }
   }
 
+  isPrivateOrLocalHost(hostname) {
+    if (!hostname || typeof hostname !== 'string') return false;
+    const ip = hostname.trim().toLowerCase();
+    return (
+      ip === 'localhost' ||
+      ip === '127.0.0.1' ||
+      ip.startsWith('192.168.') ||
+      ip.startsWith('10.') ||
+      ip.startsWith('172.16.') || ip.startsWith('172.17.') || ip.startsWith('172.18.') || ip.startsWith('172.19.') ||
+      ip.startsWith('172.20.') || ip.startsWith('172.21.') || ip.startsWith('172.22.') || ip.startsWith('172.23.') ||
+      ip.startsWith('172.24.') || ip.startsWith('172.25.') || ip.startsWith('172.26.') || ip.startsWith('172.27.') ||
+      ip.startsWith('172.28.') || ip.startsWith('172.29.') || ip.startsWith('172.30.') || ip.startsWith('172.31.')
+    );
+  }
+
+  buildDeterministicOffset(seed) {
+    const safeSeed = String(seed || 'peer');
+    let hash = 0;
+    for (let i = 0; i < safeSeed.length; i += 1) {
+      hash = ((hash << 5) - hash) + safeSeed.charCodeAt(i);
+      hash |= 0;
+    }
+    const normalized = Math.abs(hash % 1000) / 1000;
+    const lat = (normalized - 0.5) * 0.3;
+    const lng = (((normalized * 1.37) % 1) - 0.5) * 0.3;
+    return { lat, lng };
+  }
+
   /**
    * Realiza lookup GeoIP usando ip-api.com
    * @param {string} ip - Dirección IP
@@ -159,16 +200,7 @@ class CoordinateService {
     }
 
     // IP privada/local: no geolocalizable por GeoIP público
-    if (
-      ip === 'localhost' ||
-      ip === '127.0.0.1' ||
-      ip.startsWith('192.168.') ||
-      ip.startsWith('10.') ||
-      ip.startsWith('172.16.') || ip.startsWith('172.17.') || ip.startsWith('172.18.') || ip.startsWith('172.19.') ||
-      ip.startsWith('172.20.') || ip.startsWith('172.21.') || ip.startsWith('172.22.') || ip.startsWith('172.23.') ||
-      ip.startsWith('172.24.') || ip.startsWith('172.25.') || ip.startsWith('172.26.') || ip.startsWith('172.27.') ||
-      ip.startsWith('172.28.') || ip.startsWith('172.29.') || ip.startsWith('172.30.') || ip.startsWith('172.31.')
-    ) {
+    if (this.isPrivateOrLocalHost(ip)) {
       throw new Error('IP privada/local no geolocalizable por GeoIP público');
     }
 

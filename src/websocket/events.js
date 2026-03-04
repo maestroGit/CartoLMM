@@ -443,10 +443,23 @@ const emitPeerEvent = (socket) => {
  * Emitir métricas del sistema
  */
 const emitSystemMetrics = (socket) => {
+  const extractHostFromUrl = (urlValue) => {
+    if (!urlValue || typeof urlValue !== "string") return null;
+    const trimmed = urlValue.trim();
+    if (!trimmed) return null;
+    try {
+      return new URL(trimmed).hostname;
+    } catch {
+      return null;
+    }
+  };
+
   magnusmasterAPI
     .getSystemInfo()
     .then((result) => {
       let activeNodes = "-";
+      let activeNodeIps = [];
+      let activeNodeDetails = [];
       let totalTransactions = "-";
       let pendingTransactions = "-";
       let blockHeight = "-";
@@ -458,6 +471,25 @@ const emitSystemMetrics = (socket) => {
       if (result.success && result.data && result.data.blockchain) {
         const net = result.data.blockchain.network;
         activeNodes = net?.p2pConnections ?? "-";
+        const p2pPeers = Array.isArray(net?.p2pPeers) ? net.p2pPeers : [];
+        activeNodeDetails = p2pPeers.map((peer) => {
+          const httpUrl =
+            typeof peer?.httpUrl === "string" ? peer.httpUrl.trim() : null;
+          const host = extractHostFromUrl(httpUrl);
+          return {
+            nodeId: peer?.nodeId || null,
+            httpUrl,
+            ip: host,
+            lastSeen: peer?.lastSeen || null,
+          };
+        });
+        activeNodeIps = [
+          ...new Set(
+            activeNodeDetails
+              .map((node) => node.ip)
+              .filter((ip) => typeof ip === "string" && ip.length > 0)
+          ),
+        ];
         blockHeight = result.data.blockchain.height ?? "-";
         hashRate = result.data.blockchain.hashRate ?? "-";
         totalTransactions = result.data.blockchain.totalTransactions ?? "-";
@@ -474,6 +506,8 @@ const emitSystemMetrics = (socket) => {
         timestamp: new Date().toISOString(),
         network: {
           activeNodes,
+          activeNodeIps,
+          activeNodeDetails,
           totalTransactions,
           pendingTransactions,
           blockHeight,
@@ -499,6 +533,8 @@ const emitSystemMetrics = (socket) => {
         timestamp: new Date().toISOString(),
         network: {
           activeNodes: "-",
+          activeNodeIps: [],
+          activeNodeDetails: [],
           totalTransactions: Math.floor(Math.random() * 1000) + 5000,
           pendingTransactions: Math.floor(Math.random() * 20),
           blockHeight: Math.floor(Math.random() * 1000) + 2000,

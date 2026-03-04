@@ -416,6 +416,79 @@ class CartoLMMWebSocket {
             console.warn('Error updating overlay metric elements:', err);
         }
 
+        const networkData = metrics?.network || {};
+        const ipsFromArray = Array.isArray(networkData.activeNodeIps)
+            ? networkData.activeNodeIps
+                .filter((ip) => typeof ip === 'string' && ip.trim().length > 0)
+                .map((ip) => ip.trim())
+            : [];
+
+        const ipsFromDetails = Array.isArray(networkData.activeNodeDetails)
+            ? networkData.activeNodeDetails
+                .map((node) => {
+                    if (typeof node?.ip === 'string' && node.ip.trim().length > 0) {
+                        return node.ip.trim();
+                    }
+                    if (typeof node?.httpUrl === 'string' && node.httpUrl.trim().length > 0) {
+                        try {
+                            return new URL(node.httpUrl.trim()).hostname;
+                        } catch {
+                            return null;
+                        }
+                    }
+                    return null;
+                })
+                .filter(Boolean)
+            : [];
+
+        const nodeEntries = Array.isArray(networkData.activeNodeDetails)
+            ? networkData.activeNodeDetails
+                .map((node, index) => {
+                    let resolvedIp = null;
+                    if (typeof node?.ip === 'string' && node.ip.trim().length > 0) {
+                        resolvedIp = node.ip.trim();
+                    } else if (typeof node?.httpUrl === 'string' && node.httpUrl.trim().length > 0) {
+                        try {
+                            resolvedIp = new URL(node.httpUrl.trim()).hostname;
+                        } catch {
+                            resolvedIp = null;
+                        }
+                    }
+
+                    if (!resolvedIp) return null;
+
+                    const resolvedNodeId =
+                        typeof node?.nodeId === 'string' && node.nodeId.trim().length > 0
+                            ? node.nodeId.trim()
+                            : `peer-${index + 1}`;
+
+                    return {
+                        nodeId: resolvedNodeId,
+                        ip: resolvedIp,
+                    };
+                })
+                .filter(Boolean)
+            : [];
+
+        const uniqueNodeEntries = [];
+        const seenNodeKeys = new Set();
+        for (const entry of nodeEntries) {
+            const key = `${entry.nodeId}|${entry.ip}`;
+            if (!seenNodeKeys.has(key)) {
+                uniqueNodeEntries.push(entry);
+                seenNodeKeys.add(key);
+            }
+        }
+
+        const uniqueIps = [...new Set([...ipsFromArray, ...ipsFromDetails])];
+        const inferredActiveNodes = uniqueIps.length;
+        const activeNodesValue =
+            typeof networkData.activeNodes === 'number'
+                ? networkData.activeNodes
+                : (networkData.activeNodes !== '-' && networkData.activeNodes != null
+                    ? networkData.activeNodes
+                    : inferredActiveNodes || '-');
+
         // Actualizar el valor de nodos activos en el panel principal (sidebar)
         // Aumentar reintentos y delay para asegurar sincronización con el DOM
         function setActiveNodesValue(val, retries = 15) {
@@ -426,7 +499,25 @@ class CartoLMMWebSocket {
                 setTimeout(() => setActiveNodesValue(val, retries - 1), 200);
             }
         }
-        setActiveNodesValue(metrics.network.activeNodes);
+        setActiveNodesValue(activeNodesValue);
+
+        const activeNodeIpsEl = document.getElementById('active-node-ips');
+        if (activeNodeIpsEl) {
+            const nodesText = uniqueNodeEntries.length
+                ? uniqueNodeEntries.map((entry) => `${entry.nodeId} (${entry.ip})`).join(', ')
+                : (uniqueIps.length ? uniqueIps.join(', ') : '-');
+
+            const expectedCount = Number.isFinite(Number(activeNodesValue))
+                ? Number(activeNodesValue)
+                : null;
+            const detailedCount = uniqueNodeEntries.length || uniqueIps.length;
+            const mismatchText =
+                expectedCount !== null && detailedCount > 0 && expectedCount !== detailedCount
+                    ? ` | ⚠️ desajuste: detalle ${detailedCount}/${expectedCount}`
+                    : '';
+
+            activeNodeIpsEl.textContent = `Nodos/IP activas: ${nodesText}${mismatchText}`;
+        }
         // Se eliminó actualización del modal de bodega (feature retirada)
     }
     
