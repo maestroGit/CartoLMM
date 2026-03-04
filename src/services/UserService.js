@@ -86,11 +86,14 @@ class UserService {
 
     console.log(`📍 ${usersWithCoords.length}/${users.length} usuarios con coordenadas válidas`);
 
+    // Separar visualmente usuarios con coordenadas muy cercanas para evitar solape de marcadores
+    const displayUsers = this.disperseOverlappingUsers(usersWithCoords);
+
     // Limpiar marcadores existentes
     this.clearMarkers();
 
     // Crear marcador para cada usuario con coordenadas
-    usersWithCoords.forEach(user => {
+    displayUsers.forEach(user => {
       try {
         const marker = new window.UserMarker(user, this.map);
         this.userMarkers.set(user.id, marker);
@@ -100,6 +103,70 @@ class UserService {
     });
 
     console.log(`✅ ${this.userMarkers.size} usuarios renderizados en el mapa`);
+  }
+
+  disperseOverlappingUsers(usersWithCoords) {
+    if (!Array.isArray(usersWithCoords) || usersWithCoords.length === 0) {
+      return usersWithCoords;
+    }
+
+    const groupedByProximity = new Map();
+
+    usersWithCoords.forEach((user) => {
+      const lat = Number(user.localizacion?.lat);
+      const lng = Number(user.localizacion?.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+      // Redondeo a 4 decimales (~11m) para detectar solapes visuales en el mapa
+      const proximityKey = `${lat.toFixed(4)}:${lng.toFixed(4)}`;
+      if (!groupedByProximity.has(proximityKey)) {
+        groupedByProximity.set(proximityKey, []);
+      }
+      groupedByProximity.get(proximityKey).push(user);
+    });
+
+    const dispersedUsers = [];
+    let overlapGroups = 0;
+
+    groupedByProximity.forEach((groupUsers) => {
+      if (groupUsers.length === 1) {
+        dispersedUsers.push(groupUsers[0]);
+        return;
+      }
+
+      overlapGroups += 1;
+      const anchorLat = Number(groupUsers[0].localizacion.lat);
+      const anchorLng = Number(groupUsers[0].localizacion.lng);
+
+      // ~20m de radio base para separar marcadores
+      const radiusMeters = 20;
+      const latOffsetUnit = radiusMeters / 111320;
+      const lngOffsetUnit = radiusMeters / (111320 * Math.max(Math.cos(anchorLat * Math.PI / 180), 0.2));
+
+      groupUsers.forEach((user, index) => {
+        const angle = (2 * Math.PI * index) / groupUsers.length;
+        const newLat = anchorLat + (latOffsetUnit * Math.sin(angle));
+        const newLng = anchorLng + (lngOffsetUnit * Math.cos(angle));
+
+        dispersedUsers.push({
+          ...user,
+          localizacion: {
+            ...user.localizacion,
+            lat: newLat,
+            lng: newLng,
+            originalLat: anchorLat,
+            originalLng: anchorLng,
+            displaced: true
+          }
+        });
+      });
+    });
+
+    if (overlapGroups > 0) {
+      console.log(`🧭 Solape detectado en ${overlapGroups} grupo(s): marcadores redistribuidos`);
+    }
+
+    return dispersedUsers;
   }
 
   async ensureUserMarker() {

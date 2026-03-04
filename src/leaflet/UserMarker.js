@@ -120,7 +120,7 @@ class UserMarker {
         }
     const roleCategory = this.data.role === 'winery'
       ? 'bodega'
-      : (this.data.role === 'wine_lover' ? 'wine_lover' : null);
+      : ((this.data.role === 'wine_lover' || this.data.role === 'user') ? 'wine_lover' : null);
     const categoriasList = Array.isArray(this.data.categorias) && this.data.categorias.length > 0
       ? this.data.categorias
       : (roleCategory ? [roleCategory] : []);
@@ -170,6 +170,18 @@ class UserMarker {
       const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')"></div>`;
     // Para wine_lover: imagen + botón Move
     const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\">${moveBtn}</div>`;
+    // Para usuarios generales (role=user): mostrar avatar/foto de perfil
+    const imagenDivUsuario = `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0 4px 0;">
+        <img
+          src="${finalImgSrc}"
+          alt="Foto de ${this.data.nombre || 'usuario'}"
+          style="width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid #f7931a;box-shadow:0 2px 10px #0004;cursor:pointer;"
+          onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')"
+        >
+        <div style="font-weight:600;color:#f5f5f5;text-align:center;">${this.data.nombre || 'Usuario'}</div>
+      </div>
+    `;
 
         const userType = categoriasList.includes('wine_lover')
           ? 'winelover'
@@ -201,6 +213,7 @@ class UserMarker {
       <div class="user-popup" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${finalImgSrc}" data-img-bottle="${this.data['img-bottle'] || ''}">
         ${userCard}
         ${userType === 'bodega' ? imagenDivBodega : ''}
+        ${userType === 'otro' ? imagenDivUsuario : ''}
         ${userType === 'bodega' ? `<h3 class="bodega-img-title">${this.data.nombre}</h3>` : ''}
        
         <div class="wallets-section">
