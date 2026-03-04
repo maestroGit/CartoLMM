@@ -6,6 +6,18 @@
 
 import { config } from '../../config/config.js';
 
+function getUsersSourceUrl() {
+  if (process.env.USERS_API_URL) {
+    return process.env.USERS_API_URL;
+  }
+
+  if (config.nodeEnv === 'production') {
+    return config.blockchainApiUrl || config.blockchainLocalUrl || 'https://app.blockswine.com';
+  }
+
+  return config.blockchainLocalUrl || config.blockchainApiUrl || 'http://localhost:6001';
+}
+
 // Caché simple para evitar rate limiting de magnumsmaster
 const CACHE_TTL = 60000; // 1 minuto
 const cache = new Map();
@@ -59,10 +71,10 @@ export const getUsers = async (req, res) => {
     if (search) queryParams.append('search', search);
     if (includeWallets) queryParams.append('includeWallets', includeWallets);
 
-    const magnumsmasterUrl = config.blockchainApiUrl || 'https://app.blockswine.com';
-    const endpoint = `${magnumsmasterUrl}/users${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const usersSourceUrl = getUsersSourceUrl();
+    const endpoint = `${usersSourceUrl}/users${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     
-    console.log(`[USER] Fetching usuarios desde magnumsmaster: ${endpoint}`);
+    console.log(`[USER] Fetching usuarios desde ${usersSourceUrl}: ${endpoint}`);
     
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -87,7 +99,7 @@ export const getUsers = async (req, res) => {
         }
       }
       
-      throw new Error(`magnumsmaster HTTP error: ${response.status}`);
+      throw new Error(`users source HTTP error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -97,7 +109,7 @@ export const getUsers = async (req, res) => {
     const responseData = {
       success: true,
       data: data.data || data,
-      source: 'magnumsmaster',
+      source: usersSourceUrl,
       timestamp: new Date().toISOString()
     };
     
@@ -112,7 +124,7 @@ export const getUsers = async (req, res) => {
       success: false,
       error: 'No se pudieron obtener los usuarios',
       details: error.message,
-      source: 'magnumsmaster',
+      source: usersSourceUrl,
       timestamp: new Date().toISOString()
     });
   }
@@ -134,10 +146,10 @@ export const getUserById = async (req, res) => {
       });
     }
 
-    const magnumsmasterUrl = config.blockchainApiUrl || 'https://app.blockswine.com';
-    const endpoint = `${magnumsmasterUrl}/users/${id}${includeWallets ? '?includeWallets=true' : ''}`;
+    const usersSourceUrl = getUsersSourceUrl();
+    const endpoint = `${usersSourceUrl}/users/${id}${includeWallets ? '?includeWallets=true' : ''}`;
     
-    console.log(`[USER] Fetching usuario ${id} desde magnumsmaster`);
+    console.log(`[USER] Fetching usuario ${id} desde ${usersSourceUrl}`);
     
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -153,7 +165,7 @@ export const getUserById = async (req, res) => {
           error: `Usuario ${id} no encontrado`
         });
       }
-      throw new Error(`magnumsmaster HTTP error: ${response.status}`);
+      throw new Error(`users source HTTP error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -163,7 +175,7 @@ export const getUserById = async (req, res) => {
     res.json({
       success: true,
       data: data.data || data,
-      source: 'magnumsmaster',
+      source: usersSourceUrl,
       timestamp: new Date().toISOString()
     });
 
@@ -173,7 +185,7 @@ export const getUserById = async (req, res) => {
       success: false,
       error: 'No se pudo obtener el usuario',
       details: error.message,
-      source: 'magnumsmaster',
+      source: usersSourceUrl,
       timestamp: new Date().toISOString()
     });
   }
@@ -185,10 +197,10 @@ export const getUserById = async (req, res) => {
  */
 export const getUserStats = async (req, res) => {
   try {
-    const magnumsmasterUrl = config.blockchainApiUrl || 'https://app.blockswine.com';
-    const endpoint = `${magnumsmasterUrl}/users/stats`;
+    const usersSourceUrl = getUsersSourceUrl();
+    const endpoint = `${usersSourceUrl}/users/stats`;
     
-    console.log(`[USER] Fetching estadísticas desde magnumsmaster`);
+    console.log(`[USER] Fetching estadísticas desde ${usersSourceUrl}`);
     
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -198,7 +210,7 @@ export const getUserStats = async (req, res) => {
     });
 
     if (!response.ok) {
-      throw new Error(`magnumsmaster HTTP error: ${response.status}`);
+      throw new Error(`users source HTTP error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -208,7 +220,7 @@ export const getUserStats = async (req, res) => {
     res.json({
       success: true,
       data: data.data || data,
-      source: 'magnumsmaster',
+      source: usersSourceUrl,
       timestamp: new Date().toISOString()
     });
 
@@ -218,7 +230,7 @@ export const getUserStats = async (req, res) => {
       success: false,
       error: 'No se pudieron obtener las estadísticas',
       details: error.message,
-      source: 'magnumsmaster',
+      source: usersSourceUrl,
       timestamp: new Date().toISOString()
     });
   }

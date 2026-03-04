@@ -11,6 +11,20 @@ class UserService {
     this.userLayer = null;
   }
 
+  normalizeWallets(user) {
+    const wallets = Array.isArray(user?.wallets) ? user.wallets : [];
+    return wallets
+      .map((wallet) => {
+        const address = typeof wallet?.address === 'string' ? wallet.address.trim() : '';
+        if (!address) return null;
+        return {
+          ...wallet,
+          address
+        };
+      })
+      .filter(Boolean);
+  }
+
   initialize(map) {
     this.map = map;
     console.log("✅ UserService inicializado");
@@ -30,28 +44,17 @@ class UserService {
       
       // La API devuelve { success, data, source, timestamp }
       // Extraer el array de usuarios
-      this.users = responseData.data || responseData;
+      const rawUsers = responseData.data || responseData;
+      this.users = Array.isArray(rawUsers)
+        ? rawUsers.map((user) => ({ ...user, wallets: this.normalizeWallets(user) }))
+        : [];
 
       console.log(`✅ ${this.users.length} usuarios cargados desde ${responseData.source || 'API'}`);
       return this.users;
 
     } catch (error) {
       console.error("❌ Error cargando usuarios desde API:", error);
-      console.warn("⚠️ Intentando fallback a datos locales...");
-      
-      try {
-        // Fallback a archivo local si API falla
-        const response = await fetch('/public/data/users.json');
-        if (response.ok) {
-          const data = await response.json();
-          this.users = data;
-          console.log(`⚠️ ${this.users.length} usuarios cargados desde fallback (JSON local)`);
-          return this.users;
-        }
-      } catch (fallbackError) {
-        console.error("❌ Fallback también falló:", fallbackError);
-      }
-      
+      console.warn('⚠️ Sin fallback local: popups usan wallets exclusivamente desde base de datos vía API');
       this.users = [];
       return [];
     }
