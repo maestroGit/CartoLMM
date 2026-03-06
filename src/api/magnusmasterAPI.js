@@ -70,6 +70,7 @@ class MagnusmasterAPI {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
+        credentials: 'include',
         timeout: 5000
       });
 
@@ -124,6 +125,7 @@ class MagnusmasterAPI {
               'Content-Type': 'application/json',
               'Accept': 'application/json'
             },
+            credentials: 'include',
             ...fetchOptions
           });
 
