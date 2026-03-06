@@ -1016,14 +1016,19 @@ async function handleGetWalletUtxoSummary(req, res) {
         }
 
         const normalizeSummaryPayload = (payload, fallbackAddress) => {
-            const data = payload?.data || payload || {};
-            const utxosDisponibles = Number(data.utxosDisponibles ?? data.utxos_disponibles ?? 0);
-            const balanceDisponible = Number(data.balanceDisponible ?? data.balance_disponible ?? 0);
+            // MagnusmasterAPI envuelve respuestas como { success, data, timestamp }.
+            // Y el backend de wallet devuelve a su vez { success, data: { ... } }.
+            // Por eso aquí desempaquetamos ambos niveles de forma robusta.
+            const envelope = payload?.data ?? payload ?? {};
+            const data = envelope?.data ?? envelope;
+
+            const utxosDisponibles = Number(data?.utxosDisponibles ?? data?.utxos_disponibles ?? 0);
+            const balanceDisponible = Number(data?.balanceDisponible ?? data?.balance_disponible ?? 0);
             return {
-                address: data.address || data.wallet_address || fallbackAddress,
+                address: data?.address || data?.wallet_address || fallbackAddress,
                 utxosDisponibles: Number.isFinite(utxosDisponibles) ? utxosDisponibles : 0,
                 balanceDisponible: Number.isFinite(balanceDisponible) ? balanceDisponible : 0,
-                updatedAt: data.updatedAt || data.updated_at || new Date().toISOString()
+                updatedAt: data?.updatedAt || data?.updated_at || new Date().toISOString()
             };
         };
 
