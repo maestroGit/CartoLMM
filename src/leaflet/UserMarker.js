@@ -464,7 +464,7 @@ class UserMarker {
                 if (data && data.success && data.data && typeof data.data.utxosDisponibles !== 'undefined') {
                   const utxosCount = Number(data.data.utxosDisponibles || 0);
                   const balance = Number(data.data.balanceDisponible || 0);
-                  const displayValue = `${utxosCount} UTXO${utxosCount === 1 ? '' : 's'} · ${balance} LMM`;
+                  const displayValue = `${utxosCount} Magnums · ${balance} Balance`;
                   console.log('[Balance] ✅ Actualizando DOM con resumen:', displayValue);
                   resultDiv.textContent = displayValue;
                   resultDiv.style.color = '#222';
