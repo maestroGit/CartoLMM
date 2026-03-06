@@ -3,24 +3,50 @@
  * Devuelve contadores para Winery, Wine Lovers, D.O., variedades y tipos de vino.
  */
 class BusinessStatsService {
-  constructor(baseUrl) {
-    this.baseUrl = (baseUrl || '').replace(/\/+$/, '');
+  constructor(baseUrlOrList) {
+    const input = Array.isArray(baseUrlOrList)
+      ? baseUrlOrList
+      : [baseUrlOrList];
+
+    this.baseUrls = Array.from(
+      new Set(
+        input
+          .map((url) => String(url || '').trim().replace(/\/+$/, ''))
+          .filter(Boolean)
+      )
+    );
+
+    this.baseUrl = this.baseUrls[0] || '';
     this.cache = null;
     this.cacheTimestamp = 0;
     this.cacheTtlMs = 60 * 1000;
   }
 
   async fetchJson(path) {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const errors = [];
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} en ${path}`);
+    for (const baseUrl of this.baseUrls) {
+      try {
+        const response = await fetch(`${baseUrl}${path}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} en ${baseUrl}${path}`);
+        }
+
+        const payload = await response.json();
+        return {
+          ...payload,
+          _sourceBaseUrl: baseUrl
+        };
+      } catch (error) {
+        errors.push(error?.message || `Error en ${baseUrl}${path}`);
+      }
     }
 
-    return response.json();
+    throw new Error(errors.join(' | '));
   }
 
   isCacheFresh() {
@@ -122,6 +148,13 @@ class BusinessStatsService {
       wineTypes: tiposVinoRes.status === 'fulfilled' ? this.extractCount(tiposVino) : null,
       magnums: blocksRes.status === 'fulfilled' ? this.estimateMagnumsFromBlocks(blocks) : null,
       source: warnings.length === 0 ? 'database' : 'partial',
+      sourceBaseUrl:
+        users?._sourceBaseUrl ||
+        denominaciones?._sourceBaseUrl ||
+        variedades?._sourceBaseUrl ||
+        tiposVino?._sourceBaseUrl ||
+        blocks?._sourceBaseUrl ||
+        null,
       warnings,
       lastUpdate: new Date().toISOString()
     };

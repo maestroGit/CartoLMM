@@ -21,6 +21,22 @@ class DashboardService {
       networkStatus: "disconnected",
     };
     this.updateInterval = null;
+    this.debugMetrics = this.isMetricsDebugEnabled();
+  }
+
+  isMetricsDebugEnabled() {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      if (params.get("debugMetrics") === "1") return true;
+      return window.localStorage?.getItem("debugMetrics") === "1";
+    } catch (error) {
+      return false;
+    }
+  }
+
+  logMetricsDebug(label, payload) {
+    if (!this.debugMetrics) return;
+    console.log(`[METRICS][Dashboard] ${label}`, payload);
   }
 
   /**
@@ -427,6 +443,11 @@ class DashboardService {
    * Actualiza métricas del sistema
    */
   updateMetrics(bodegasData = null, blockchainData = null) {
+    this.logMetricsDebug("updateMetrics input", {
+      bodegasData,
+      blockchainData,
+    });
+
     // Compatibilidad: en varios flujos se invoca updateMetrics(payload)
     // donde payload es el objeto de métricas del backend (/api/dashboard-metrics).
     // Si detectamos ese shape, lo tratamos como blockchainData.
@@ -494,6 +515,7 @@ class DashboardService {
       // Métricas de negocio (BD): wineries, wine lovers, D.O., magnums
       if (blockchainData.business) {
         const business = blockchainData.business;
+        this.logMetricsDebug("business payload", business);
         if (typeof business.wineries === "number") {
           this.metrics.totalBodegas = business.wineries;
         } else {
@@ -537,6 +559,8 @@ class DashboardService {
     } catch (e) {
       this.metrics.lastUpdated = Date.now();
     }
+
+    this.logMetricsDebug("metrics normalizadas", { ...this.metrics });
 
     this.updateMetricsDisplay();
   }
@@ -607,6 +631,14 @@ class DashboardService {
         ? String(this.metrics.totalWineTypes)
         : "-";
     }
+
+    this.logMetricsDebug("valores pintados en DOM", {
+      totalBodegas: wineriesEl?.textContent ?? null,
+      totalWineLovers: wineLoversEl?.textContent ?? null,
+      totalGrapeTypes: grapeTypesEl?.textContent ?? null,
+      totalWineTypes: wineTypesEl?.textContent ?? null,
+      totalDoRegions: doRegionsEl?.textContent ?? null,
+    });
 
     // Actualizar estado de conexión
     const statusElement = document.querySelector(

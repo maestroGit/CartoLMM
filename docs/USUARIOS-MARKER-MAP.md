@@ -1,74 +1,42 @@
-src/
-├── models/
-│   └── Usuario.js           // ✅ Modelo de datos (mantener ES6)
-│                            // Representa la estructura del usuario
-│
-└── leaflet/
-    ├── PeerMarker.js        // ✅ Ya existe - Marcadores de peers P2P
-    └── UserMarker.js        // 🆕 NUEVO - Marcadores de usuarios
-                             // Usa Usuario.js internamente
-                             // Clase global (window.UserMarker)
+# Usuarios en mapa (CartoLMM)
 
-UserMarker.js 
-/**
- * Marcador de usuario en el mapa Leaflet
- * Usa el modelo Usuario.js para los datos
- */
-class UserMarker {...}
+## Estado actual
 
-Ventajas de Esta Arquitectura
-✅ Usuario.js sigue siendo ES6 puro (modelo de datos)
-✅ UserMarker.js es clase global (compatible con navegador)
-✅ Separación clara:
-Usuario.js = lógica de negocio
-UserMarker.js = visualización en mapa
-✅ Consistente con PeerMarker.js
-✅ No necesitas cambiar Usuario.js
+CartoLMM renderiza usuarios y popups **exclusivamente desde API/BD**.
 
-¿Quieres que implemente esto?
-Si dices que sí, crearé:
+- Fuente de datos: `GET /api/users?includeWallets=true`
+- Proxy backend: `src/api/controllers/userController.js`
+- Servicio frontend: `src/services/UserService.js`
+- Marcadores/popup: `src/leaflet/UserMarker.js`
 
-src/leaflet/UserMarker.js (clase global para el navegador)
-src/services/userService.js (cargar users.json y gestionar marcadores)
-Integración en mapService.js (nueva capa "Usuarios")
-CSS para los iconos de usuarios
-Usuario.js se queda como está (ES6) porque no se carga en el navegador, solo sirve de referencia para la estructura de datos.
+No se usa `public/data/users.json` como fuente runtime.
 
-Implementación completa ✅
+## Flujo de datos
 
-Archivos creados:
+1. `UserService.loadUsers()` llama a `/api/users?includeWallets=true`.
+2. El backend de CartoLMM proxyea a backend blockchain configurado (`BLOCKCHAIN_LOCAL_URL` en desarrollo).
+3. El payload incluye `wallets[]` por usuario desde base de datos.
+4. `UserMarker` pinta popup y wallets con `user.wallets`.
 
-✅ src/leaflet/UserMarker.js (181 líneas) - Marcadores con iconos 🍷 🍇 ⛏️
-✅ src/services/userService.js (193 líneas) - Gestión de usuarios
-Archivos modificados:
-3. ✅ peer-markers.css (+283 líneas CSS) - Estilos para usuarios
-4. ✅ mapService.js - Capa de usuarios + método loadUsersOnMap()
-5. ✅ dashboardService.js - Inicialización de userService
-6. ✅ index.html - Scripts UserMarker.js y userService.js
+## Requisitos de backend
 
-Características implementadas:
+Para que un usuario se muestre en mapa:
 
-Iconos por categoría:
+- Debe venir en `data[]` de `/api/users`.
+- Debe tener coordenadas válidas (`localizacion.lat/lng` o `localizacion_lat/lng`).
+- Si `includeWallets=true`, popup mostrará addresses desde DB (`wallets`).
 
-🍷 Bodegas (rojo, 36px)
-🍇 Wine Lovers (morado, 32px)
-⛏️ Mineros (naranja, 34px)
-Badge "×N" para múltiples categorías
-Indicador verde de blockchain activo
-Popups detallados:
+## Notas de operación
 
-Nombre, email, categorías
-Wallets con estado (active/inactive)
-Estado blockchain (✅/❌)
-Proveedor OAuth, fecha registro
-Ubicación geográfica
-Control de capas:
+- Si falla `/api/users`, no hay fallback local JSON: mapa de usuarios queda vacío.
+- Para validar un usuario concreto:
 
-"🌐 Peers Blockchain" (nodos P2P)
-"👥 Usuarios" (bodegas, wine lovers, mineros)
-Activar/desactivar independientemente
-Reinicia el servidor y verás:
+```bash
+curl -s "http://localhost:8080/api/users/<USER_ID>?includeWallets=true"
+```
 
-4 peers blockchain (🏠 🌐)
-4 usuarios de users.json (🍷 🍇 ⛏️)
-Control de capas en botón "Capas"
+- Para validar listado con wallets:
+
+```bash
+curl -s "http://localhost:8080/api/users?includeWallets=true"
+```

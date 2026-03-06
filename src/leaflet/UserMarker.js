@@ -153,23 +153,30 @@ class UserMarker {
     const isWineLover = categoriasList && categoriasList.includes('wine_lover');
     if (this.data.userCard && this.data.userCard.img && this.data.userCard.img.trim() !== '') {
       imagenSrc = this.data.userCard.img;
+    } else if (this.data.usercard_img && this.data.usercard_img.trim() !== '') {
+      imagenSrc = this.data.usercard_img;
     } else if (this.data.img_bottle && this.data.img_bottle.trim() !== '') {
       imagenSrc = this.data.img_bottle;
+    } else if (this.data.imgBottle && this.data.imgBottle.trim() !== '') {
+      imagenSrc = this.data.imgBottle;
+    } else if (this.data['img-bottle'] && this.data['img-bottle'].trim() !== '') {
+      imagenSrc = this.data['img-bottle'];
+    } else if (this.data.img && this.data.img.trim() !== '') {
+      imagenSrc = this.data.img;
     } else if (isWineLover) {
       imagenSrc = '/public/images/20220704_174927.jpg';
     } else {
       imagenSrc = '/images/iconoBWred.png';
     }
-    const isExternal = imagenSrc.startsWith('http://') || imagenSrc.startsWith('https://');
-    const finalImgSrc = isExternal ? imagenSrc : imagenSrc;
+    const finalImgSrc = this.resolveImageSrc(imagenSrc);
     // Botón Move
 
     // Imagen con zoom interactivo y botón Move solo para wine_lover
     const moveBtn = `<div style=\"width:100%;display:flex;justify-content:center;\"><button class=\"move-btn-user-popup\" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
     // Para bodega: solo imagen, contenedor ancho
-      const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')"></div>`;
+      const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" referrerpolicy="no-referrer" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/default-bottle.png';"></div>`;
     // Para wine_lover: imagen + botón Move
-    const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" onclick=\"window.showZoomImage && window.showZoomImage('${finalImgSrc}')\">${moveBtn}</div>`;
+    const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" referrerpolicy=\"no-referrer\" onclick=\"window.showZoomImage && window.showZoomImage(this.getAttribute('src'))\" onerror=\"this.onerror=null;this.src='/images/default-bottle.png';\">${moveBtn}</div>`;
     // Para usuarios generales (role=user): mostrar avatar/foto de perfil
     const imagenDivUsuario = `
       <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0 4px 0;">
@@ -177,7 +184,9 @@ class UserMarker {
           src="${finalImgSrc}"
           alt="Foto de ${this.data.nombre || 'usuario'}"
           style="width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid #f7931a;box-shadow:0 2px 10px #0004;cursor:pointer;"
-          onclick="window.showZoomImage && window.showZoomImage('${finalImgSrc}')"
+          referrerpolicy="no-referrer"
+          onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))"
+          onerror="this.onerror=null;this.src='/images/default-bottle.png';"
         >
         <div style="font-weight:600;color:#f5f5f5;text-align:center;">${this.data.nombre || 'Usuario'}</div>
       </div>
@@ -475,6 +484,44 @@ class UserMarker {
             });
       };
     }
+  }
+
+  resolveImageSrc(rawValue) {
+    const fallback = '/images/default-bottle.png';
+    if (typeof rawValue !== 'string') {
+      return fallback;
+    }
+
+    let candidate = rawValue.trim();
+    if (!candidate) {
+      return fallback;
+    }
+
+    // Algunos registros vienen como etiqueta HTML completa en vez de URL directa.
+    const fromHtml = this.extractSrcFromImgTag(candidate);
+    if (fromHtml) {
+      candidate = fromHtml;
+    }
+
+    if (!candidate.startsWith('http://') && !candidate.startsWith('https://')) {
+      return candidate;
+    }
+
+    try {
+      const decoded = decodeURI(candidate);
+      return encodeURI(decoded.normalize('NFC'));
+    } catch (err) {
+      return candidate.normalize('NFC');
+    }
+  }
+
+  extractSrcFromImgTag(rawValue) {
+    if (typeof rawValue !== 'string') {
+      return '';
+    }
+
+    const match = rawValue.match(/<img[^>]*\ssrc\s*=\s*["']([^"']+)["']/i);
+    return match && match[1] ? match[1].trim() : '';
   }
 
   formatRegistroFecha() {

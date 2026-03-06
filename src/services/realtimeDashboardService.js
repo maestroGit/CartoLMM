@@ -13,6 +13,17 @@ class RealtimeDashboardService {
     this.pollingInterval = null;
     this.mapUpdateTimeout = null;
     this.mapUpdateDelay = 1000;
+    this.debugMetrics = this.isMetricsDebugEnabled();
+  }
+
+  isMetricsDebugEnabled() {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.get('debugMetrics') === '1') return true;
+      return window.localStorage?.getItem('debugMetrics') === '1';
+    } catch (error) {
+      return false;
+    }
   }
 
   init() {
@@ -24,6 +35,9 @@ class RealtimeDashboardService {
     fetch('/api/dashboard-metrics')
       .then(r => r.json())
       .then(data => {
+        if (this.debugMetrics) {
+          console.log('[METRICS][Realtime] /api/dashboard-metrics snapshot:', data);
+        }
         if (data.success && this.dashboardService) {
           this.dashboardService.updateMetrics(data.data);
         }
@@ -60,6 +74,9 @@ class RealtimeDashboardService {
     });
     this.socket.on('system:metrics', metrics => {
       this.lastMetrics = metrics;
+      if (this.debugMetrics) {
+        console.log('[METRICS][Realtime] system:metrics payload:', metrics);
+      }
       if (this.dashboardService) {
         this.dashboardService.updateMetrics(metrics);
       }

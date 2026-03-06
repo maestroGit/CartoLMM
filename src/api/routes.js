@@ -13,7 +13,10 @@ import { config } from '../config/config.js';
 // Instancias de clientes API para magnumsmaster (relay) y magnumslocal (nodo local)
 const magnusmasterClient = new MagnusmasterAPI(config.blockchainApiUrl); // Relay principal (puerto 3001)
 const magnumslocalClient = new MagnusmasterAPI(config.blockchainLocalUrl);  // Nodo local (puerto 6001)
-const businessStatsService = new BusinessStatsService(config.blockchainLocalUrl);
+const businessStatsService = new BusinessStatsService([
+    config.blockchainLocalUrl,
+    config.blockchainApiUrl
+]);
 
 /**
  * Configurar todas las rutas API
@@ -773,6 +776,10 @@ async function handleGetDashboardMetrics(req, res) {
                 success: true,
                 data: validatedMetrics,
                 source: 'magnumsmaster',
+                diagnostics: {
+                    businessSourceBaseUrl: businessStats?.sourceBaseUrl || null,
+                    businessSourceMode: businessStats?.source || 'unavailable'
+                },
                 errors: metricsResponse.errors || [],
                 timestamp: new Date().toISOString()
             });
@@ -795,6 +802,10 @@ async function handleGetDashboardMetrics(req, res) {
                 success: true,
                 data: emptyMetrics,
                 source: 'empty',
+                diagnostics: {
+                    businessSourceBaseUrl: businessStats?.sourceBaseUrl || null,
+                    businessSourceMode: businessStats?.source || 'unavailable'
+                },
                 warning: 'Backend magnumsmaster no disponible - sin datos',
                 timestamp: new Date().toISOString()
             });

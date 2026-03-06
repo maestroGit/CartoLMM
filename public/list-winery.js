@@ -536,6 +536,7 @@ class WineryListManager {
 
     // Renderizar tarjetas
     container.innerHTML = paginatedWineries.map(winery => this.createWineryCard(winery)).join('');
+    this.attachImageFallbackHandlers(container);
 
     // Agregar event listeners a botones de tarjetas
     document.querySelectorAll('.winery-view-btn').forEach((btn, idx) => {
@@ -572,10 +573,10 @@ class WineryListManager {
     const denominacionesData = this.extractDenominacionesInfo(winery);
     const dosHtml = this.createDosSection(denominacionesData);
 
-    const imgSrc = this.getWineryImageSrc(winery);
+    const { primarySrc, fallbackSrc } = this.getWineryImageSources(winery);
     return `
       <div class="winery-card">
-        <div class="user-bottle-img-wrapper bodega-img-full"><img src="${imgSrc}" alt="Imagen botella o icono" class="bottle-img-card" onclick="window.showZoomImage && window.showZoomImage('${imgSrc}')"></div>
+        <div class="user-bottle-img-wrapper bodega-img-full"><img src="${primarySrc}" data-fallback-src="${fallbackSrc}" alt="Imagen botella o icono" class="bottle-img-card" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)"></div>
         <div class="winery-card-header">
           <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
           <span class="winery-role-badge">Bodega</span>
@@ -624,15 +625,18 @@ class WineryListManager {
     document.getElementById('modalWineryCreated').textContent = createdAt;
 
     // Imagen de la bodega en el modal
-    let imgSrc = this.getWineryImageSrc(winery);
-    let imgHtml = `<div class="user-bottle-img-wrapper bodega-img-full bottle-img-modal"><img src="${imgSrc}" alt="Imagen botella o icono" class="bottle-img" onclick="window.showZoomImage && window.showZoomImage('${imgSrc}')"></div>`;
+    const { primarySrc, fallbackSrc } = this.getWineryImageSources(winery);
+    const imgHtml = `<div class="user-bottle-img-wrapper bodega-img-full bottle-img-modal"><img src="${primarySrc}" data-fallback-src="${fallbackSrc}" alt="Imagen botella o icono" class="bottle-img" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)"></div>`;
     // Insertar imagen arriba del modal
     const modalHeader = document.querySelector('.winery-detail-header');
     if (modalHeader && !modalHeader.querySelector('img')) {
       modalHeader.insertAdjacentHTML('afterbegin', imgHtml);
     } else if (modalHeader && modalHeader.querySelector('img')) {
-      modalHeader.querySelector('img').src = imgSrc;
+      const modalImg = modalHeader.querySelector('img');
+      modalImg.src = primarySrc;
+      modalImg.dataset.fallbackSrc = fallbackSrc;
     }
+    this.attachImageFallbackHandlers(modalHeader || modal);
 
     // Categorías
     const categoriesHtml = winery.categorias && winery.categorias.length > 0
@@ -795,16 +799,53 @@ class WineryListManager {
       .replace(/^_+|_+$/g, '');
   }
 
-  getWineryImageSrc(winery) {
+  getWineryImageSources(winery) {
     const imageFromProfile = winery?.userCard?.img || winery?.usercard_img;
     const imageFromBottle = winery?.img_bottle || winery?.imgBottle || winery?.['img-bottle'] || winery?.img;
-    const selected = imageFromProfile || imageFromBottle;
+    const defaultImage = '/images/default-bottle.png';
+
+    const profileValue = typeof imageFromProfile === 'string' ? imageFromProfile.trim() : '';
+    const bottleValue = typeof imageFromBottle === 'string' ? imageFromBottle.trim() : '';
+    const profileLooksLocal = profileValue.startsWith('/images/');
+    const bottleLooksRemote = /^https?:\/\//i.test(bottleValue);
+
+    const selected =
+      profileLooksLocal && bottleLooksRemote
+        ? bottleValue
+        : (profileValue || bottleValue || defaultImage);
 
     if (typeof selected === 'string' && selected.trim()) {
-      return selected.trim();
+      const primarySrc = selected.trim();
+      const fallbackSrc =
+        bottleValue && bottleValue !== primarySrc
+          ? bottleValue
+          : defaultImage;
+
+      return { primarySrc, fallbackSrc };
     }
 
-    return '/images/default-bottle.png';
+    return { primarySrc: defaultImage, fallbackSrc: defaultImage };
+  }
+
+  attachImageFallbackHandlers(rootElement) {
+    if (!rootElement) return;
+
+    rootElement.querySelectorAll('img[data-fallback-src]').forEach((img) => {
+      if (img.dataset.fallbackBound === '1') return;
+      img.dataset.fallbackBound = '1';
+
+      img.addEventListener('error', () => {
+        const fallbackSrc = img.dataset.fallbackSrc || '/images/default-bottle.png';
+        const currentSrc = img.getAttribute('src') || '';
+
+        if (currentSrc === fallbackSrc && fallbackSrc === '/images/default-bottle.png') {
+          return;
+        }
+
+        img.setAttribute('src', fallbackSrc);
+        img.dataset.fallbackSrc = '/images/default-bottle.png';
+      });
+    });
   }
 
   extractDenominacionesInfo(winery) {
