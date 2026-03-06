@@ -262,6 +262,16 @@ class MagnusmasterAPI {
   }
 
   /**
+   * 📚 Obtener resumen UTXO persistido en BD para una wallet
+   */
+  async getWalletUtxoSummary(address) {
+    const normalized = String(address || '').trim().toLowerCase();
+    const safeAddress = encodeURIComponent(normalized);
+    const cacheKey = `GET /wallet/${normalized}/utxo-summary`;
+    return await this.makeRequest(`/wallet/${safeAddress}/utxo-summary`, { cacheTtlMs: 30000, cacheKey });
+  }
+
+  /**
    * 💳 Obtener balance de la wallet principal
    */
   async getWalletBalance() {

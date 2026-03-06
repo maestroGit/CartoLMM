@@ -133,7 +133,7 @@ class UserMarker {
           <div class="wallet-item" style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
             <code style="word-break:break-all;white-space:pre-wrap;user-select:all;margin-bottom:0;">${w.address}</code>
             <div style="display:flex;align-items:center;gap:6px;">
-              <button class="balance-btn-user-popup" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Balance</button>
+              <button class="balance-btn-user-popup" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Magnums</button>
               <div class="wallet-balance-result" id="wallet-balance-result-${this.data.id || idx}"></div>
             </div>
           </div>
@@ -427,8 +427,8 @@ class UserMarker {
         } else {
           console.error('[Balance] ❌ No se encontró resultDiv (nextElementSibling del botón)');
         }
-        console.log('[Balance] Solicitando balance para address:', address);
-          fetch(`/api/balance?address=${encodeURIComponent(address)}`)
+        console.log('[Balance] Solicitando resumen UTXO para address:', address);
+          fetch(`/api/wallet/${encodeURIComponent(address)}/utxo-summary`)
             .then(res => {
               console.log('[Balance] Respuesta fetch:', res);
               return res.text();
@@ -458,17 +458,20 @@ class UserMarker {
                 console.log('[Balance] - data existe:', !!data);
                 console.log('[Balance] - data.success:', data?.success);
                 console.log('[Balance] - data.data existe:', !!data?.data);
-                console.log('[Balance] - data.data.balance:', data?.data?.balance);
-                console.log('[Balance] - typeof balance:', typeof data?.data?.balance);
+                console.log('[Balance] - data.data.utxosDisponibles:', data?.data?.utxosDisponibles);
+                console.log('[Balance] - data.data.balanceDisponible:', data?.data?.balanceDisponible);
                 
-                if (data && data.success && data.data && typeof data.data.balance !== 'undefined') {
-                  console.log('[Balance] ✅ Actualizando DOM con balance:', data.data.balance);
-                  resultDiv.textContent = data.data.balance;
+                if (data && data.success && data.data && typeof data.data.utxosDisponibles !== 'undefined') {
+                  const utxosCount = Number(data.data.utxosDisponibles || 0);
+                  const balance = Number(data.data.balanceDisponible || 0);
+                  const displayValue = `${utxosCount} UTXO${utxosCount === 1 ? '' : 's'} · ${balance} LMM`;
+                  console.log('[Balance] ✅ Actualizando DOM con resumen:', displayValue);
+                  resultDiv.textContent = displayValue;
                   resultDiv.style.color = '#222';
                   console.log('[Balance] ✅ DOM actualizado. Nuevo texto:', resultDiv.textContent);
                 } else {
-                  console.warn('[Balance] ⚠️ Condición fallida, mostrando "Balance no disponible"');
-                  resultDiv.textContent = 'Balance no disponible';
+                  console.warn('[Balance] ⚠️ Condición fallida, mostrando "Resumen no disponible"');
+                  resultDiv.textContent = 'Resumen no disponible';
                   resultDiv.style.color = '#a22';
                 }
               } else {

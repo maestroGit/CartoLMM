@@ -44,6 +44,9 @@ export async function setupAPIRoutes(app) {
     // API: Balance de dirección
     app.get('/api/balance', handleGetBalance);
 
+    // API: Resumen UTXO por wallet (conteo + balance)
+    app.get('/api/wallet/:address/utxo-summary', handleGetWalletUtxoSummary);
+
     // API: UTXOs de dirección
     app.get('/api/utxo-balance', handleGetUTXOBalance);
     
@@ -994,5 +997,96 @@ async function handleGetUTXOBalance(req, res) {
     } catch (error) {
         console.error(`❌ [API] /api/utxo-balance - Error:`, error.message);
         handleAPIError(res, error, 'Error obteniendo UTXOs');
+    }
+}
+
+/**
+ * Handler: Resumen UTXO de una wallet
+ * Devuelve conteo de UTXOs disponibles + balance, priorizando endpoint persistido en BD.
+ */
+async function handleGetWalletUtxoSummary(req, res) {
+    try {
+        const { address } = req.params;
+        if (!address) {
+            return res.status(400).json({
+                success: false,
+                error: 'Dirección requerida',
+                code: 'MISSING_ADDRESS'
+            });
+        }
+
+        const normalizeSummaryPayload = (payload, fallbackAddress) => {
+            const data = payload?.data || payload || {};
+            const utxosDisponibles = Number(data.utxosDisponibles ?? data.utxos_disponibles ?? 0);
+            const balanceDisponible = Number(data.balanceDisponible ?? data.balance_disponible ?? 0);
+            return {
+                address: data.address || data.wallet_address || fallbackAddress,
+                utxosDisponibles: Number.isFinite(utxosDisponibles) ? utxosDisponibles : 0,
+                balanceDisponible: Number.isFinite(balanceDisponible) ? balanceDisponible : 0,
+                updatedAt: data.updatedAt || data.updated_at || new Date().toISOString()
+            };
+        };
+
+        console.log(`🔍 [UTXO-SUMMARY] Consultando magnumsmaster para ${address}...`);
+        const relayResponse = await magnusmasterClient.getWalletUtxoSummary(address);
+        if (relayResponse?.success) {
+            return res.json({
+                success: true,
+                data: normalizeSummaryPayload(relayResponse, address),
+                source: 'magnumsmaster-relay',
+                timestamp: relayResponse.timestamp || new Date().toISOString()
+            });
+        }
+
+        console.warn(`⚠️ [UTXO-SUMMARY] magnumsmaster no disponible. Intentando magnumslocal...`);
+        const localResponse = await magnumslocalClient.getWalletUtxoSummary(address);
+        if (localResponse?.success) {
+            return res.json({
+                success: true,
+                data: normalizeSummaryPayload(localResponse, address),
+                source: 'magnumslocal',
+                timestamp: localResponse.timestamp || new Date().toISOString()
+            });
+        }
+
+        // Fallback de compatibilidad: construir resumen desde /utxo-balance/:address
+        const legacyResponse = await magnusmasterClient.getUTXOBalance(address);
+        if (legacyResponse?.success && legacyResponse?.data) {
+            const legacyData = legacyResponse.data;
+            const utxosDisponibles = Array.isArray(legacyData.utxosDisponibles)
+                ? legacyData.utxosDisponibles.length
+                : Array.isArray(legacyData.utxos)
+                    ? legacyData.utxos.length
+                    : 0;
+            const balanceDisponible = Number(legacyData.balance || 0);
+
+            return res.json({
+                success: true,
+                data: {
+                    address,
+                    utxosDisponibles,
+                    balanceDisponible,
+                    updatedAt: new Date().toISOString()
+                },
+                source: 'fallback-legacy-utxo',
+                warning: 'Resumen construido desde utxo-balance (sin tabla summary)'
+            });
+        }
+
+        return res.json({
+            success: true,
+            data: {
+                address,
+                utxosDisponibles: 0,
+                balanceDisponible: 0,
+                updatedAt: new Date().toISOString()
+            },
+            source: 'fallback',
+            warning: 'Backends no disponibles para utxo-summary',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error(`❌ [API] /api/wallet/:address/utxo-summary - Error:`, error.message);
+        handleAPIError(res, error, 'Error obteniendo resumen UTXO');
     }
 }

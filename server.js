@@ -120,15 +120,12 @@ async function startServer() {
 
         // Iniciar servidor
         server.listen(config.port, () => {
-            console.log('🍷 =====================================');
-            console.log('🚀 CartoLMM - Large Magnum Master');
-            console.log('🌍 Del Terruño al Ciberespacio');
-            console.log('🍷 =====================================');
-            console.log(`📊 Dashboard: http://${config.host}:${config.port}/`);
-            console.log(`🌐 Entorno: ${config.nodeEnv}`);
-            console.log(`📝 Logging: ${config.logLevel}`);
+            console.log(' =====================================');
+            console.log(`Dashboard: http://${config.host}:${config.port}/`);
+            console.log(` Entorno: ${config.nodeEnv}`);
+            console.log(` Logging: ${config.logLevel}`);
             console.log('');
-            console.log('🔍 APIs disponibles:');
+            console.log(' APIs disponibles:');
             console.log('   GET /api/users - Usuarios (proxy a magnumslocal)');
             console.log('   GET /api/users/:id - Usuario por ID');
             console.log('   GET /api/users/stats - Estadísticas de usuarios');
@@ -142,8 +139,8 @@ async function startServer() {
             console.log('   GET /api/geographic-data - Datos geográficos');
             console.log('   GET /api/magnumsmaster-status - Estado de conexión');
             console.log('');
-            console.log('⚡ WebSocket activo para eventos en tiempo real');
-            console.log('🍷 =====================================');
+            console.log(' WebSocket activo para eventos en tiempo real');
+            console.log(' =====================================');
         });
 
     } catch (error) {
