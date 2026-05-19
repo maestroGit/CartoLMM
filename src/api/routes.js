@@ -10,9 +10,8 @@ import BusinessStatsService from '../services/businessStatsService.js';
 import userRoutes from './routes/userRoutes.js';
 import { config } from '../config/config.js';
 
-// Instancias de clientes API para magnumsmaster (relay) y magnumslocal (nodo local)
+// Instancia cliente API para magnumsmaster (fuente de verdad UTXO)
 const magnusmasterClient = new MagnusmasterAPI(config.blockchainApiUrl); // Relay principal (puerto 3001)
-const magnumslocalClient = new MagnusmasterAPI(config.blockchainLocalUrl);  // Nodo local (puerto 6001)
 const businessStatsService = new BusinessStatsService([
     config.blockchainLocalUrl,
     config.blockchainApiUrl
@@ -541,7 +540,7 @@ async function handleGetTransactions(req, res) {
 
 /**
  * Handler: Balance de dirección
- * Obtiene balance por dirección con fallback a datos mock
+ * Obtiene balance por dirección usando magnumsmaster como fuente de verdad
  */
 async function handleGetBalance(req, res) {
     try {
@@ -556,8 +555,7 @@ async function handleGetBalance(req, res) {
             });
         }
 
-        // Estrategia dual: Intentar primero magnumsmaster (relay), luego magnumslocal
-        // Usar /utxo-balance en lugar de /wallet/address-balance (está roto en producción)
+        // Fuente de verdad: UTXO runtime desde magnumsmaster
         console.log(`🔍 [Balance] Consultando magnumsmaster (relay principal)...`);
         const relayResponse = await magnusmasterClient.getUTXOBalance(address);
         
@@ -583,34 +581,9 @@ async function handleGetBalance(req, res) {
                 timestamp: relayResponse.timestamp || new Date().toISOString()
             });
         }
-        console.warn(`⚠️ [Balance] magnumsmaster no disponible. Intentando magnumslocal...`);
 
-        // Segundo intento: magnumslocal (nodo local)
-        const localResponse = await magnumslocalClient.getUTXOBalance(address);
-        
-        if (localResponse && localResponse.success && localResponse.data) {
-            console.log(`✅ [Balance] Respuesta exitosa desde magnumslocal`);
-            const utxoData = localResponse.data;
-            const balance = utxoData.balance || 0; // Campo correcto del backend
-            const utxosCount = (utxoData.utxosDisponibles?.length || 0) + (utxoData.utxosPendientes?.length || 0);
-            return res.json({
-                success: true,
-                data: {
-                    address: address,
-                    balance: balance,
-                    balanceFormatted: `${balance} LMM`,
-                    lastUpdated: localResponse.timestamp || new Date().toISOString(),
-                    transactionCount: utxosCount,
-                    type: address.includes('bodega') ? 'winery' : 'customer'
-                },
-                source: 'magnumslocal',
-                timestamp: localResponse.timestamp || new Date().toISOString()
-            });
-        }
-        console.warn(`⚠️ [Balance] Ambos backends no disponibles`);
-
-        // Fallback: balance cero si ambos backends fallan
-        console.warn(`⚠️ [API] /api/balance - Usando fallback. Relay: ${relayResponse.error || 'Sin datos'}, Local: ${localResponse.error || 'Sin datos'}`);
+        // Si magnumsmaster no responde, devolver fallback neutro sin mezclar con otras fuentes
+        console.warn(`⚠️ [API] /api/balance - magnumsmaster no disponible. Usando fallback neutro. Razón: ${relayResponse.error || 'Sin datos'}`);
         return res.json({
             success: true,
             data: {
@@ -622,7 +595,7 @@ async function handleGetBalance(req, res) {
                 type: address.includes('bodega') ? 'winery' : 'customer'
             },
             source: 'fallback',
-            warning: 'Both backends unavailable',
+            warning: 'magnumsmaster unavailable',
             timestamp: new Date().toISOString()
         });
     } catch (error) {
@@ -1002,7 +975,7 @@ async function handleGetUTXOBalance(req, res) {
 
 /**
  * Handler: Resumen UTXO de una wallet
- * Devuelve conteo de UTXOs disponibles + balance, priorizando endpoint persistido en BD.
+ * Devuelve conteo de UTXOs disponibles + balance desde UTXO runtime de magnumsmaster.
  */
 async function handleGetWalletUtxoSummary(req, res) {
     try {
@@ -1015,68 +988,34 @@ async function handleGetWalletUtxoSummary(req, res) {
             });
         }
 
-        const normalizeSummaryPayload = (payload, fallbackAddress) => {
-            // MagnusmasterAPI envuelve respuestas como { success, data, timestamp }.
-            // Y el backend de wallet devuelve a su vez { success, data: { ... } }.
-            // Por eso aquí desempaquetamos ambos niveles de forma robusta.
-            const envelope = payload?.data ?? payload ?? {};
-            const data = envelope?.data ?? envelope;
-
-            const utxosDisponibles = Number(data?.utxosDisponibles ?? data?.utxos_disponibles ?? 0);
-            const balanceDisponible = Number(data?.balanceDisponible ?? data?.balance_disponible ?? 0);
+        const buildSummaryFromUtxoRuntime = (payload, fallbackAddress) => {
+            const data = payload?.data ?? {};
+            const utxosDisponibles = Array.isArray(data?.utxosDisponibles)
+                ? data.utxosDisponibles.length
+                : Array.isArray(data?.utxos)
+                    ? data.utxos.length
+                    : 0;
+            const balanceDisponible = Number(data?.balance || 0);
             return {
-                address: data?.address || data?.wallet_address || fallbackAddress,
+                address: data?.address || fallbackAddress,
                 utxosDisponibles: Number.isFinite(utxosDisponibles) ? utxosDisponibles : 0,
                 balanceDisponible: Number.isFinite(balanceDisponible) ? balanceDisponible : 0,
-                updatedAt: data?.updatedAt || data?.updated_at || new Date().toISOString()
+                updatedAt: payload?.timestamp || new Date().toISOString()
             };
         };
 
-        console.log(`🔍 [UTXO-SUMMARY] Consultando magnumsmaster para ${address}...`);
-        const relayResponse = await magnusmasterClient.getWalletUtxoSummary(address);
+        console.log(`🔍 [UTXO-SUMMARY] Construyendo resumen desde UTXOs runtime de magnumsmaster para ${address}...`);
+        const relayResponse = await magnusmasterClient.getUTXOBalance(address);
         if (relayResponse?.success) {
             return res.json({
                 success: true,
-                data: normalizeSummaryPayload(relayResponse, address),
-                source: 'magnumsmaster-relay',
+                data: buildSummaryFromUtxoRuntime(relayResponse, address),
+                source: 'magnumsmaster-runtime-utxo',
                 timestamp: relayResponse.timestamp || new Date().toISOString()
             });
         }
 
-        console.warn(`⚠️ [UTXO-SUMMARY] magnumsmaster no disponible. Intentando magnumslocal...`);
-        const localResponse = await magnumslocalClient.getWalletUtxoSummary(address);
-        if (localResponse?.success) {
-            return res.json({
-                success: true,
-                data: normalizeSummaryPayload(localResponse, address),
-                source: 'magnumslocal',
-                timestamp: localResponse.timestamp || new Date().toISOString()
-            });
-        }
-
-        // Fallback de compatibilidad: construir resumen desde /utxo-balance/:address
-        const legacyResponse = await magnusmasterClient.getUTXOBalance(address);
-        if (legacyResponse?.success && legacyResponse?.data) {
-            const legacyData = legacyResponse.data;
-            const utxosDisponibles = Array.isArray(legacyData.utxosDisponibles)
-                ? legacyData.utxosDisponibles.length
-                : Array.isArray(legacyData.utxos)
-                    ? legacyData.utxos.length
-                    : 0;
-            const balanceDisponible = Number(legacyData.balance || 0);
-
-            return res.json({
-                success: true,
-                data: {
-                    address,
-                    utxosDisponibles,
-                    balanceDisponible,
-                    updatedAt: new Date().toISOString()
-                },
-                source: 'fallback-legacy-utxo',
-                warning: 'Resumen construido desde utxo-balance (sin tabla summary)'
-            });
-        }
+        console.warn(`⚠️ [UTXO-SUMMARY] magnumsmaster no disponible. Usando fallback neutro.`);
 
         return res.json({
             success: true,
@@ -1087,7 +1026,7 @@ async function handleGetWalletUtxoSummary(req, res) {
                 updatedAt: new Date().toISOString()
             },
             source: 'fallback',
-            warning: 'Backends no disponibles para utxo-summary',
+            warning: 'magnumsmaster unavailable for utxo-summary',
             timestamp: new Date().toISOString()
         });
     } catch (error) {
