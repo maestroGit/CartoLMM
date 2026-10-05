@@ -31,6 +31,45 @@ class RealtimeDashboardService {
     this.setupSocketListeners();
   }
 
+  applyPeersSnapshot(payload) {
+    if (!this.peersService) return [];
+
+    let peers = [];
+    let stats = null;
+    let network = null;
+
+    if (Array.isArray(payload)) {
+      peers = payload;
+    } else if (payload && typeof payload === 'object') {
+      peers = Array.isArray(payload.peers) ? payload.peers : [];
+      stats = payload.stats && typeof payload.stats === 'object' ? payload.stats : null;
+      network = payload.network && typeof payload.network === 'object' ? payload.network : null;
+    }
+
+    this.peersService.peers = peers;
+    if (stats) {
+      this.peersService.stats = stats;
+    } else {
+      const online = peers.filter((p) => p && p.status === 'online').length;
+      const offline = peers.filter((p) => p && p.status === 'offline').length;
+      const error = peers.filter((p) => p && p.status === 'error').length;
+      this.peersService.stats = {
+        total: peers.length,
+        online,
+        offline,
+        error,
+      };
+    }
+
+    if (network) {
+      this.peersService.network = network;
+      this.peersService.myNodeId = network.localNode || null;
+    }
+
+    this.peersService.renderMetricGrid();
+    return peers;
+  }
+
   fetchInitialSnapshot() {
     fetch('/api/dashboard-metrics')
       .then(r => r.json())
@@ -46,12 +85,10 @@ class RealtimeDashboardService {
       .then(r => r.json())
       .then(data => {
         if (data.success) {
-          if (this.peersService) {
-            this.peersService.renderMetricGrid();
-          }
-          if (this.mapService && data.peers) {
-            console.log('Cargando ' + data.peers.length + ' peers en el mapa...');
-            this.mapService.loadPeersOnMap(data.peers);
+          const peers = this.applyPeersSnapshot(data);
+          if (this.mapService && Array.isArray(peers)) {
+            console.log('Cargando ' + peers.length + ' peers en el mapa...');
+            this.mapService.loadPeersOnMap(peers);
           }
         }
       });
@@ -81,16 +118,14 @@ class RealtimeDashboardService {
         this.dashboardService.updateMetrics(metrics);
       }
       if (metrics.peers && this.peersService) {
-        this.peersService.renderMetricGrid(metrics.peers);
+        this.applyPeersSnapshot(metrics.peers);
       }
     });
     this.socket.on('system:peers', peers => {
       this.lastPeers = peers;
-      if (this.peersService) {
-        this.peersService.renderMetricGrid(peers);
-      }
-      if (this.mapService && peers && peers.peers) {
-        this.scheduleMapUpdate(peers.peers);
+      const peerList = this.applyPeersSnapshot(peers);
+      if (this.mapService && Array.isArray(peerList)) {
+        this.scheduleMapUpdate(peerList);
       }
     });
   }

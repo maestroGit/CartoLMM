@@ -187,21 +187,48 @@ async function handleGetPeers(req, res) {
       });
     }
 
-        // 2. Extraer info del nodo local con sus datos reales
+        const network = blockchain.network || {};
+
+        let baseHostFromClient = 'localhost';
+        let baseProtocolFromClient = 'http:';
+        try {
+            const baseUrl = new URL(magnusmasterClient.baseURL);
+            baseHostFromClient = baseUrl.hostname;
+            baseProtocolFromClient = baseUrl.protocol;
+        } catch (error) {
+            // Use safe defaults if base URL cannot be parsed.
+        }
+
+        const localHttpUrl =
+            blockchain.server?.httpUrl ||
+            blockchain.httpUrl ||
+            (blockchain.server?.httpPort
+                ? `${baseProtocolFromClient}//${baseHostFromClient}:${blockchain.server.httpPort}`
+                : magnusmasterClient.baseURL);
+
+        const localP2pUrl =
+            blockchain.server?.p2pUrl ||
+            blockchain.p2pUrl ||
+            (blockchain.server?.p2pPort
+                ? `ws://${baseHostFromClient}:${blockchain.server.p2pPort}`
+                : 'unknown');
+
+        // 2. Extraer info del nodo local usando la estructura actual de /system-info
         const localNode = {
-            nodeId: blockchain.nodeId || 'unknown',
-            httpUrl: (blockchain.server?.httpUrl || blockchain.httpUrl || 'unknown').toString().trim(),
-            p2pUrl: (blockchain.server?.p2pUrl || blockchain.p2pUrl || 'unknown').toString().trim(),
+            nodeId: network.nodeId || blockchain.nodeId || 'unknown',
+            httpUrl: String(localHttpUrl || 'unknown').trim(),
+            p2pUrl: String(localP2pUrl || 'unknown').trim(),
             isLocal: true,
             status: 'online',
-            blockHeight: blockchain.blockHeight || 0,
-            difficulty: blockchain.difficulty || 0,
+            blockHeight: Number(network.blockHeight || blockchain.blockHeight || 0),
+            difficulty: Number(blockchain.difficulty || 0),
+            pendingTransactions: Number(network.pendingTransactions || 0),
+            role: network.role || 'unknown',
             lastSeen: new Date().toISOString(),
             responseTime: 0
         };
 
     // 3. Extraer peers remotos (pueden ser strings o objetos)
-    const network = blockchain.network || {};
     const peersHttpRaw = network.peersHttp || [];
     const peersP2P = network.peersP2P || [];
     const p2pPeers = network.p2pPeers || []; // Array detallado si existe
@@ -260,6 +287,12 @@ async function handleGetPeers(req, res) {
     mergedPeersHttp.map(async (peer, index) => {
         const startTime = Date.now();
         const peerHttpUrl = peer.httpUrl.trim(); // Eliminar espacios
+                const peerMeta = p2pPeers.find((p) => {
+                    if (!p || typeof p !== 'object') return false;
+                    if (peer.nodeId && p.nodeId && p.nodeId === peer.nodeId) return true;
+                    if (p.httpUrl && p.httpUrl === peerHttpUrl) return true;
+                    return false;
+                }) || null;
         
                 try {
                     // Hacer petición a /system-info de cada peer
@@ -294,11 +327,11 @@ async function handleGetPeers(req, res) {
                     return {
                         nodeId,
                         httpUrl: peerHttpUrl,
-                        p2pUrl: peersP2P[index]?.url || peersP2P[index] || 'unknown',
+                        p2pUrl: peerMeta?.p2pUrl || peerMeta?.url || peersP2P[index]?.url || peersP2P[index] || 'unknown',
                         isLocal: false,
                         status: 'online',
-                        blockHeight: peerBlockchain.blockHeight || 0,
-                        difficulty: peerBlockchain.difficulty || 0,
+                        blockHeight: peerBlockchain.network?.blockHeight || peerBlockchain.blockHeight || 0,
+                        difficulty: peerBlockchain.network?.difficulty || peerBlockchain.difficulty || 0,
                         lastSeen: peer.lastSeen ? new Date(peer.lastSeen).toISOString() : new Date().toISOString(),
                         responseTime: responseTime,
                         // Info adicional si existe
@@ -324,7 +357,7 @@ async function handleGetPeers(req, res) {
                     return {
                         nodeId,
                         httpUrl: peerHttpUrl,
-                        p2pUrl: peersP2P[index]?.url || peersP2P[index] || 'unknown',
+                        p2pUrl: peerMeta?.p2pUrl || peerMeta?.url || peersP2P[index]?.url || peersP2P[index] || 'unknown',
                         isLocal: false,
                         status: 'offline',
                         blockHeight: 0,
@@ -694,6 +727,40 @@ async function handleGetDashboardMetrics(req, res) {
     try {
         console.log(`[API] /api/dashboard-metrics - Iniciando obtención de métricas...`);
 
+        const deriveActiveNodes = (metrics, systemInfoResponse) => {
+            const explicitActiveNodes = metrics?.network?.activeNodes;
+            if (Number.isFinite(explicitActiveNodes)) {
+                return explicitActiveNodes;
+            }
+
+            const metricsNetwork = metrics?.systemInfo?.data?.blockchain?.network || {};
+            const responseNetwork = systemInfoResponse?.data?.blockchain?.network || {};
+
+            const p2pPeers = Array.isArray(metricsNetwork.p2pPeers)
+                ? metricsNetwork.p2pPeers
+                : Array.isArray(responseNetwork.p2pPeers)
+                    ? responseNetwork.p2pPeers
+                    : [];
+
+            const p2pConnections = Number.isFinite(metricsNetwork.p2pConnections)
+                ? metricsNetwork.p2pConnections
+                : Number.isFinite(responseNetwork.p2pConnections)
+                    ? responseNetwork.p2pConnections
+                    : null;
+
+            // Include local node plus currently identified remote peers.
+            if (p2pPeers.length > 0) {
+                return 1 + p2pPeers.length;
+            }
+
+            if (Number.isFinite(p2pConnections)) {
+                return Math.max(1, 1 + p2pConnections);
+            }
+
+            const backendReachable = Boolean(systemInfoResponse?.success || metrics?.connectionStatus);
+            return backendReachable ? 1 : 0;
+        };
+
         // 0. Métricas de negocio desde endpoints respaldados por BD (magnumslocal)
         let businessStats = {
             wineries: 0,
@@ -734,6 +801,7 @@ async function handleGetDashboardMetrics(req, res) {
             
             // Agregar URL detectada del nodo
             metrics.network.nodeHttpUrl = nodeHttpUrl;
+            metrics.network.activeNodes = deriveActiveNodes(metrics, systemInfoResponse);
             
             // Validar que todas las métricas existan
             const validatedMetrics = {
@@ -769,7 +837,10 @@ async function handleGetDashboardMetrics(req, res) {
                 systemInfo: { success: false, data: null },
                 balance: { success: false, data: null },
                 connectionStatus: false,
-                network: { nodeHttpUrl: nodeHttpUrl || null },
+                network: {
+                    nodeHttpUrl: nodeHttpUrl || null,
+                    activeNodes: 0
+                },
                 business: businessStats,
                 lastUpdate: new Date().toISOString()
             };
