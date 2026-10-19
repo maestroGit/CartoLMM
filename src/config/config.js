@@ -21,6 +21,7 @@ export const config = {
     port: process.env.PORT || 8080,
     host: process.env.HOST || '0.0.0.0',
     nodeEnv: process.env.NODE_ENV || 'development',
+    publicUrl: process.env.PUBLIC_URL || null,
     
     // APIs - magnumsmaster (relay principal) y magnumslocal (nodo local)
     blockchainApiUrl: process.env.BLOCKCHAIN_API_URL || 'https://app.blockswine.com', // magnumsmaster producción

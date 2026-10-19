@@ -80,19 +80,27 @@ class PeerMarker {
         offline: '🔴',
         error: '🟠'
       }[this.data.status] || '⚪';
-      const title = this.data.isLocal ? '💻  NODO LOCAL' : '📡  PEER REMOTO';
+      const title = this.data.isLocal
+        ? (this.data.role === 'relay' ? '🏛️  RELAY PRINCIPAL' : '💻  NODO LOCAL')
+        : (this.data.role === 'secondary' || this.data.role === 'Node-02-blockswine' || (this.data.nodeId && this.data.nodeId.includes('winelover'))
+            ? '🍇  NODO SECUNDARIO (WineLover)'
+            : '📡  PEER REMOTO');
       // Mostrar publicKey completa si existe
       let walletSection = '';
       if (this.data.walletPublicKey) {
         walletSection = `<p><strong>Wallet:</strong> <code style="word-break:break-all;white-space:pre-wrap;user-select:all;">${this.data.walletPublicKey}</code></p>`;
       }
+      const urlLink = (this.data.httpUrl && (this.data.httpUrl.startsWith('http://') || this.data.httpUrl.startsWith('https://')))
+        ? `<a href="${this.data.httpUrl}" target="_blank" rel="noopener">${this.data.httpUrl}</a>`
+        : `<span style="color:#9ca3af;">${this.data.httpUrl || 'unknown'}</span>`;
+
       content = `
         <div class="peer-popup">
           <h4 class="peer-popup-title" style="margin-bottom:6px;">${title}</h4>
           <div class="peer-popup-content" style="display:flex;flex-direction:column;gap:4px;">
             <p style="margin:0;"><strong>ID:</strong> <code>${this.data.nodeId}</code></p>
             <p style="margin:0;"><strong>Estado:</strong> ${statusEmoji} <span class="status-${this.data.status}">${this.data.status || 'unknown'}</span></p>
-            <p style="margin:0;"><strong>URL:</strong> <a href="${this.data.httpUrl}" target="_blank" rel="noopener">${this.data.httpUrl}</a></p>
+            <p style="margin:0;"><strong>URL:</strong> ${urlLink}</p>
             <div class="peer-popup-img-wrapper" style="text-align:center;margin:6px 0 2px 0;">
               <img src="images/iconoBWred.png" alt="Peer" style="max-width:220px;border-radius:8px;box-shadow:0 2px 8px rgba(208, 127, 127, 0.13);margin:0;" />
             </div>

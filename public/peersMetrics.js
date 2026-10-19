@@ -128,9 +128,9 @@ class PeersService {
         
         <div style="font-size: 0.65em; color: #6B7280; line-height: 1.3;">
           <div style="margin-bottom: 1px;">
-            <a href="${httpUrl}" target="_blank" style="color: #3B82F6; text-decoration: none;">
-              ${this.shortenUrl(httpUrl)}
-            </a>
+            ${(httpUrl.startsWith('http://') || httpUrl.startsWith('https://'))
+              ? `<a href="${httpUrl}" target="_blank" rel="noopener" style="color: #3B82F6; text-decoration: none;">${this.shortenUrl(httpUrl)}</a>`
+              : `<span style="color: #9CA3AF;">${this.shortenUrl(httpUrl) || 'N/A'}</span>`}
           </div>
           
           ${peer.status === 'online' ? `

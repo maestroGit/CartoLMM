@@ -218,9 +218,11 @@ async function handleGetPeers(req, res) {
         const localHttpUrl =
             blockchain.server?.httpUrl ||
             blockchain.httpUrl ||
-            (blockchain.server?.httpPort
-                ? `${baseProtocolFromClient}//${baseHostFromClient}:${blockchain.server.httpPort}`
-                : magnusmasterClient.baseURL);
+            (baseProtocolFromClient === 'https:'
+                ? `${baseProtocolFromClient}//${baseHostFromClient}`
+                : (blockchain.server?.httpPort
+                    ? `${baseProtocolFromClient}//${baseHostFromClient}:${blockchain.server.httpPort}`
+                    : magnusmasterClient.baseURL));
 
         const localP2pUrl =
             blockchain.server?.p2pUrl ||
@@ -231,7 +233,7 @@ async function handleGetPeers(req, res) {
 
         // 2. Extraer info del nodo local usando la estructura actual de /system-info
         const localNode = {
-            nodeId: network.nodeId || blockchain.nodeId || 'unknown',
+            nodeId: network.nodeId || blockchain.nodeId || (network.role === 'relay' ? 'seenode-relay-master' : 'node-local'),
             httpUrl: String(localHttpUrl || 'unknown').trim(),
             p2pUrl: String(localP2pUrl || 'unknown').trim(),
             isLocal: true,
@@ -244,42 +246,84 @@ async function handleGetPeers(req, res) {
             responseTime: 0
         };
 
-    // 3. Extraer peers remotos (pueden ser strings o objetos)
-    const peersHttpRaw = network.peersHttp || [];
-    const peersP2P = network.peersP2P || [];
-    const p2pPeers = network.p2pPeers || []; // Array detallado si existe
+        function isPrivateHost(host) {
+            if (!host) return true;
+            const cleanHost = host.toLowerCase().split(':')[0];
+            if (cleanHost === 'localhost' || cleanHost === '127.0.0.1') return true;
+            if (cleanHost.startsWith('10.') || cleanHost.startsWith('192.168.')) return true;
+            if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(cleanHost)) return true;
+            return false;
+        }
 
-    // Normalizar peersHttp: puede ser array de strings o array de objetos {nodeId, httpUrl, lastSeen}
+        function resolveCandidateHttpUrl(httpUrl, remoteAddress) {
+            let candidate = typeof httpUrl === 'string' ? httpUrl.trim() : '';
+            if (candidate.startsWith('ws://')) candidate = candidate.replace('ws://', 'http://');
+            if (candidate.startsWith('wss://')) candidate = candidate.replace('wss://', 'https://');
+
+            try {
+                const u = new URL(candidate);
+                if (!isPrivateHost(u.hostname)) return candidate;
+            } catch {}
+
+            // Si candidate es privada o inválida, pero remoteAddress contiene un hostname público
+            if (typeof remoteAddress === 'string') {
+                try {
+                    let addr = remoteAddress.trim();
+                    if (!addr.startsWith('ws://') && !addr.startsWith('wss://') && !addr.startsWith('http://') && !addr.startsWith('https://')) {
+                        addr = 'wss://' + addr;
+                    }
+                    const parsed = new URL(addr);
+                    const host = parsed.hostname;
+                    const isRawIP = /^(\d{1,3}\.){3}\d{1,3}$/.test(host);
+                    if (host && !isPrivateHost(host) && !isRawIP) {
+                        const scheme = (parsed.protocol === 'wss:' || parsed.protocol === 'https:') ? 'https:' : 'http:';
+                        return `${scheme}//${host}`;
+                    }
+                } catch {}
+            }
+
+            return candidate;
+        }
+
+        // 3. Extraer peers remotos (pueden ser strings o objetos)
+        const peersHttpRaw = network.peersHttp || [];
+        const peersP2P = network.peersP2P || [];
+        const p2pPeers = network.p2pPeers || []; // Array detallado si existe
+
+        // Normalizar peersHttp: puede ser array de strings o array de objetos {nodeId, httpUrl, lastSeen}
         const peersHttp = peersHttpRaw.map(peer => {
-      if (typeof peer === 'string') {
-        return { httpUrl: peer, nodeId: null, lastSeen: null };
-      } else if (peer && typeof peer === 'object') {
-        return {
-          httpUrl: peer.httpUrl || peer.url || 'unknown',
-          nodeId: peer.nodeId || null,
-          lastSeen: peer.lastSeen || null
-        };
-      }
-      return { httpUrl: 'unknown', nodeId: null, lastSeen: null };
-    });
-
-        // Fallback: cuando peersHttp no viene poblado, usar p2pPeers como fuente
-        // de URLs HTTP para no perder peers activos en visualizaciones.
-        const peersFromP2P = p2pPeers
-            .map((peer) => {
-                if (!peer || typeof peer !== 'object') return null;
-                const httpUrl =
-                    typeof peer.httpUrl === 'string' && peer.httpUrl.trim().length > 0
-                        ? peer.httpUrl.trim()
-                        : null;
-                if (!httpUrl) return null;
+            if (typeof peer === 'string') {
+                return { httpUrl: resolveCandidateHttpUrl(peer), nodeId: null, lastSeen: null };
+            } else if (peer && typeof peer === 'object') {
                 return {
-                    httpUrl,
+                    httpUrl: resolveCandidateHttpUrl(peer.httpUrl || peer.url),
+                    nodeId: peer.nodeId || null,
+                    lastSeen: peer.lastSeen || null
+                };
+            }
+            return { httpUrl: 'unknown', nodeId: null, lastSeen: null };
+        });
+
+        // Fallback: cuando peersHttp no viene poblado, usar p2pPeers deduplicados
+        const peersFromP2PMap = new Map();
+        for (const peer of p2pPeers) {
+            if (!peer || typeof peer !== 'object') continue;
+            const candidateUrl = resolveCandidateHttpUrl(peer.httpUrl, peer.remoteAddress);
+            if (!candidateUrl || candidateUrl === 'unknown') continue;
+
+            const key = peer.nodeId || candidateUrl;
+            const existing = peersFromP2PMap.get(key);
+            // Preferir URLs que resuelvan a dominios públicos no privados
+            if (!existing || isPrivateHost(new URL(existing.httpUrl).hostname)) {
+                peersFromP2PMap.set(key, {
+                    httpUrl: candidateUrl,
                     nodeId: peer.nodeId || null,
                     lastSeen: peer.lastSeen || null,
-                };
-            })
-            .filter(Boolean);
+                    role: peer.role || null
+                });
+            }
+        }
+        const peersFromP2P = Array.from(peersFromP2PMap.values());
 
         const peersByHttpUrl = new Map();
         [...peersHttp, ...peersFromP2P].forEach((peer) => {
