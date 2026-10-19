@@ -172,7 +172,8 @@ class UserMarker {
     // Botón Move
 
     // Imagen con zoom interactivo y botón Move solo para wine_lover
-    const moveBtn = `<div style=\"width:100%;display:flex;justify-content:center;\"><button class=\"move-btn-user-popup\" onclick=\"window.open('http://localhost:3000/demo-wallet/web-demo.html','_blank')\">Move</button></div>`;
+    const walletTransferUrl = window.BLOCKCHAIN_WALLET_URL || 'https://app.blockswine.com/transfer-keystore.html';
+    const moveBtn = `<div style="width:100%;display:flex;justify-content:center;"><button class="move-btn-user-popup" onclick="window.open('${walletTransferUrl}','_blank','noopener,noreferrer')">Move</button></div>`;
     // Para bodega: solo imagen, contenedor ancho
       const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" referrerpolicy="no-referrer" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/default-bottle.png';"></div>`;
     // Para wine_lover: imagen + botón Move
@@ -218,12 +219,40 @@ class UserMarker {
         </div>
       </div>
     ` : '';
+    let bodegaMetaHtml = '';
+    if (userType === 'bodega') {
+      const doName = this.data.denominacion || this.data.denominacionOrigen || this.data.denominacion_origen || this.data.region;
+      const enologo = this.data.enologo;
+      const director = this.data.directorGeneral || this.data.director_general;
+      const anoFundacion = this.data.anoFundacion || this.data.ano_fundacion || this.data.fundacion;
+      const superficie = this.data.superficieVinedo || this.data.superficie_vinedos || this.data.superficie;
+      const variedades = Array.isArray(this.data.variedadesPrincipales)
+        ? this.data.variedadesPrincipales.join(', ')
+        : (this.data.variedadesPrincipales || this.data.variedades_principales || '');
+      const isVerified = this.data.verificado || this.data.isVerified || this.data.verified || false;
+
+      bodegaMetaHtml = `
+        <div class="bodega-meta-panel" style="margin: 6px 10px 10px 10px; padding: 10px; background: rgba(43, 15, 19, 0.75); border-radius: 8px; border: 1px solid rgba(247, 147, 26, 0.3); font-size: 0.85em; color: #e5e7eb;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            ${doName ? `<span class="do-badge" style="background:#6A0D25; color:#f7931a; padding:2px 8px; border-radius:4px; font-weight:600; border:1px solid #f7931a; font-size:0.85em;">🍷 ${doName}</span>` : '<span></span>'}
+            ${isVerified ? `<span style="color:#22c55e; font-weight:600; font-size:0.85em;">✓ Verificada</span>` : ''}
+          </div>
+          ${enologo ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>🍇 Enólogo:</strong> ${enologo}</div>` : ''}
+          ${director ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>👔 Dir. General:</strong> ${director}</div>` : ''}
+          ${anoFundacion ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>🏛️ Fundada:</strong> ${anoFundacion}</div>` : ''}
+          ${superficie ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>🌿 Viñedos:</strong> ${superficie} ha</div>` : ''}
+          ${variedades ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>🌱 Variedades:</strong> ${variedades}</div>` : ''}
+        </div>
+      `;
+    }
+
     const popupContent = `
       <div class="user-popup" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${finalImgSrc}" data-img-bottle="${this.data['img-bottle'] || ''}">
         ${userCard}
         ${userType === 'bodega' ? imagenDivBodega : ''}
         ${userType === 'otro' ? imagenDivUsuario : ''}
         ${userType === 'bodega' ? `<h3 class="bodega-img-title">${this.data.nombre}</h3>` : ''}
+        ${bodegaMetaHtml}
        
         <div class="wallets-section">
           ${wallets}
@@ -505,6 +534,9 @@ class UserMarker {
     if (fromHtml) {
       candidate = fromHtml;
     }
+
+    // Normalizar prefijos de carpeta public/ para que resuelvan desde la raíz servida por Vite/Express
+    candidate = candidate.replace(/^\/public\//, '/');
 
     if (!candidate.startsWith('http://') && !candidate.startsWith('https://')) {
       return candidate;

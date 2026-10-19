@@ -363,7 +363,8 @@ function initWalletPopupLogic(popupNode) {
               moveBtn.style.transform = 'scale(1)';
               moveBtn.style.boxShadow = '0 2px 8px rgba(255,167,38,0.3)';
             };
-            moveBtn.onclick = () => window.open(`http://localhost:3000/demo-wallet/web-demo.html`,'_blank');
+            const walletTransferUrl = window.BLOCKCHAIN_WALLET_URL || 'https://app.blockswine.com/transfer-keystore.html';
+            moveBtn.onclick = () => window.open(walletTransferUrl, '_blank', 'noopener,noreferrer');
 
             btnRow.appendChild(burnBtn);
             btnRow.appendChild(moveBtn);

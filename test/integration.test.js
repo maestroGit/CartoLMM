@@ -7,11 +7,12 @@
 
 import fetch from 'node-fetch';
 import MagnusmasterAPI from '../src/api/magnusmasterAPI.js';
+import { config } from '../src/config/config.js';
 
 const TEST_CONFIG = {
-    magnusmasterURL: 'http://localhost:3000',
-    cartolmmURL: 'http://localhost:8080',
-    timeoutMs: 5000
+    magnusmasterURL: process.env.BLOCKCHAIN_API_URL || process.env.BLOCKCHAIN_LOCAL_URL || config.blockchainLocalUrl || 'http://localhost:6001',
+    cartolmmURL: `http://${config.host === '0.0.0.0' ? 'localhost' : (config.host || 'localhost')}:${config.port || 8080}`,
+    timeoutMs: config.apiTimeout || 5000
 };
 
 class IntegrationTester {
@@ -219,8 +220,12 @@ class IntegrationTester {
     }
 }
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 // Ejecutar tests si se llama directamente
-if (import.meta.url === `file://${process.argv[1]}`) {
+const isDirectRun = process.argv[1] && path.resolve(fileURLToPath(import.meta.url)).toLowerCase() === path.resolve(process.argv[1]).toLowerCase();
+if (isDirectRun) {
     const tester = new IntegrationTester();
     
     // Manejo de signals

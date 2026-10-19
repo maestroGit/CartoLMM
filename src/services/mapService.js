@@ -612,6 +612,65 @@ class MapService {
     }
 
     /**
+     * Crea un efecto de pulso circular en una coordenada geográfica (descorche, evento RWA)
+     */
+    pulseLocation(latlng, color = '#f7931a') {
+        if (!this.map || !latlng) return;
+        try {
+            const coords = Array.isArray(latlng) ? latlng : [latlng.lat, latlng.lng];
+            const circle = L.circleMarker(coords, {
+                radius: 14,
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.85,
+                weight: 2
+            }).addTo(this.map);
+
+            let currentRadius = 14;
+            let currentOpacity = 0.85;
+            const pulseTimer = setInterval(() => {
+                currentRadius += 3;
+                currentOpacity -= 0.05;
+                if (currentOpacity <= 0) {
+                    clearInterval(pulseTimer);
+                    if (this.map && this.map.hasLayer(circle)) {
+                        this.map.removeLayer(circle);
+                    }
+                } else {
+                    circle.setRadius(currentRadius);
+                    circle.setStyle({ fillOpacity: currentOpacity, opacity: currentOpacity });
+                }
+            }, 50);
+        } catch (err) {
+            console.warn('MapService.pulseLocation error:', err);
+        }
+    }
+
+    /**
+     * Dibuja una línea de ruta animada entre origen (bodega) y destino (custodia / winelover)
+     */
+    drawCustodyRoute(fromLatLng, toLatLng, metadata = {}) {
+        if (!this.map || !fromLatLng || !toLatLng) return null;
+        try {
+            const routeLine = L.polyline([fromLatLng, toLatLng], {
+                color: metadata.color || '#f7931a',
+                weight: 3,
+                opacity: 0.85,
+                dashArray: '8, 8',
+                className: 'custody-route-line'
+            }).addTo(this.map);
+
+            if (metadata.popup) {
+                routeLine.bindPopup(metadata.popup);
+            }
+            return routeLine;
+        } catch (err) {
+            console.warn('MapService.drawCustodyRoute error:', err);
+            return null;
+        }
+    }
+
+    /**
      * Destruye el mapa
      */
     destroy() {

@@ -128,6 +128,73 @@ class RealtimeDashboardService {
         this.scheduleMapUpdate(peerList);
       }
     });
+
+    // Evento de descorche en tiempo real (Burn Event RWA)
+    this.socket.on('wine:uncorked', data => {
+      console.log('🍾 [Realtime] Evento de descorche recibido:', data);
+      this.handleUncorkEvent(data);
+    });
+
+    // Notificaciones generales del sistema
+    this.socket.on('system:notification', data => {
+      if (data && data.tipo === 'burn_event') {
+        this.handleUncorkEvent(data);
+      } else if (data && data.mensaje) {
+        this.showToastNotification(data.mensaje, '🔔');
+      }
+    });
+  }
+
+  handleUncorkEvent(data) {
+    if (!data) return;
+    const bodegaName = data.bodega || data.bodega_nombre || 'Bodega';
+    const magnumId = data.botella_id || data.token_id || data.magnum_id || '';
+    const msg = `🍾 ¡Magnum ${magnumId} descorchada en ${bodegaName}!`;
+
+    // 1. Mostrar toast animado con estilo BlocksWine Luxury
+    this.showToastNotification(msg, '🍷');
+
+    // 2. Pulso en mapa si hay coordenadas disponibles
+    if (this.mapService && typeof this.mapService.pulseLocation === 'function') {
+      const coords = data.localizacion 
+        ? [data.localizacion.lat, data.localizacion.lng]
+        : (data.lat && data.lng ? [data.lat, data.lng] : null);
+      if (coords) {
+        this.mapService.pulseLocation(coords, '#f7931a');
+      }
+    }
+  }
+
+  showToastNotification(message, icon = '🔔') {
+    const toast = document.createElement('div');
+    toast.className = 'cartolmm-toast';
+    toast.innerHTML = `<span style="font-size:18px;">${icon}</span> <span>${message}</span>`;
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: linear-gradient(135deg, rgba(43, 15, 19, 0.96), rgba(106, 13, 37, 0.96));
+      color: #fff;
+      border: 1px solid #f7931a;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      transform: translateY(0);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 450);
+    }, 6000);
   }
 
   scheduleMapUpdate(peers) {

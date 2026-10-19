@@ -46,7 +46,11 @@ class WineryListManager {
 
   async populateFilterOptions() {
     try {
-      const catalog = await this.loadCatalogFromWineries();
+      let catalog = await this.loadCatalogFromAPI();
+      if (!catalog) {
+        console.log('🔄 [CartoLMM Winery] Usando fallback de catálogo desde listado de bodegas...');
+        catalog = await this.loadCatalogFromWineries();
+      }
 
       this.populateSelect('doFilter', catalog.denominaciones, 'Select DO');
       this.populateSelect('uvaFilter', catalog.variedades, 'Select grape');
@@ -76,6 +80,73 @@ class WineryListManager {
       this.setSelectAvailability('uvaFilter', false, 'Catalog unavailable');
       this.setSelectAvailability('estiloFilter', false, 'Catalog unavailable');
       this.showCatalogToast('error', 'Unable to load catalog. Dynamic filters are disabled.');
+    }
+  }
+
+  async loadCatalogFromAPI() {
+    try {
+      const [dosRes, varsRes, tiposRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/denominaciones?limit=100`).catch(() => null),
+        fetch(`${API_BASE_URL}/api/variedades?limit=100`).catch(() => null),
+        fetch(`${API_BASE_URL}/api/tipos-vino?limit=100`).catch(() => null)
+      ]);
+
+      let denominaciones = [];
+      let variedades = [];
+      let tiposVino = [];
+
+      if (dosRes && dosRes.ok) {
+        const payload = await dosRes.json();
+        const list = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+        denominaciones = list.map(item => ({
+          value: String(item.id || item.nombre),
+          label: item.nombre
+        })).filter(item => item.label);
+      }
+
+      if (varsRes && varsRes.ok) {
+        const payload = await varsRes.json();
+        const list = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+        variedades = list.map(item => {
+          const nombre = item.nombre;
+          const token = this.normalizeBadgeToken(nombre);
+          return {
+            value: `uva_${token}`,
+            label: nombre
+          };
+        }).filter(item => item.label);
+      }
+
+      if (tiposRes && tiposRes.ok) {
+        const payload = await tiposRes.json();
+        const list = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+        tiposVino = list.map(item => {
+          const nombre = item.nombre;
+          const token = this.normalizeBadgeToken(nombre);
+          return {
+            value: `estilo_${token}`,
+            label: nombre
+          };
+        }).filter(item => item.label);
+      }
+
+      if (denominaciones.length > 0 || variedades.length > 0 || tiposVino.length > 0) {
+        console.log('🍇 [CartoLMM Winery] Catálogo cargado directamente de la API:', {
+          denominaciones: denominaciones.length,
+          variedades: variedades.length,
+          tiposVino: tiposVino.length
+        });
+        return {
+          denominaciones: denominaciones.sort((a, b) => a.label.localeCompare(b.label, 'es')),
+          variedades: variedades.sort((a, b) => a.label.localeCompare(b.label, 'es')),
+          tiposVino: tiposVino.sort((a, b) => a.label.localeCompare(b.label, 'es'))
+        };
+      }
+
+      return null;
+    } catch (e) {
+      console.warn('⚠️ [CartoLMM Winery] Falló carga de catálogo directo, usando fallback:', e);
+      return null;
     }
   }
 

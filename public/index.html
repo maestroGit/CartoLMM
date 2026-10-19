@@ -10,6 +10,7 @@
 
 
     <!-- Estilos -->
+    <link rel="stylesheet" href="base.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="components.css">
     <link rel="stylesheet" href="map-styles.css">
@@ -40,10 +41,13 @@
         <!-- Header -->
         <header class="site-header">
             <div class="container">
-                <img src="images/iconoBWred.png" alt="Logo" class="logo-icon white" />
-                <h1 class="logo">BlocksWine</h1>
+                <a href="/" style="display:flex;align-items:center;text-decoration:none;gap:10px;">
+                    <img src="images/iconoBWred.png" alt="Logo" class="logo-icon white" />
+                    <h1 class="logo">BlocksWine</h1>
+                </a>
                 <nav class="nav">
-                    <a href="https://app.blockswine.com/" target="_blank" class="btn" id="dashboard-btn"
+                    <a href="/" class="btn active" id="map-btn">Map</a>
+                    <a href="https://app.blockswine.com/" target="_blank" rel="noopener" class="btn" id="dashboard-btn"
                         title="Dashboard">Panel</a>
                     <a href="https://app.blockswine.com/keystore.html" target="_blank" rel="noopener" class="btn"
                         id="bw-wallet-btn">Wallet</a>
@@ -52,10 +56,9 @@
                         type="button">Layers</button>
                     <button id="toggle-3d" class="control-btn unified-btn" type="button">Zoom</button>
 
-
                     <!-- Hamburger button triggers sidebar toggle directly -->
                     <button id="toggle-metrics" class="btn" aria-haspopup="true" aria-expanded="false"
-                        type="button">red <span></span></button>
+                        type="button">Red <span></span></button>
                 </nav>
             </div>
         </header>
@@ -198,9 +201,10 @@
             </div>
             <div class="modal-body">
                 <img id="modal-bottle-img"
-                    src="https://www.lavinia.com/media/catalog/product/cache/ad72991f53b91b689717df43818bf2ce/z/o/zorzal-garnacha.jpeg"
-                    alt="Botella de vino"
-                    style="width: 752px; max-width:90%; height: auto; display: block; margin: 16px auto;">
+                    src="images/default-bottle.png"
+                    alt="Botella Magnum RWA"
+                    onerror="this.onerror=null;this.src='images/default-bottle.png';"
+                    style="max-width:320px; max-height:420px; height: auto; display: block; margin: 16px auto; border-radius:12px; object-fit:contain; background:#2B0F13; box-shadow:0 8px 30px rgba(0,0,0,0.5);">
                 <!-- Bodega details (restored) -->
                 <div class="bodega-info">
                     <div class="info-grid">

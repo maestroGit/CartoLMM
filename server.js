@@ -129,6 +129,12 @@ async function startServer() {
             console.log('   GET /api/users - Usuarios (proxy a magnumslocal)');
             console.log('   GET /api/users/:id - Usuario por ID');
             console.log('   GET /api/users/stats - Estadísticas de usuarios');
+            console.log('   GET /api/denominaciones - Denominaciones de Origen');
+            console.log('   GET /api/variedades - Variedades de uva');
+            console.log('   GET /api/tipos-vino - Tipos y estilos de vino');
+            console.log('   GET /api/winelover/portfolio - Colección y custodia Magnums');
+            console.log('   GET /api/notifications - Eventos de descorche / burns');
+            console.log('   GET /api/lotes/:id - Lotes de producción');
             console.log('   GET /api/blocks - Información de bloques');
             console.log('   GET /api/peers - Información de nodos');
             console.log('   GET /api/transactions - Pool de transacciones');

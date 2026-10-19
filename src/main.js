@@ -3,11 +3,14 @@
  * Inicializa todo el sistema cuando se carga la página
  */
 
-// Importar VineyardLayer y WineryLayer
+// Importar VineyardLayer, WineryLayer y DoTerritoryLayer
 import { VineyardLayer } from './leaflet/VineyardLayer.js';
 import { WineryLayer } from './leaflet/WineryLayer.js';
+import { DoTerritoryLayer } from './leaflet/DoTerritoryLayer.js';
+
 let vineyardLayerInstance = null;
 let wineryLayerInstance = null;
+let doTerritoryLayerInstance = null;
 // Configuración global
 window.CartoLMM = {
     version: '1.0.0',
@@ -22,31 +25,59 @@ window.CartoLMM = {
 };
 
 /**
+ * Inicializa las capas geográficas (D.O., Viñedos, Bodegas) de forma determinista
+ */
+async function initMapLayers() {
+    try {
+        if (!window.mapService || !window.mapService.map) {
+            console.warn('⚠️ MapService no disponible para inicializar capas geográficas');
+            return;
+        }
+
+        // 1. Capa de Denominaciones de Origen (D.O.)
+        if (!doTerritoryLayerInstance) {
+            doTerritoryLayerInstance = new DoTerritoryLayer(window.mapService.map);
+            if (window.mapService.layersControl && doTerritoryLayerInstance.layer) {
+                window.mapService.layersControl.addOverlay(
+                    doTerritoryLayerInstance.layer,
+                    '🍷 Denominaciones de Origen (D.O.)'
+                );
+            }
+            // Activar por defecto para mostrar las regiones de referencia inmediatamente
+            doTerritoryLayerInstance.layer.addTo(window.mapService.map);
+            console.log('✅ Capa de Denominaciones de Origen (D.O.) activada');
+        }
+
+        // 2. Capa de viñedos OSM
+        if (!vineyardLayerInstance) {
+            vineyardLayerInstance = new VineyardLayer(window.mapService.map);
+            if (window.mapService.layersControl && vineyardLayerInstance.layer) {
+                window.mapService.layersControl.addOverlay(
+                    vineyardLayerInstance.layer,
+                    '🍇 Viñedos (landuse=vineyard)'
+                );
+            }
+        }
+
+        // 3. Capa de bodegas OSM
+        if (!wineryLayerInstance) {
+            wineryLayerInstance = new WineryLayer(window.mapService.map);
+            if (window.mapService.layersControl && wineryLayerInstance.layer) {
+                window.mapService.layersControl.addOverlay(
+                    wineryLayerInstance.layer,
+                    '🏛️ Bodegas (amenity=winery)'
+                );
+            }
+        }
+    } catch (err) {
+        console.warn('⚠️ Error inicializando capas geográficas:', err);
+    }
+}
+
+/**
  * Función principal de inicialización
  */
 async function initializeCartoLMM() {
-    // Inicializar capas de viñedos y bodegas después de crear el mapa
-    setTimeout(() => {
-        if (window.mapService && window.mapService.map) {
-            vineyardLayerInstance = new VineyardLayer(window.mapService.map);
-            wineryLayerInstance = new WineryLayer(window.mapService.map);
-            // Añadir la capa de viñedos al control de capas como overlay
-            if (window.mapService.layersControl) {
-                if (vineyardLayerInstance.layer) {
-                    window.mapService.layersControl.addOverlay(
-                        vineyardLayerInstance.layer,
-                        'Viñedos (landuse=vineyard)'
-                    );
-                }
-                if (wineryLayerInstance.layer) {
-                    window.mapService.layersControl.addOverlay(
-                        wineryLayerInstance.layer,
-                        'Bodegas (amenity=winery)'
-                    );
-                }
-            }
-        }
-    }, 1000);
     try {
         console.log('🚀 Iniciando CartoLMM v' + window.CartoLMM.version);
         window.CartoLMM.startTime = Date.now();
@@ -65,6 +96,9 @@ async function initializeCartoLMM() {
         if (!initialized) {
             throw new Error('No se pudo inicializar el dashboard');
         }
+
+        // Inicializar capas geográficas (D.O., Viñedos, Bodegas)
+        await initMapLayers();
 
         // Configurar listeners globales
         setupGlobalListeners();
@@ -592,7 +626,7 @@ function handleBodegaSelected(bodega) {
         img.alt = 'Botella de vino';
         img.onerror = function() {
             this.onerror = null;
-            this.src = bodega.fallbackImage || '/public/images/IconoMagnum.png';
+            this.src = bodega.fallbackImage || '/images/default-bottle.png';
         };
 
         // Action buttons container (Custodiado / Disponible) under the image

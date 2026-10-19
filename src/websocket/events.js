@@ -245,6 +245,13 @@ const broadcastToAllClients = (eventName, data) => {
 };
 
 /**
+ * 🍾 Emitir evento de descorche / burn a todos los clientes
+ */
+export const broadcastUncorkEvent = (burnData) => {
+  broadcastToAllClients("wine:uncorked", burnData);
+};
+
+/**
  * 🎲 Generar transacción mock
  */
 const generateMockTransaction = () => {

@@ -1,3 +1,6 @@
+    // Base API URL dinámica según estándar
+    const apiBaseUrl = window.location.origin;
+
     // Responsive nav: toggle menu on mobile
     document.addEventListener('DOMContentLoaded', () => {
         const nav = document.querySelector('.nav');

@@ -8,6 +8,10 @@ import MagnusmasterAPI from './magnusmasterAPI.js';
 import coordinateService from '../services/coordinateService.js';
 import BusinessStatsService from '../services/businessStatsService.js';
 import userRoutes from './routes/userRoutes.js';
+import catalogRoutes from './routes/catalogRoutes.js';
+import wineloverRoutes from './routes/wineloverRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import loteRoutes from './routes/loteRoutes.js';
 import { config } from '../config/config.js';
 
 // Instancia cliente API para magnumsmaster (fuente de verdad UTXO)
@@ -69,8 +73,20 @@ export async function setupAPIRoutes(app) {
     
     // === USUARIOS (Proxy a magnumslocal) ===
     app.use('/api/users', userRoutes);
+
+    // === CATÁLOGO (D.O., Variedades, Tipos de Vino) ===
+    app.use('/api', catalogRoutes);
+
+    // === WINELOVER & MAGNUMS PORTFOLIO ===
+    app.use('/api/winelover', wineloverRoutes);
+
+    // === NOTIFICACIONES DE DESCORCHE / BURNS ===
+    app.use('/api/notifications', notificationRoutes);
+
+    // === LOTES DE PRODUCCIÓN ===
+    app.use('/api/lotes', loteRoutes);
     
-    console.log('✅ API Routes configuradas (incluyendo /api/users)');
+    console.log('✅ API Routes configuradas (incluyendo /api/users, /api/denominaciones, /api/winelover, /api/notifications, /api/lotes)');
 }
 
 /**

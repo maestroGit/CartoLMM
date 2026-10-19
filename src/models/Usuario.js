@@ -1,85 +1,95 @@
 /**
- * Clase Usuario - Representa un usuario registrado en la plataforma CartoLMM
- * Gestiona la información del usuario, sus wallets vinculadas y estado en blockchain
- * 
- * @class
- * @property {string} id - ID único del usuario (OAuth UID)
- * @property {string} provider - Proveedor de autenticación ("google", "github", etc.)
- * @property {string} nombre - Nombre completo del usuario
- * @property {string} email - Correo electrónico
- * @property {Object} localizacion - Ubicación geográfica { direccion, lat, lng }
- * @property {string[]} categorias - Categorías del usuario (["bodega"], ["wine_lover"], etc.)
- * @property {AccountWallet[]} wallets - Array de wallets vinculadas
- * @property {boolean} blockchainActive - Estado de activación en blockchain
- * @property {boolean} registrado - Estado de registro completo
- * @property {Date} fechaRegistro - Fecha de registro en la plataforma
+ * Clase Usuario - Representa un usuario registrado en la plataforma BlocksWine / CartoLMM
+ * Compatible con el modelo Sequelize de magnumslocal (roles, KYC, metadatos enológicos y wallets)
  */
+
 class Usuario {
-  /**
-   * @param {Object} params - Parámetros del constructor
-   * @param {string} params.id - ID único del usuario
-   * @param {string} params.provider - Proveedor OAuth
-   * @param {string} params.nombre - Nombre del usuario
-   * @param {string} params.email - Email del usuario
-   * @param {Object} params.localizacion - Ubicación geográfica
-   * @param {string[]} params.categorias - Categorías del usuario
-   * @param {AccountWallet[]} [params.wallets=[]] - Wallets vinculadas
-   * @param {boolean} [params.blockchainActive=false] - Estado blockchain
-   * @param {boolean} [params.registrado=false] - Estado de registro
-   * @param {Date} [params.fechaRegistro=new Date()] - Fecha de registro
-   */
-  constructor({ 
-    id, 
-    provider, 
-    nombre, 
-    email, 
-    localizacion, 
-    categorias, 
-    wallets = [], 
-    blockchainActive = false, 
-    registrado = false, 
-    fechaRegistro = new Date() 
-  }) {
-    this.id = id; // ID único (OAuth UID)
-    this.provider = provider; // "google", "github", etc.
+  constructor({
+    id,
+    provider = 'google',
+    nombre = '',
+    email = '',
+    role = 'wine_lover',
+    localizacion = null,
+    direccion = '',
+    latitud = null,
+    longitud = null,
+    lat = null,
+    lng = null,
+    categorias = [],
+    badges = [],
+    wallets = [],
+    blockchainActive = false,
+    registrado = false,
+    kyc_status = 'none',
+    subscription_status = 'active',
+    founded = null,
+    enologo = null,
+    manager = null,
+    website = null,
+    web = null,
+    descripcion = '',
+    denominaciones = [],
+    fechaRegistro = new Date()
+  } = {}) {
+    this.id = id;
+    this.provider = provider;
     this.nombre = nombre;
     this.email = email;
-    this.localizacion = localizacion; // { direccion, lat, lng }
-    this.categorias = categorias; // ["bodega"], ["wine_lover"], etc.
-    this.wallets = wallets; // Array de AccountWallet
-    this.blockchainActive = blockchainActive;
-    this.registrado = registrado;
-    this.fechaRegistro = fechaRegistro;
+    this.role = role || (categorias && categorias.includes('bodega') ? 'winery' : 'wine_lover');
+    this.categorias = Array.isArray(categorias) && categorias.length > 0 
+      ? categorias 
+      : (this.role === 'winery' ? ['bodega'] : [this.role]);
+    this.badges = Array.isArray(badges) ? badges : [];
+
+    // Normalizar coordenadas geográficas
+    const finalLat = latitud ?? lat ?? localizacion?.lat;
+    const finalLng = longitud ?? lng ?? localizacion?.lng;
+    const finalDir = direccion || localizacion?.direccion || '';
+
+    this.localizacion = (finalLat !== null && finalLng !== null && !isNaN(finalLat) && !isNaN(finalLng))
+      ? { direccion: finalDir, lat: Number(finalLat), lng: Number(finalLng) }
+      : null;
+
+    this.wallets = Array.isArray(wallets) ? wallets : [];
+    this.blockchainActive = Boolean(blockchainActive || (this.wallets.length > 0));
+    this.registrado = Boolean(registrado);
+    this.kyc_status = kyc_status;
+    this.subscription_status = subscription_status;
+
+    // Metadatos de bodega / perfil profesional
+    this.founded = founded;
+    this.enologo = enologo;
+    this.manager = manager;
+    this.website = website || web;
+    this.descripcion = descripcion;
+    this.denominaciones = Array.isArray(denominaciones) ? denominaciones : [];
+    this.fechaRegistro = fechaRegistro instanceof Date ? fechaRegistro : new Date(fechaRegistro || Date.now());
   }
-  
-  /**
-   * Agrega una wallet a la lista de wallets del usuario
-   * @param {AccountWallet} wallet - Wallet a agregar
-   * @todo Implementar lógica para evitar duplicados por publicKey
-   */
+
   agregarWallet(wallet) {
-    this.wallets.push(wallet);
-    // TODO: lógica para evitar duplicados por publicKey
+    if (!wallet) return;
+    const address = typeof wallet === 'string' ? wallet : (wallet.address || wallet.publicKey);
+    if (!address) return;
+    const exists = this.wallets.some(w => (w.address || w.publicKey) === address);
+    if (!exists) {
+      this.wallets.push(typeof wallet === 'object' ? wallet : { address });
+      this.blockchainActive = true;
+    }
   }
 
-  /**
-   * Activa el usuario en la blockchain
-   */
-  activarEnBlockchain() {
-    this.blockchainActive = true;
+  isWinery() {
+    return this.role === 'winery' || this.categorias.includes('bodega');
   }
 
-  /**
-   * Obtiene las transacciones relacionadas con las wallets del usuario
-   * @param {AccountTransaction[]} transaccionesGlobales - Lista de todas las transacciones
-   * @returns {AccountTransaction[]} Transacciones donde el usuario es origen o destino
-   */
-  obtenerTransacciones(transaccionesGlobales) {
-    const misWallets = new Set(this.wallets.map(w => w.publicKey));
-    return transaccionesGlobales.filter(
-      tx => misWallets.has(tx.fromWallet.publicKey) || misWallets.has(tx.toWallet.publicKey)
-    );
+  isWineLover() {
+    return this.role === 'wine_lover' || this.categorias.includes('wine_lover');
+  }
+
+  isVerified() {
+    return this.kyc_status === 'verified';
   }
 }
 
 export { Usuario };
+export default Usuario;
