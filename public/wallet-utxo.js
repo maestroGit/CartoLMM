@@ -313,13 +313,16 @@ function initWalletPopupLogic(popupNode) {
             console.log(`[UTXO][${i}] Añadiendo imagen y botón Move para winelover`, {userImg, utxo: u});
             
             // Imagen de la botella (img-bottle)
+            const fallbackBottle = '/images/bottel-magnum-transparent.png';
+            const displayBottleImg = userBottleImg ? userBottleImg.replace(/^\/public\//, '/') : fallbackBottle;
             const imgDiv = document.createElement('div');
             imgDiv.className = 'user-bottle-img-wrapper';
             imgDiv.style.cssText = 'width: 100%; margin-top: 8px; text-align: center;';
-            imgDiv.innerHTML = `<img src="${userBottleImg || '/public/images/default-bottle.png'}" 
+            imgDiv.innerHTML = `<img src="${displayBottleImg}" 
               alt="Imagen botella o icono" 
-              style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);"
-              onclick="window.showZoomImage && window.showZoomImage('${userBottleImg || '/public/images/default-bottle.png'}')">`;
+              style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); object-fit: contain;"
+              onerror="this.onerror=null;this.src='${fallbackBottle}';"
+              onclick="window.showZoomImage && window.showZoomImage('${displayBottleImg}')">`;
             div.appendChild(imgDiv);
 
             // Fila de botones: Burn y Move alineados

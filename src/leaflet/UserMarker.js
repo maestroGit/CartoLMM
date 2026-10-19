@@ -148,9 +148,12 @@ class UserMarker {
       ? `<p><strong>Web:</strong> <a href="https://${this.data.web}" target="_blank" rel="noopener">${this.data.web}</a></p>`
       : '';
 
-    // Imagen: para winelover sin imagen personalizada, usar imagen fija por defecto
+    // Resolver información y asset de la botella Magnum
+    const isWineLover = Boolean(categoriasList && categoriasList.includes('wine_lover'));
+    const bottleInfo = this.resolveMagnumBottle(this.data, isWineLover);
+
+    // Imagen: para bodega resolver logo/bodega, para winelover usar botella resuelta
     let imagenSrc = '';
-    const isWineLover = categoriasList && categoriasList.includes('wine_lover');
     if (this.data.userCard && this.data.userCard.img && this.data.userCard.img.trim() !== '') {
       imagenSrc = this.data.userCard.img;
     } else if (this.data.usercard_img && this.data.usercard_img.trim() !== '') {
@@ -164,20 +167,19 @@ class UserMarker {
     } else if (this.data.img && this.data.img.trim() !== '') {
       imagenSrc = this.data.img;
     } else if (isWineLover) {
-      imagenSrc = '/public/images/20220704_174927.jpg';
+      imagenSrc = bottleInfo.imgUrl;
     } else {
       imagenSrc = '/images/iconoBWred.png';
     }
-    const finalImgSrc = this.resolveImageSrc(imagenSrc);
-    // Botón Move
+    const finalImgSrc = isWineLover ? bottleInfo.imgUrl : this.resolveImageSrc(imagenSrc);
 
-    // Imagen con zoom interactivo y botón Move solo para wine_lover
+    // Botón Move
     const walletTransferUrl = window.BLOCKCHAIN_WALLET_URL || 'https://app.blockswine.com/transfer-keystore.html';
     const moveBtn = `<div style="width:100%;display:flex;justify-content:center;"><button class="move-btn-user-popup" onclick="window.open('${walletTransferUrl}','_blank','noopener,noreferrer')">Move</button></div>`;
     // Para bodega: solo imagen, contenedor ancho
-      const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" referrerpolicy="no-referrer" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/default-bottle.png';"></div>`;
+    const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" referrerpolicy="no-referrer" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/default-bottle.png';"></div>`;
     // Para wine_lover: imagen + botón Move
-    const imagenDivWineLover = `<div class=\"user-bottle-img-wrapper\"><img src=\"${finalImgSrc}\" alt=\"Imagen botella o icono\" referrerpolicy=\"no-referrer\" onclick=\"window.showZoomImage && window.showZoomImage(this.getAttribute('src'))\" onerror=\"this.onerror=null;this.src='/images/default-bottle.png';\">${moveBtn}</div>`;
+    const imagenDivWineLover = `<div class="user-bottle-img-wrapper"><img src="${finalImgSrc}" alt="Imagen botella o icono" referrerpolicy="no-referrer" onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/bottel-magnum-transparent.png';">${moveBtn}</div>`;
     // Para usuarios generales (role=user): mostrar avatar/foto de perfil
     const imagenDivUsuario = `
       <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0 4px 0;">
@@ -193,16 +195,33 @@ class UserMarker {
       </div>
     `;
 
-        const userType = categoriasList.includes('wine_lover')
-          ? 'winelover'
-          : (categoriasList.includes('bodega') ? 'bodega' : 'otro');
-        const uniqueId = this.data.id || userType;
-    const userCard = (userType === 'winelover' && finalImgSrc && this.data.nombre) ? `
-      <div class="user-card">
-        <div class="user-card-img-wrapper">
-          <img src="${finalImgSrc}" alt="${this.data.nombre}" class="user-card-img" />
+    const userType = categoriasList.includes('wine_lover')
+      ? 'winelover'
+      : (categoriasList.includes('bodega') ? 'bodega' : 'otro');
+    const uniqueId = this.data.id || userType;
+    const userCard = (userType === 'winelover' && this.data.nombre) ? `
+      <div class="user-card winelover-magnum-card">
+        <div class="user-bottle-stage">
+          <div class="vintage-pill">${bottleInfo.vintage}</div>
+          <div class="critic-pill">${bottleInfo.critic}</div>
+          <div class="bottle-frame" onclick="window.showZoomImage && window.showZoomImage('${bottleInfo.imgUrl}')" title="Clic para ampliar botella Magnum">
+            <img 
+              src="${bottleInfo.imgUrl}" 
+              alt="${bottleInfo.wineTitle}" 
+              class="user-magnum-img" 
+              onerror="this.onerror=null;this.src='/images/bottel-magnum-transparent.png';" 
+            />
+          </div>
+          <div class="bottle-meta-badge">🍷 ${bottleInfo.winery} · ${bottleInfo.doOrigin}</div>
         </div>
         <div class="user-popup-nombre">${this.data.nombre}</div>
+        <div class="custody-indicator">
+          <span class="custody-dot"></span> Custodia Activa Magnum 1.5L
+        </div>
+        <div class="wine-title-sub">${bottleInfo.wineTitle}</div>
+        <div style="width:100%;display:flex;justify-content:center;margin:4px 0 6px 0;">
+          <button class="move-btn-user-popup" onclick="window.open('${walletTransferUrl}','_blank','noopener,noreferrer')">Move Magnum</button>
+        </div>
         <div class="user-card-social">
           <a href="https://x.com/" target="_blank" title="X" style="display:inline-block;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="#fffefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M17.53 7.477l-4.06 4.06 4.06 4.06-1.06 1.06-4.06-4.06-4.06 4.06-1.06-1.06 4.06-4.06-4.06-4.06 1.06-1.06 4.06 4.06 4.06-4.06z"/></svg>
@@ -214,9 +233,7 @@ class UserMarker {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="#fefefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a2.998 2.998 0 0 0-2.115-2.115C19.633 3.5 12 3.5 12 3.5s-7.633 0-9.383.571a2.998 2.998 0 0 0-2.115 2.115C0 7.937 0 12 0 12s0 4.063.502 5.814a2.998 2.998 0 0 0 2.115 2.115C4.367 20.5 12 20.5 12 20.5s7.633 0 9.383-.571a2.998 2.998 0 0 0 2.115-2.115C24 16.063 24 12 24 12s0-4.063-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
           </a>
         </div>
-                <div class="user-card-description">${this.data.descripcion || ''}
-        </div>
-        </div>
+        ${this.data.descripcion ? `<div class="user-card-description">${this.data.descripcion}</div>` : ''}
       </div>
     ` : '';
     let bodegaMetaHtml = '';
@@ -247,7 +264,7 @@ class UserMarker {
     }
 
     const popupContent = `
-      <div class="user-popup" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${finalImgSrc}" data-img-bottle="${this.data['img-bottle'] || ''}">
+      <div class="user-popup" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${finalImgSrc}" data-img-bottle="${bottleInfo.imgUrl}">
         ${userCard}
         ${userType === 'bodega' ? imagenDivBodega : ''}
         ${userType === 'otro' ? imagenDivUsuario : ''}
@@ -557,6 +574,104 @@ class UserMarker {
 
     const match = rawValue.match(/<img[^>]*\ssrc\s*=\s*["']([^"']+)["']/i);
     return match && match[1] ? match[1].trim() : '';
+  }
+
+  /**
+   * Resuelve el asset óptimo y metadatos de la botella Magnum (Cascade Asset Resolver)
+   * Cascada:
+   * 1. URL explícita (siempre que no sea la foto obsoleta 20220704_174927.jpg)
+   * 2. ID directo de botella (magnum-042 -> Vitium, magnum-088 -> Valcavado)
+   * 3. Mapeo semántico por bodega/vino
+   * 4. Asignación determinista por ID de usuario para muestra en catálogo
+   * 5. Fallback a silueta oficial de Magnum transparente
+   */
+  resolveMagnumBottle(data = {}, isWineLover = false) {
+    // 1. Imagen explícita personalizada
+    const explicit = (data.userCard && data.userCard.img) ||
+      data.usercard_img ||
+      data.img_bottle ||
+      data.imgBottle ||
+      data['img-bottle'] ||
+      data.img ||
+      data.imagen;
+
+    if (explicit && typeof explicit === 'string' && explicit.trim() !== '' && !explicit.includes('20220704_174927')) {
+      const resolvedSrc = this.resolveImageSrc(explicit.trim());
+      return {
+        imgUrl: resolvedSrc,
+        wineTitle: data.nombreVino || data.vino || 'Magnum Fine Wine',
+        winery: data.bodega || 'BlocksWine Reserve',
+        vintage: data.anada ? String(data.anada) : 'Vintage Selection',
+        critic: '★ 95+ Points',
+        doOrigin: data.denominacion || data.doOrigin || 'Denominación de Origen'
+      };
+    }
+
+    // Catálogo estándar de botellas Magnum tokenizadas
+    const catalog = {
+      'magnum-042': {
+        imgUrl: '/images/bottles/magnum-042.png',
+        wineTitle: 'VITIUM · Selección Familiar',
+        winery: 'Fernández de Piérola',
+        vintage: '2018',
+        critic: '★ 95 Parker',
+        doOrigin: 'DOCa Rioja'
+      },
+      'magnum-088': {
+        imgUrl: '/images/bottles/magnum-088.png',
+        wineTitle: 'VALCAVADO · Edición Limitada',
+        winery: 'Traslascuestas',
+        vintage: '2019',
+        critic: '★ 96 Peñín',
+        doOrigin: 'DO Ribera del Duero'
+      }
+    };
+
+    // 2. Por ID de botella
+    const rawBottleId = data.bottleId || data.bottle_id || data.id_bottle || (data.botella && data.botella.id);
+    if (rawBottleId) {
+      const cleanId = String(rawBottleId).trim().toLowerCase();
+      if (cleanId === 'magnum-042' || cleanId === '042') return catalog['magnum-042'];
+      if (cleanId === 'magnum-088' || cleanId === '088') return catalog['magnum-088'];
+      return {
+        imgUrl: `/images/bottles/${cleanId}.png`,
+        wineTitle: data.nombreVino || 'Magnum Collector Edition',
+        winery: data.bodega || 'BlocksWine Reserve',
+        vintage: data.anada ? String(data.anada) : '2026',
+        critic: '★ 95+ Points',
+        doOrigin: data.denominacion || 'Denominación de Origen'
+      };
+    }
+
+    // 3. Mapeo semántico por bodega/vino
+    const textBlob = `${data.nombre || ''} ${data.descripcion || ''} ${data.bodega || ''} ${data.vino || ''}`.toLowerCase();
+    if (textBlob.includes('piérola') || textBlob.includes('pierola') || textBlob.includes('vitium')) {
+      return catalog['magnum-042'];
+    }
+    if (textBlob.includes('traslascuestas') || textBlob.includes('valcavado')) {
+      return catalog['magnum-088'];
+    }
+
+    // 4. Si es wine_lover sin botella fija: asignar deterministamente por ID
+    if (isWineLover) {
+      const seed = String(data.id || data.email || data.nombre || '0');
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+        hash |= 0;
+      }
+      return (Math.abs(hash) % 2 === 0) ? catalog['magnum-042'] : catalog['magnum-088'];
+    }
+
+    // 5. Fallback general elegante
+    return {
+      imgUrl: '/images/bottel-magnum-transparent.png',
+      wineTitle: 'Magnum Fine Wine',
+      winery: 'BlocksWine Protocol',
+      vintage: '2026',
+      critic: '★ Verified Custody',
+      doOrigin: 'BlocksWine Origin'
+    };
   }
 
   formatRegistroFecha() {

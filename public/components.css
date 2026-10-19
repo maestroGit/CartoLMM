@@ -2268,10 +2268,137 @@ kbd {
   margin: 0;
   text-align: center;
 }
+
+/* === WINELOVER MAGNUM SHOWCASE CARD === */
+.winelover-magnum-card {
+  width: 100%;
+  padding: 6px 0 10px 0;
+  gap: 4px;
+}
+
+.user-bottle-stage {
+  position: relative;
+  width: 100%;
+  height: 205px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(247, 147, 26, 0.16) 0%, rgba(43, 15, 19, 0.75) 65%, rgba(20, 7, 9, 0.95) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(247, 147, 26, 0.35);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.user-bottle-stage .bottle-frame {
+  cursor: zoom-in;
+  height: 175px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: 18px;
+}
+
+.user-bottle-stage .bottle-frame:hover {
+  transform: scale(1.06);
+}
+
+.user-magnum-img {
+  max-height: 170px;
+  max-width: 140px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.75));
+}
+
+.vintage-pill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(247, 147, 26, 0.5);
+  color: #FFA726;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+}
+
+.critic-pill {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(106, 13, 37, 0.9);
+  border: 1px solid #FFA726;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.bottle-meta-badge {
+  position: absolute;
+  bottom: 6px;
+  background: rgba(20, 7, 9, 0.88);
+  border: 1px solid rgba(247, 147, 26, 0.3);
+  color: #FFD7B3;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.custody-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #5fd3a5;
+  font-weight: 600;
+  margin: 2px 0;
+  letter-spacing: 0.3px;
+}
+
+.custody-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  display: inline-block;
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+.wine-title-sub {
+  font-size: 0.86rem;
+  color: #FFA726;
+  font-weight: 600;
+  text-align: center;
+  margin: 1px 0 4px 0;
+}
+
 /* === END USER CARD (WINE_LOVER POPUP) === */
 /* Descripción de usuario en la tarjeta */
 .user-card-description {
-  font-size: 1em;
+  font-size: 0.95em;
   color: #faf9f7;
   margin: 6px 0 0 0;
   text-align: center;
