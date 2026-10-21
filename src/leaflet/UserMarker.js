@@ -152,9 +152,17 @@ class UserMarker {
     const isWineLover = Boolean(categoriasList && categoriasList.includes('wine_lover'));
     const bottleInfo = this.resolveMagnumBottle(this.data, isWineLover);
 
+    const userType = categoriasList.includes('wine_lover')
+      ? 'winelover'
+      : (categoriasList.includes('bodega') ? 'bodega' : 'otro');
+
     // Imagen: para bodega resolver logo/bodega, para winelover usar botella resuelta
     let imagenSrc = '';
-    if (this.data.userCard && this.data.userCard.img && this.data.userCard.img.trim() !== '') {
+    if (isWineLover) {
+      imagenSrc = bottleInfo.imgUrl;
+    } else if (userType === 'bodega') {
+      imagenSrc = this.resolveBodegaImage(this.data);
+    } else if (this.data.userCard && this.data.userCard.img && this.data.userCard.img.trim() !== '') {
       imagenSrc = this.data.userCard.img;
     } else if (this.data.usercard_img && this.data.usercard_img.trim() !== '') {
       imagenSrc = this.data.usercard_img;
@@ -166,18 +174,16 @@ class UserMarker {
       imagenSrc = this.data['img-bottle'];
     } else if (this.data.img && this.data.img.trim() !== '') {
       imagenSrc = this.data.img;
-    } else if (isWineLover) {
-      imagenSrc = bottleInfo.imgUrl;
     } else {
       imagenSrc = '/images/iconoBWred.png';
     }
-    const finalImgSrc = isWineLover ? bottleInfo.imgUrl : this.resolveImageSrc(imagenSrc);
+    const finalImgSrc = isWineLover ? bottleInfo.imgUrl : (userType === 'bodega' ? imagenSrc : this.resolveImageSrc(imagenSrc));
 
     // Botón Move
     const walletTransferUrl = window.BLOCKCHAIN_WALLET_URL || 'https://app.blockswine.com/transfer-keystore.html';
     const moveBtn = `<div style="width:100%;display:flex;justify-content:center;"><button class="move-btn-user-popup" onclick="window.open('${walletTransferUrl}','_blank','noopener,noreferrer')">Move</button></div>`;
     // Para bodega: solo imagen, contenedor ancho
-    const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" alt="Imagen botella o icono" referrerpolicy="no-referrer" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/default-bottle.png';"></div>`;
+    const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" data-fallback-src="/images/Icono-Magnum.png" alt="Bottle or winery image" referrerpolicy="no-referrer" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/Icono-Magnum.png';"></div>`;
     // Para wine_lover: imagen + botón Move
     const imagenDivWineLover = `<div class="user-bottle-img-wrapper"><img src="${finalImgSrc}" alt="Imagen botella o icono" referrerpolicy="no-referrer" onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/bottel-magnum-transparent.png';">${moveBtn}</div>`;
     // Para usuarios generales (role=user): mostrar avatar/foto de perfil
@@ -195,9 +201,6 @@ class UserMarker {
       </div>
     `;
 
-    const userType = categoriasList.includes('wine_lover')
-      ? 'winelover'
-      : (categoriasList.includes('bodega') ? 'bodega' : 'otro');
     const uniqueId = this.data.id || userType;
     const userCard = (userType === 'winelover' && this.data.nombre) ? `
       <div class="user-card winelover-magnum-card">
@@ -536,7 +539,7 @@ class UserMarker {
   }
 
   resolveImageSrc(rawValue) {
-    const fallback = '/images/default-bottle.png';
+    const fallback = '/images/Icono-Magnum.png';
     if (typeof rawValue !== 'string') {
       return fallback;
     }
@@ -574,6 +577,35 @@ class UserMarker {
 
     const match = rawValue.match(/<img[^>]*\ssrc\s*=\s*["']([^"']+)["']/i);
     return match && match[1] ? match[1].trim() : '';
+  }
+
+  /**
+   * Resuelve la imagen de bodega con URL externa/local o fallback a Icono-Magnum
+   */
+  resolveBodegaImage(data = {}) {
+    const explicit = (data.userCard && data.userCard.img) ||
+      data.usercard_img ||
+      data.img_bottle ||
+      data.imgBottle ||
+      data['img-bottle'] ||
+      data.img ||
+      data.imagen;
+
+    if (explicit && typeof explicit === 'string' && explicit.trim() !== '' && !explicit.includes('default-bottle') && !explicit.includes('iconoBWred')) {
+      return this.resolveImageSrc(explicit.trim());
+    }
+
+    const textBlob = `${data.nombre || ''} ${data.bodega || ''} ${data.winery || ''} ${data.email || ''}`.toLowerCase();
+    if (textBlob.includes('traslascuestas')) {
+      return 'https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg';
+    }
+    if (textBlob.includes('pierola') || textBlob.includes('piérola')) {
+      return 'https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg';
+    }
+    if (textBlob.includes('fya')) {
+      return '/images/FyA-bodega.jpg';
+    }
+    return '/images/Icono-Magnum.png';
   }
 
   /**

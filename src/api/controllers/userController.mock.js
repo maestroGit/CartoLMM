@@ -12,6 +12,11 @@ export const mockWineries = {
       role: "winery",
       kyc_status: "approved",
       subscription_status: "active",
+      img: "https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg",
+      img_bottle: "https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg",
+      userCard: {
+        img: "https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg"
+      },
       badges: ["do_rueda", "uva_verdejo", "uva_sauvignon_blanc", "estilo_espumoso", "estilo_blanco"],
       denominaciones: [
         {
@@ -48,6 +53,11 @@ export const mockWineries = {
       role: "winery",
       kyc_status: "approved",
       subscription_status: "trial",
+      img: "/images/FyA-bodega.jpg",
+      img_bottle: "/images/FyA-bodega.jpg",
+      userCard: {
+        img: "/images/FyA-bodega.jpg"
+      },
       badges: ["do_rioja", "uva_tempranillo", "uva_garnacha", "estilo_gran_reserva", "estilo_reserva", "estilo_crianza"],
       denominaciones: [
         {
@@ -66,6 +76,11 @@ export const mockWineries = {
       role: "winery",
       kyc_status: "approved",
       subscription_status: "active",
+      img: "https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg",
+      img_bottle: "https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg",
+      userCard: {
+        img: "https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg"
+      },
       badges: ["do_rioja", "uva_tempranillo", "uva_garnacha", "estilo_gran_reserva", "estilo_reserva"],
       denominaciones: [
         {

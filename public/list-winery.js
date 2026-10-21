@@ -647,7 +647,7 @@ class WineryListManager {
     const { primarySrc, fallbackSrc } = this.getWineryImageSources(winery);
     return `
       <div class="winery-card">
-        <div class="user-bottle-img-wrapper bodega-img-full"><img src="${primarySrc}" data-fallback-src="${fallbackSrc}" alt="Imagen botella o icono" class="bottle-img-card" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)"></div>
+        <div class="user-bottle-img-wrapper bodega-img-full"><img src="${primarySrc}" data-fallback-src="${fallbackSrc}" alt="Bottle or winery image" class="bottle-img-card" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)"></div>
         <div class="winery-card-header">
           <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
           <span class="winery-role-badge">Bodega</span>
@@ -697,7 +697,7 @@ class WineryListManager {
 
     // Imagen de la bodega en el modal
     const { primarySrc, fallbackSrc } = this.getWineryImageSources(winery);
-    const imgHtml = `<div class="user-bottle-img-wrapper bodega-img-full bottle-img-modal"><img src="${primarySrc}" data-fallback-src="${fallbackSrc}" alt="Imagen botella o icono" class="bottle-img" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)"></div>`;
+    const imgHtml = `<div class="user-bottle-img-wrapper bodega-img-full bottle-img-modal"><img src="${primarySrc}" data-fallback-src="${fallbackSrc}" alt="Bottle or winery image" class="bottle-img" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)"></div>`;
     // Insertar imagen arriba del modal
     const modalHeader = document.querySelector('.winery-detail-header');
     if (modalHeader && !modalHeader.querySelector('img')) {
@@ -873,26 +873,49 @@ class WineryListManager {
   getWineryImageSources(winery) {
     const imageFromProfile = winery?.userCard?.img || winery?.usercard_img;
     const imageFromBottle = winery?.img_bottle || winery?.imgBottle || winery?.['img-bottle'] || winery?.img;
-    const defaultImage = '/images/default-bottle.png';
+    const defaultImage = '/images/Icono-Magnum.png';
 
     const profileValue = typeof imageFromProfile === 'string' ? imageFromProfile.trim() : '';
     const bottleValue = typeof imageFromBottle === 'string' ? imageFromBottle.trim() : '';
     const profileLooksLocal = profileValue.startsWith('/images/');
     const bottleLooksRemote = /^https?:\/\//i.test(bottleValue);
 
-    const selected =
-      profileLooksLocal && bottleLooksRemote
-        ? bottleValue
-        : (profileValue || bottleValue || defaultImage);
+    let explicitSrc = '';
+    if (profileLooksLocal && bottleLooksRemote) {
+      explicitSrc = bottleValue;
+    } else {
+      explicitSrc = profileValue || bottleValue;
+    }
 
-    if (typeof selected === 'string' && selected.trim()) {
-      const primarySrc = selected.trim();
+    if (explicitSrc && !explicitSrc.includes('default-bottle.png')) {
+      const primarySrc = explicitSrc;
       const fallbackSrc =
-        bottleValue && bottleValue !== primarySrc
+        bottleValue && bottleValue !== primarySrc && !bottleValue.includes('default-bottle.png')
           ? bottleValue
           : defaultImage;
 
       return { primarySrc, fallbackSrc };
+    }
+
+    // Resolutor semántico por nombre/email de la bodega (concordancia con magnumslocal)
+    const nameOrEmail = `${winery?.nombre || ''} ${winery?.email || ''} ${winery?.winery || ''}`.toLowerCase();
+    if (nameOrEmail.includes('traslascuestas')) {
+      return {
+        primarySrc: 'https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg',
+        fallbackSrc: defaultImage
+      };
+    }
+    if (nameOrEmail.includes('pierola') || nameOrEmail.includes('piérola')) {
+      return {
+        primarySrc: 'https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg',
+        fallbackSrc: defaultImage
+      };
+    }
+    if (nameOrEmail.includes('fya')) {
+      return {
+        primarySrc: '/images/FyA-bodega.jpg',
+        fallbackSrc: defaultImage
+      };
     }
 
     return { primarySrc: defaultImage, fallbackSrc: defaultImage };
@@ -906,15 +929,15 @@ class WineryListManager {
       img.dataset.fallbackBound = '1';
 
       img.addEventListener('error', () => {
-        const fallbackSrc = img.dataset.fallbackSrc || '/images/default-bottle.png';
+        const fallbackSrc = img.dataset.fallbackSrc || '/images/Icono-Magnum.png';
         const currentSrc = img.getAttribute('src') || '';
 
-        if (currentSrc === fallbackSrc && fallbackSrc === '/images/default-bottle.png') {
+        if (currentSrc === fallbackSrc && fallbackSrc === '/images/Icono-Magnum.png') {
           return;
         }
 
         img.setAttribute('src', fallbackSrc);
-        img.dataset.fallbackSrc = '/images/default-bottle.png';
+        img.dataset.fallbackSrc = '/images/Icono-Magnum.png';
       });
     });
   }
