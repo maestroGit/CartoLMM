@@ -391,7 +391,7 @@
   width: 100%;
   box-sizing: border-box;
   padding: 0;
-  background: #e6ffe6; /* Fondo claro para mejor legibilidad */ 
+  background: transparent;
   overflow-y: auto;
 }
 
@@ -2409,3 +2409,511 @@ kbd {
   box-shadow: 0 1px 4px #0001;
   display: block;
 }
+
+/* ==========================================================================
+   WINERY CARD & USER POPUP UNIFIED DESIGN SYSTEM (CartoLMM & list-winery.html)
+   ========================================================================== */
+
+:root {
+  --color-primary: #f7931a;
+  --color-dark-bg: #220F17;
+  --color-light-bg: #3A1319;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #aaaaaa;
+  --color-border: #4a2328;
+  --color-success: #4caf50;
+  --color-error: #f44336;
+  --color-warning: #ff9800;
+}
+
+/* Card base */
+.winery-card {
+  background: #220F17 !important;
+  background-color: #220F17 !important;
+  color: #ffffff;
+  opacity: 1 !important;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 20px rgba(247, 147, 26, 0.08);
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* When displayed inside a Leaflet popup container */
+.peer-leaflet-popup .user-popup.winery-card {
+  width: 100% !important;
+  max-width: 370px !important;
+  min-width: 270px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  background: #220F17 !important;
+}
+
+/* Header */
+.winery-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+.winery-card-name {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+.winery-role-badge {
+  background: var(--color-primary);
+  color: var(--color-dark-bg);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+  display: inline-block;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.winery-card-email {
+  color: var(--color-text-secondary);
+  font-size: 0.86rem;
+  margin: 0;
+  word-break: break-all;
+}
+
+/* Info section (Location, Subscription, Member Since) */
+.winery-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.winery-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+}
+
+.winery-info-label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.winery-info-value {
+  color: var(--color-text-primary);
+  word-break: break-word;
+  font-weight: 500;
+}
+
+/* Categories & Badges */
+.winery-card-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.winery-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.winery-category-tag {
+  background: rgba(247, 147, 26, 0.15);
+  color: var(--color-primary);
+  padding: 3px 9px;
+  border-radius: 16px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.winery-badge-tag {
+  background: rgba(76, 175, 80, 0.15);
+  color: #8fdc8f;
+  padding: 3px 9px;
+  border-radius: 16px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* DO, Grapes and Types section */
+.winery-card-dos {
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.winery-dos-section,
+.winery-variedades-section,
+.winery-tipos-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.winery-dos-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-right: 4px;
+}
+
+.winery-do-tag {
+  background: rgba(103, 58, 183, 0.18);
+  color: #b39ddb;
+  padding: 3px 8px;
+  border-radius: 14px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.winery-variedad-tag {
+  background: rgba(156, 39, 176, 0.18);
+  color: #ce93d8;
+  padding: 3px 8px;
+  border-radius: 14px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.winery-tipo-tag {
+  background: rgba(233, 30, 99, 0.18);
+  color: #f48fb1;
+  padding: 3px 8px;
+  border-radius: 14px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.winery-more-tag {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-secondary);
+  padding: 3px 7px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Actions */
+.winery-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.winery-view-btn {
+  flex: 1;
+  padding: 8px 14px;
+  background: var(--color-primary);
+  color: var(--color-dark-bg);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+
+.winery-view-btn:hover {
+  background: #e68a0f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(247, 147, 26, 0.35);
+}
+
+/* Bottle image card */
+.bottle-img-card {
+  width: 100%;
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  background: #2B0F13;
+  display: block;
+  margin: 0 auto;
+  cursor: zoom-in;
+  transition: transform 0.2s ease;
+}
+
+.bottle-img-card:hover {
+  transform: scale(1.02);
+}
+
+.user-bottle-img-wrapper.bodega-img-full {
+  width: 100%;
+  max-width: 100%;
+  max-height: 200px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2B0F13;
+  border-radius: 12px;
+  border: 1px solid rgba(247, 147, 26, 0.2);
+  margin: 0 0 6px 0;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+/* User Profile Avatar for general users */
+.user-profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+}
+
+.user-profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  cursor: zoom-in;
+}
+
+/* Wallets Section in user-popup */
+.user-popup .wallets-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.user-popup .wallet-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(58, 19, 25, 0.6);
+  border: 1px solid rgba(247, 147, 26, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+.user-popup .wallet-address-code {
+  word-break: break-all;
+  white-space: normal;
+  user-select: all;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: #FFA726;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(247, 147, 26, 0.15);
+  display: block;
+  margin: 0;
+}
+
+.user-popup .wallet-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-popup .balance-btn-user-popup {
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: var(--color-dark-bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-popup .balance-btn-user-popup:hover {
+  background: #e68a0f;
+  transform: scale(1.02);
+}
+
+.user-popup .wallet-balance-result {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #f7931a;
+}
+
+.user-popup .wallet-empty-message {
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  margin: 0;
+  padding: 4px 0;
+}
+
+/* Wallet UTXO Collapsible Details */
+.user-popup .wallet-utxo-details {
+  margin: 6px 0 0 0;
+  border: 1px solid rgba(247, 147, 26, 0.2);
+  border-radius: 8px;
+  background: rgba(43, 15, 19, 0.4);
+  padding: 6px 10px;
+}
+
+.user-popup .wallet-utxo-summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #FFA726;
+  outline: none;
+  padding: 2px 0;
+  user-select: none;
+}
+
+.user-popup .wallet-utxo-summary:hover {
+  color: #FFD7B3;
+}
+
+/* Footer popup */
+.user-popup .footer-popup {
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.user-popup .footer-popup-item {
+  color: var(--color-text-secondary) !important;
+  font-size: 0.8rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.4;
+}
+
+.user-popup .footer-popup a {
+  color: var(--color-primary) !important;
+  text-decoration: none;
+}
+
+.user-popup .footer-popup a:hover {
+  text-decoration: underline;
+}
+
+.user-popup .blockchain-active-item {
+  color: #4caf50 !important;
+  font-weight: 600;
+}
+
+.user-card-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 4px 0;
+}
+
+.social-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(247, 147, 26, 0.12);
+  border: 1px solid rgba(247, 147, 26, 0.25);
+  transition: all 0.2s ease;
+}
+
+.social-icon-link:hover {
+  background: var(--color-primary);
+  transform: scale(1.1);
+}
+
+/* Leaflet container fixes */
+.peer-leaflet-popup .leaflet-popup-content-wrapper {
+  background: #220F17 !important;
+  border: 1.5px solid var(--color-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(247, 147, 26, 0.12) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  width: 370px !important;
+  max-width: 90vw !important;
+  box-sizing: border-box !important;
+}
+
+.peer-leaflet-popup .leaflet-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+.peer-leaflet-popup .leaflet-popup-tip {
+  background: #220F17 !important;
+  border: 1.5px solid var(--color-border) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.peer-leaflet-popup .leaflet-popup-close-button {
+  top: 10px !important;
+  right: 10px !important;
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 18px !important;
+  line-height: 28px !important;
+  color: #FFA726 !important;
+  background: rgba(247, 147, 26, 0.15) !important;
+  border: 1px solid rgba(247, 147, 26, 0.3) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  z-index: 1000 !important;
+  text-decoration: none !important;
+  padding: 0 !important;
+}
+
+.peer-leaflet-popup .leaflet-popup-close-button:hover {
+  background: var(--color-primary) !important;
+  color: var(--color-dark-bg) !important;
+  transform: scale(1.1) !important;
+}

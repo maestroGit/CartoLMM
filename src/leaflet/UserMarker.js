@@ -99,199 +99,178 @@ class UserMarker {
   }
 
   attachPopup() {
-        // Inyectar CSS para ajustar el fondo blanco del wrapper en modo claro y evitar el saliente
-        if (!document.getElementById('user-popup-media-style')) {
-          const style = document.createElement('style');
-          style.id = 'user-popup-media-style';
-          style.innerHTML = `
-            @media (prefers-color-scheme: light) {
-              .peer-leaflet-popup .leaflet-popup-content-wrapper {
-                background: rgba(255,255,255,0.95) !important;
-                color: #1F2937;
-                max-width: 370px !important;
-                min-width: 270px !important;
-                width: 370px !important;
-                box-sizing: border-box;
-                padding: 0 !important;
-              }
-            }
-          `;
-          document.head.appendChild(style);
-        }
+    const uniqueId = this.data.id || this.data.role || 'user';
+    const nombre = this.data.nombre || 'Sin nombre';
+    const email = this.data.email || 'No especificado';
+    const location = this.resolveLocation(this.data);
+    const subscription = this.resolveSubscription(this.data);
+    const memberSince = this.resolveMemberSince(this.data);
+
     const roleCategory = this.data.role === 'winery'
       ? 'bodega'
       : ((this.data.role === 'wine_lover' || this.data.role === 'user') ? 'wine_lover' : null);
     const categoriasList = Array.isArray(this.data.categorias) && this.data.categorias.length > 0
       ? this.data.categorias
       : (roleCategory ? [roleCategory] : []);
-    const categorias = categoriasList
-      .map(cat => `<span class="categoria-tag categoria-${cat}">${cat}</span>`)
-      .join(' ');
 
-    const wallets = this.data.wallets && this.data.wallets.length > 0
+    const isWineLover = Boolean(categoriasList && categoriasList.includes('wine_lover'));
+    const isBodega = Boolean(categoriasList && (categoriasList.includes('bodega') || this.data.role === 'winery'));
+    const userType = isWineLover ? 'winelover' : (isBodega ? 'bodega' : 'otro');
+
+    // Categorías tags
+    const categoriesHtml = categoriasList.length > 0
+      ? categoriasList.slice(0, 3).map(cat => `<span class="winery-category-tag">${this.escapeHtml(cat)}</span>`).join('')
+      : `<span class="winery-category-tag">${userType === 'bodega' ? 'bodega' : (userType === 'winelover' ? 'wine_lover' : 'user')}</span>`;
+
+    // Badges tags
+    const rawBadges = Array.isArray(this.data.badges) ? this.data.badges : [];
+    const badgesHtml = rawBadges.length > 0
+      ? rawBadges.slice(0, 3).map(badge => `<span class="winery-badge-tag">${this.escapeHtml(this.getBadgeLabel(badge))}</span>`).join('')
+      : '<span class="winery-badge-tag">No badges</span>';
+
+    // Wallets section
+    const wallets = Array.isArray(this.data.wallets) && this.data.wallets.length > 0
       ? this.data.wallets.map((w, idx) => `
-          <div class="wallet-item" style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
-            <code style="word-break:break-all;white-space:pre-wrap;user-select:all;margin-bottom:0;">${w.address}</code>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <button class="balance-btn-user-popup" onclick="window.getWalletBalance && window.getWalletBalance('${w.address}', this)">Magnums</button>
-              <div class="wallet-balance-result" id="wallet-balance-result-${this.data.id || idx}"></div>
+          <div class="wallet-item">
+            <code class="wallet-address-code">${this.escapeHtml(w.address)}</code>
+            <div class="wallet-actions-row">
+              <button class="balance-btn-user-popup" onclick="window.getWalletBalance && window.getWalletBalance('${this.escapeHtml(w.address)}', this)">Magnums</button>
+              <div class="wallet-balance-result" id="wallet-balance-result-${this.escapeHtml(this.data.id || String(idx))}"></div>
             </div>
           </div>
         `).join('')
-      : '<p style="color: #999;">Sin wallets registradas</p>';
+      : '<p class="wallet-empty-message">Sin wallets registradas</p>';
 
+    // Blockchain status
     const blockchainStatus = this.data.blockchainActive
-      ? '<div class="blockchain-status active">🟢 Blockchain activa</div>'
-      : '<div class="blockchain-status inactive">⚪ Sin blockchain</div>';
-
-    const webField = this.data.web
-      ? `<p><strong>Web:</strong> <a href="https://${this.data.web}" target="_blank" rel="noopener">${this.data.web}</a></p>`
+      ? '<p class="footer-popup-item blockchain-active-item">🟢 Blockchain activa</p>'
       : '';
 
-    // Resolver información y asset de la botella Magnum
-    const isWineLover = Boolean(categoriasList && categoriasList.includes('wine_lover'));
-    const bottleInfo = this.resolveMagnumBottle(this.data, isWineLover);
+    // Web field
+    const webRaw = this.data.web ? String(this.data.web).trim() : '';
+    const webHref = webRaw.startsWith('http://') || webRaw.startsWith('https://') ? webRaw : `https://${webRaw}`;
+    const webField = webRaw
+      ? `<p class="footer-popup-item"><strong>Web:</strong> <a href="${this.escapeHtml(webHref)}" target="_blank" rel="noopener">${this.escapeHtml(webRaw)}</a></p>`
+      : '';
 
-    const userType = categoriasList.includes('wine_lover')
-      ? 'winelover'
-      : (categoriasList.includes('bodega') ? 'bodega' : 'otro');
-
-    // Imagen: para bodega resolver logo/bodega, para winelover usar botella resuelta
-    let imagenSrc = '';
-    if (isWineLover) {
-      imagenSrc = bottleInfo.imgUrl;
-    } else if (userType === 'bodega') {
-      imagenSrc = this.resolveBodegaImage(this.data);
-    } else if (this.data.userCard && this.data.userCard.img && this.data.userCard.img.trim() !== '') {
-      imagenSrc = this.data.userCard.img;
-    } else if (this.data.usercard_img && this.data.usercard_img.trim() !== '') {
-      imagenSrc = this.data.usercard_img;
-    } else if (this.data.img_bottle && this.data.img_bottle.trim() !== '') {
-      imagenSrc = this.data.img_bottle;
-    } else if (this.data.imgBottle && this.data.imgBottle.trim() !== '') {
-      imagenSrc = this.data.imgBottle;
-    } else if (this.data['img-bottle'] && this.data['img-bottle'].trim() !== '') {
-      imagenSrc = this.data['img-bottle'];
-    } else if (this.data.img && this.data.img.trim() !== '') {
-      imagenSrc = this.data.img;
-    } else {
-      imagenSrc = '/images/iconoBWred.png';
-    }
-    const finalImgSrc = isWineLover ? bottleInfo.imgUrl : (userType === 'bodega' ? imagenSrc : this.resolveImageSrc(imagenSrc));
-
-    // Botón Move
+    // URL para Move Magnum
     const walletTransferUrl = window.BLOCKCHAIN_WALLET_URL || 'https://app.blockswine.com/transfer-keystore.html';
-    const moveBtn = `<div style="width:100%;display:flex;justify-content:center;"><button class="move-btn-user-popup" onclick="window.open('${walletTransferUrl}','_blank','noopener,noreferrer')">Move</button></div>`;
-    // Para bodega: solo imagen, contenedor ancho
-    const imagenDivBodega = `<div class="user-bottle-img-wrapper bodega-img-full"><img src="${finalImgSrc}" data-fallback-src="/images/Icono-Magnum.png" alt="Bottle or winery image" referrerpolicy="no-referrer" style="max-height:320px;object-fit:contain;border-radius:12px;box-shadow:0 4px 24px #0003;background:#2B0F13;" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/Icono-Magnum.png';"></div>`;
-    // Para wine_lover: imagen + botón Move
-    const imagenDivWineLover = `<div class="user-bottle-img-wrapper"><img src="${finalImgSrc}" alt="Imagen botella o icono" referrerpolicy="no-referrer" onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))" onerror="this.onerror=null;this.src='/images/bottel-magnum-transparent.png';">${moveBtn}</div>`;
-    // Para usuarios generales (role=user): mostrar avatar/foto de perfil
-    const imagenDivUsuario = `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0 4px 0;">
-        <img
-          src="${finalImgSrc}"
-          alt="Foto de ${this.data.nombre || 'usuario'}"
-          style="width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid #f7931a;box-shadow:0 2px 10px #0004;cursor:pointer;"
-          referrerpolicy="no-referrer"
-          onclick="window.showZoomImage && window.showZoomImage(this.getAttribute('src'))"
-          onerror="this.onerror=null;this.src='/images/default-bottle.png';"
-        >
-        <div style="font-weight:600;color:#f5f5f5;text-align:center;">${this.data.nombre || 'Usuario'}</div>
-      </div>
-    `;
 
-    const uniqueId = this.data.id || userType;
-    const userCard = (userType === 'winelover' && this.data.nombre) ? `
-      <div class="user-card winelover-magnum-card">
-        <div class="user-bottle-stage">
-          <div class="vintage-pill">${bottleInfo.vintage}</div>
-          <div class="critic-pill">${bottleInfo.critic}</div>
-          <div class="bottle-frame" onclick="window.showZoomImage && window.showZoomImage('${bottleInfo.imgUrl}')" title="Clic para ampliar botella Magnum">
-            <img 
-              src="${bottleInfo.imgUrl}" 
-              alt="${bottleInfo.wineTitle}" 
-              class="user-magnum-img" 
-              onerror="this.onerror=null;this.src='/images/bottel-magnum-transparent.png';" 
-            />
-          </div>
-          <div class="bottle-meta-badge">🍷 ${bottleInfo.winery} · ${bottleInfo.doOrigin}</div>
+    // Resolver info de botella y fuentes de imagen
+    const bottleInfo = this.resolveMagnumBottle(this.data, isWineLover);
+    const { primarySrc, fallbackSrc } = this.getWineryImageSources(this.data);
+
+    let cardBodyHtml = '';
+
+    if (userType === 'bodega') {
+      const denominacionesData = this.extractDenominacionesInfo(this.data);
+      const dosHtml = this.createDosSection(denominacionesData);
+
+      cardBodyHtml = `
+        <div class="user-bottle-img-wrapper bodega-img-full"><img src="${primarySrc}" data-fallback-src="${fallbackSrc}" alt="Bottle or winery image" class="bottle-img-card" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)" data-fallback-bound="1"></div>
+        <div class="winery-card-header">
+          <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
+          <span class="winery-role-badge">Winery</span>
         </div>
-        <div class="user-popup-nombre">${this.data.nombre}</div>
+        <p class="winery-card-email">${this.escapeHtml(email)}</p>
+        <div class="winery-card-info">
+          <div class="winery-info-row">
+            <span class="winery-info-label">Location:</span>
+            <span class="winery-info-value">${this.escapeHtml(location)}</span>
+          </div>
+          <div class="winery-info-row">
+            <span class="winery-info-label">Subscription:</span>
+            <span class="winery-info-value">${this.escapeHtml(subscription)}</span>
+          </div>
+          <div class="winery-info-row">
+            <span class="winery-info-label">Member Since:</span>
+            <span class="winery-info-value">${this.escapeHtml(memberSince)}</span>
+          </div>
+        </div>
+        <div class="winery-card-categories">
+          ${categoriesHtml}
+        </div>
+        <div class="winery-card-badges">
+          ${badgesHtml}
+        </div>
+        ${dosHtml}
+        <div class="wallets-section">
+          ${wallets}
+        </div>
+        <div class="winery-card-actions">
+          <button class="winery-view-btn" onclick="window.location.href='/list-winery.html'">View Details</button>
+        </div>
+        <div class="footer-popup">
+          <p class="footer-popup-item">Registrado: ${this.formatRegistroFecha()} - <span class="categoria-tag categoria-bodega">bodega</span></p>
+          <p class="footer-popup-item"><strong>Email:</strong> ${this.escapeHtml(email)}</p>
+          ${webField}
+          ${blockchainStatus}
+        </div>
+      `;
+    } else if (userType === 'winelover') {
+      cardBodyHtml = `
+        <div class="user-bottle-img-wrapper">
+          <div class="user-bottle-stage">
+            <div class="vintage-pill">${this.escapeHtml(bottleInfo.vintage)}</div>
+            <div class="critic-pill">${this.escapeHtml(bottleInfo.critic)}</div>
+            <div class="bottle-frame" onclick="window.showZoomImage && window.showZoomImage('${bottleInfo.imgUrl}')" title="Clic para ampliar botella Magnum">
+              <img 
+                src="${bottleInfo.imgUrl}" 
+                data-fallback-src="/images/Icono-Magnum.png"
+                alt="${this.escapeHtml(bottleInfo.wineTitle)}" 
+                class="user-magnum-img bottle-img-card" 
+                onerror="this.onerror=null;this.src='/images/bottel-magnum-transparent.png';" 
+              />
+            </div>
+            <div class="bottle-meta-badge">🍷 ${this.escapeHtml(bottleInfo.winery)} · ${this.escapeHtml(bottleInfo.doOrigin)}</div>
+          </div>
+        </div>
+        <div class="winery-card-header">
+          <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
+          <span class="winery-role-badge">Wine Lover</span>
+        </div>
+        <p class="winery-card-email">${this.escapeHtml(email)}</p>
         <div class="custody-indicator">
           <span class="custody-dot"></span> Custodia Activa Magnum 1.5L
         </div>
-        <div class="wine-title-sub">${bottleInfo.wineTitle}</div>
-        <div style="width:100%;display:flex;justify-content:center;margin:4px 0 6px 0;">
-          <button class="move-btn-user-popup" onclick="window.open('${walletTransferUrl}','_blank','noopener,noreferrer')">Move Magnum</button>
-        </div>
-        <div class="user-card-social">
-          <a href="https://x.com/" target="_blank" title="X" style="display:inline-block;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fffefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M17.53 7.477l-4.06 4.06 4.06 4.06-1.06 1.06-4.06-4.06-4.06 4.06-1.06-1.06 4.06-4.06-4.06-4.06 1.06-1.06 4.06 4.06 4.06-4.06z"/></svg>
-          </a>
-          <a href="https://instagram.com/" target="_blank" title="Instagram" style="display:inline-block;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fefefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.242-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.783 2.295 7.149 2.233 8.415 2.175 8.795 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.363 3.678 1.344c-.98.98-1.213 2.092-1.272 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.613.059 1.281.292 2.393 1.272 3.373.98.98 2.092 1.213 3.373 1.272C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.292 3.373-1.272.98-.98 1.213-2.092 1.272-3.373.059-1.281.072-1.69.072-7.613 0-5.923-.013-6.332-.072-7.613-.059-1.281-.292-2.393-1.272-3.373-.98-.98-2.092-1.213-3.373-1.272C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>
-          </a>
-          <a href="https://youtube.com/" target="_blank" title="YouTube" style="display:inline-block;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fefefe" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a2.998 2.998 0 0 0-2.115-2.115C19.633 3.5 12 3.5 12 3.5s-7.633 0-9.383.571a2.998 2.998 0 0 0-2.115 2.115C0 7.937 0 12 0 12s0 4.063.502 5.814a2.998 2.998 0 0 0 2.115 2.115C4.367 20.5 12 20.5 12 20.5s7.633 0 9.383-.571a2.998 2.998 0 0 0 2.115-2.115C24 16.063 24 12 24 12s0-4.063-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-          </a>
-        </div>
-        ${this.data.descripcion ? `<div class="user-card-description">${this.data.descripcion}</div>` : ''}
-      </div>
-    ` : '';
-    let bodegaMetaHtml = '';
-    if (userType === 'bodega') {
-      const doName = this.data.denominacion || this.data.denominacionOrigen || this.data.denominacion_origen || this.data.region;
-      const enologo = this.data.enologo;
-      const director = this.data.directorGeneral || this.data.director_general;
-      const anoFundacion = this.data.anoFundacion || this.data.ano_fundacion || this.data.fundacion;
-      const superficie = this.data.superficieVinedo || this.data.superficie_vinedos || this.data.superficie;
-      const variedades = Array.isArray(this.data.variedadesPrincipales)
-        ? this.data.variedadesPrincipales.join(', ')
-        : (this.data.variedadesPrincipales || this.data.variedades_principales || '');
-      const isVerified = this.data.verificado || this.data.isVerified || this.data.verified || false;
-
-      bodegaMetaHtml = `
-        <div class="bodega-meta-panel" style="margin: 6px 10px 10px 10px; padding: 10px; background: rgba(43, 15, 19, 0.75); border-radius: 8px; border: 1px solid rgba(247, 147, 26, 0.3); font-size: 0.85em; color: #e5e7eb;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            ${doName ? `<span class="do-badge" style="background:#6A0D25; color:#f7931a; padding:2px 8px; border-radius:4px; font-weight:600; border:1px solid #f7931a; font-size:0.85em;">🍷 ${doName}</span>` : '<span></span>'}
-            ${isVerified ? `<span style="color:#22c55e; font-weight:600; font-size:0.85em;">✓ Verificada</span>` : ''}
+        <div class="wine-title-sub">${this.escapeHtml(bottleInfo.wineTitle)}</div>
+        <div class="winery-card-info">
+          <div class="winery-info-row">
+            <span class="winery-info-label">Location:</span>
+            <span class="winery-info-value">${this.escapeHtml(location)}</span>
           </div>
-          ${enologo ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>🍇 Enólogo:</strong> ${enologo}</div>` : ''}
-          ${director ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>👔 Dir. General:</strong> ${director}</div>` : ''}
-          ${anoFundacion ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>🏛️ Fundada:</strong> ${anoFundacion}</div>` : ''}
-          ${superficie ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>🌿 Viñedos:</strong> ${superficie} ha</div>` : ''}
-          ${variedades ? `<div style="margin-bottom:3px; color:#d1d5db;"><strong>🌱 Variedades:</strong> ${variedades}</div>` : ''}
+          <div class="winery-info-row">
+            <span class="winery-info-label">Subscription:</span>
+            <span class="winery-info-value">${this.escapeHtml(subscription)}</span>
+          </div>
+          <div class="winery-info-row">
+            <span class="winery-info-label">Member Since:</span>
+            <span class="winery-info-value">${this.escapeHtml(memberSince)}</span>
+          </div>
         </div>
-      `;
-    }
-
-    const popupContent = `
-      <div class="user-popup" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${finalImgSrc}" data-img-bottle="${bottleInfo.imgUrl}">
-        ${userCard}
-        ${userType === 'bodega' ? imagenDivBodega : ''}
-        ${userType === 'otro' ? imagenDivUsuario : ''}
-        ${userType === 'bodega' ? `<h3 class="bodega-img-title">${this.data.nombre}</h3>` : ''}
-        ${bodegaMetaHtml}
-       
+        <div class="winery-card-categories">
+          ${categoriesHtml}
+        </div>
+        <div class="winery-card-badges">
+          ${badgesHtml}
+        </div>
         <div class="wallets-section">
           ${wallets}
         </div>
         <!-- Wallet UTXO UI (colapsable) -->
-        ${userType !== 'bodega' ? `
-        <details style="margin:2px 0 0 0;">
-          <summary style="cursor:pointer;font-weight:510;">Wallet</summary>
-          <div class="wallet-section" style="width:100%;max-width:420px;margin:0 auto;">
-            <div class="wallet-import-controls" style="display:flex;flex-direction:column;gap:8px;">
-              <label for="wallet-file-${this.data.id || userType}" </label>
+        <details class="wallet-utxo-details">
+          <summary class="wallet-utxo-summary">Wallet Key &amp; UTXOs</summary>
+          <div class="wallet-section">
+            <div class="wallet-import-controls">
+              <label for="wallet-file-${uniqueId}">Keystore (.json):</label>
               <div class="custom-file-input-wrapper">
-                <input type="file" id="wallet-file-${this.data.id || userType}" accept="application/json" style="display:none;">
-                <button type="button" id="wallet-file-btn-${this.data.id || userType}" class="wallet-btn">Select file</button>
-                <span id="wallet-file-name-${this.data.id || userType}" class="wallet-file-name" style="margin-left:10px;color:#FFA726;font-size:0.95em;"></span>
+                <input type="file" id="wallet-file-${uniqueId}" accept="application/json" style="display:none;">
+                <button type="button" id="wallet-file-btn-${uniqueId}" class="wallet-btn">Select file</button>
+                <span id="wallet-file-name-${uniqueId}" class="wallet-file-name"></span>
               </div>
-              <div class="wallet-import-group" id="wallet-import-group-${this.data.id || userType}">
-                <label for="wallet-passphrase-${this.data.id || userType}" style="font-weight:500;">Passphrase</label>
-                <input type="password" id="wallet-passphrase-${this.data.id || userType}" placeholder="Passphrase" class="wallet-input">
+              <div class="wallet-import-group" id="wallet-import-group-${uniqueId}">
+                <label for="wallet-passphrase-${uniqueId}">Passphrase</label>
+                <input type="password" id="wallet-passphrase-${uniqueId}" placeholder="Passphrase" class="wallet-input">
                 <button id="wallet-import" class="wallet-btn">Import PublicKey</button>
               </div>
               <button id="wallet-reset" class="wallet-btn" style="display:none;">Change wallet</button>
@@ -299,23 +278,82 @@ class UserMarker {
               <button id="wallet-history" class="wallet-btn" style="display:none;">History</button>
             </div>
             <div class="wallet-status" id="wallet-status"></div>
-            <div class="wallet-balance-area" style="margin-top:10px;">
+            <div class="wallet-balance-area">
               <strong>Balance:</strong> <span id="wallet-balance">0</span>
             </div>
-            <div class="wallet-utxos-area" style="margin-top:10px;">
+            <div class="wallet-utxos-area">
               <strong>UTXOs:</strong>
-              <div id="wallet-utxo-list" style="margin-top:4px;"></div>
+              <div id="wallet-utxo-list"></div>
             </div>
           </div>
         </details>
-        ` : ''}
-        <!-- /Wallet UTXO UI -->
-        <div class="footer-popup">
-          <p class="footer-popup-item">Registrado: ${this.formatRegistroFecha()} - ${categorias}</p>
-          <p class="footer-popup-item"><strong>Email:</strong> ${this.data.email}</p>
-          ${userType === 'bodega' ? `<p class=\"footer-popup-item\"><strong>Web:</strong> <a href=\"https://${this.data.web}\" target=\"_blank\" rel=\"noopener\">${this.data.web}</a></p>` : ''}
-          ${(userType === 'bodega' || userType === 'winelover') && this.data.blockchainActive ? `<p class=\"footer-popup-item\">🟢 Blockchain activa</p>` : ''}
+        <div class="winery-card-actions">
+          <button class="winery-view-btn move-btn-user-popup" onclick="window.open('${walletTransferUrl}','_blank','noopener,noreferrer')">Move Magnum</button>
         </div>
+        <div class="user-card-social">
+          <a href="https://x.com/" target="_blank" title="X" class="social-icon-link">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#f5f5f5" xmlns="http://www.w3.org/2000/svg"><path d="M17.53 7.477l-4.06 4.06 4.06 4.06-1.06 1.06-4.06-4.06-4.06 4.06-1.06-1.06 4.06-4.06-4.06-4.06 1.06-1.06 4.06 4.06 4.06-4.06z"/></svg>
+          </a>
+          <a href="https://instagram.com/" target="_blank" title="Instagram" class="social-icon-link">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#f5f5f5" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.242-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.783 2.295 7.149 2.233 8.415 2.175 8.795 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.363 3.678 1.344c-.98.98-1.213 2.092-1.272 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.613.059 1.281.292 2.393 1.272 3.373.98.98 2.092 1.213 3.373 1.272C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.292 3.373-1.272.98-.98 1.213-2.092 1.272-3.373.059-1.281.072-1.69.072-7.613 0-5.923-.013-6.332-.072-7.613-.059-1.281-.292-2.393-1.272-3.373-.98-.98-2.092-1.213-3.373-1.272C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>
+          </a>
+        </div>
+        ${this.data.descripcion ? `<div class="user-card-description">${this.escapeHtml(this.data.descripcion)}</div>` : ''}
+        <div class="footer-popup">
+          <p class="footer-popup-item">Registrado: ${this.formatRegistroFecha()} - <span class="categoria-tag categoria-wine_lover">wine_lover</span></p>
+          <p class="footer-popup-item"><strong>Email:</strong> ${this.escapeHtml(email)}</p>
+          ${blockchainStatus}
+        </div>
+      `;
+    } else {
+      // Usuario general / Minero
+      const roleBadge = this.resolveRoleBadge(this.data);
+      cardBodyHtml = `
+        <div class="user-profile-header">
+          <img src="${primarySrc}" data-fallback-src="/images/Icono-Magnum.png" alt="Avatar" class="user-profile-avatar" onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)" />
+        </div>
+        <div class="winery-card-header">
+          <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
+          <span class="winery-role-badge">${this.escapeHtml(roleBadge)}</span>
+        </div>
+        <p class="winery-card-email">${this.escapeHtml(email)}</p>
+        <div class="winery-card-info">
+          <div class="winery-info-row">
+            <span class="winery-info-label">Location:</span>
+            <span class="winery-info-value">${this.escapeHtml(location)}</span>
+          </div>
+          <div class="winery-info-row">
+            <span class="winery-info-label">Subscription:</span>
+            <span class="winery-info-value">${this.escapeHtml(subscription)}</span>
+          </div>
+          <div class="winery-info-row">
+            <span class="winery-info-label">Member Since:</span>
+            <span class="winery-info-value">${this.escapeHtml(memberSince)}</span>
+          </div>
+        </div>
+        <div class="winery-card-categories">
+          ${categoriesHtml}
+        </div>
+        <div class="winery-card-badges">
+          ${badgesHtml}
+        </div>
+        <div class="wallets-section">
+          ${wallets}
+        </div>
+        <div class="winery-card-actions">
+          <button class="winery-view-btn" onclick="window.open('${walletTransferUrl}','_blank','noopener,noreferrer')">Open Wallet</button>
+        </div>
+        <div class="footer-popup">
+          <p class="footer-popup-item">Registrado: ${this.formatRegistroFecha()} - ${categoriesHtml}</p>
+          <p class="footer-popup-item"><strong>Email:</strong> ${this.escapeHtml(email)}</p>
+          ${blockchainStatus}
+        </div>
+      `;
+    }
+
+    const popupContent = `
+      <div class="user-popup winery-card" data-user-type="${userType}" data-user-id="${uniqueId}" data-user-img="${primarySrc}" data-img-bottle="${bottleInfo.imgUrl}">
+        ${cardBodyHtml}
       </div>
     `;
 
@@ -324,97 +362,27 @@ class UserMarker {
       minWidth: 270,
       className: 'peer-leaflet-popup user-custom-popup',
     });
-    // Inyectar CSS para forzar el ancho de todos los popups y reducir espacio entre wallet y descripción
-    if (!document.getElementById('user-popup-width-style')) {
-      const style = document.createElement('style');
-      style.id = 'user-popup-width-style';
-      style.innerHTML = `
-        .leaflet-popup-content {
-          max-width: 370px !important;
-          min-width: 270px !important;
-          width: 370px !important;
-          box-sizing: border-box !important;
-          overflow-x: hidden !important;
-          padding: 0 !important;
-          margin: 0 !important;
-        }
-        .user-popup {
-          width: 370px !important;
-          max-width: 370px !important;
-          min-width: 270px !important;
-          box-sizing: border-box !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          overflow-x: hidden !important;
-        }
-        .leaflet-popup-content-wrapper {
-          padding: 0 !important;
-          box-sizing: border-box !important;
-        }
-        .peer-leaflet-popup .leaflet-popup-content-wrapper {
-          width: 370px !important;
-          max-width: 370px !important;
-          min-width: 270px !important;
-          padding: 0 !important;
-        }
-        .wallet-item code {
-          word-break: break-all;
-          white-space: normal !important;
-          overflow-x: auto;
-          width: 100%;
-          max-width: 100%;
-          display: block;
-          margin-bottom: 0 !important;
-          box-sizing: border-box;
-        }
-        .user-card-description {
-          margin-top: 6px !important;
-          width: 100%;
-          max-width: 100%;
-          box-sizing: border-box;
-        }
-        .wallet-item {
-          margin-bottom: 2px !important;
-        }
-      `;
-      document.head.appendChild(style);
-    }
 
-    // Inyectar CSS para ajustar el ancho del popup al de .user-popup
-    if (!document.getElementById('user-popup-width-style')) {
-      const style = document.createElement('style');
-      style.id = 'user-popup-width-style';
-      style.innerHTML = `
-        .leaflet-popup-content .user-popup {
-          max-width: 370px !important;
-          min-width: 270px !important;
-          width: 370px !important;
-          box-sizing: border-box;
-        }
-        .leaflet-popup-content-wrapper.peer-leaflet-popup.user-custom-popup {
-          padding: 0;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    // File input custom trigger logic: usar evento popupopen para asegurar funcionalidad
+    const self = this;
     this.marker.on('popupopen', function(e) {
       setTimeout(() => {
-        // Usar el id guardado en el marcador
+        const popupElement = e?.popup?._container || document.querySelector('.peer-leaflet-popup');
+        if (popupElement) {
+          self.attachImageFallbackHandlers(popupElement);
+        }
+
         const id = this._userUniqueId;
-        console.log('[UserMarker][popupopen] id usado:', id);
         const fileInput = document.getElementById('wallet-file-' + id);
         const fileBtn = document.getElementById('wallet-file-btn-' + id);
         const fileNameSpan = document.getElementById('wallet-file-name-' + id);
-        console.log('[UserMarker][popupopen] fileInput:', fileInput, 'fileBtn:', fileBtn, 'fileNameSpan:', fileNameSpan);
         if (fileBtn && fileInput) {
           fileBtn.onclick = () => {
-            console.log('[UserMarker][popupopen] fileBtn click');
             fileInput.click();
           };
           fileInput.onchange = () => {
-            fileNameSpan.textContent = fileInput.files.length ? fileInput.files[0].name : 'Ningún archivo seleccionado';
-            console.log('[UserMarker][popupopen] file selected:', fileInput.files[0]);
+            if (fileNameSpan) {
+              fileNameSpan.textContent = fileInput.files.length ? fileInput.files[0].name : 'Ningún archivo seleccionado';
+            }
           };
         }
 
@@ -429,7 +397,6 @@ class UserMarker {
           }
         }
         updateImportGroupVisibility();
-        // Observar cambios en el wallet-status
         if (walletStatus && typeof MutationObserver !== 'undefined') {
           const observer = new MutationObserver(() => {
             updateImportGroupVisibility();
@@ -444,19 +411,17 @@ class UserMarker {
           if (popup && popup._container) {
             const popupRect = popup._container.getBoundingClientRect();
             const mapRect = map.getContainer().getBoundingClientRect();
-            // Diferencia entre el centro de la popup y el centro del mapa
             const popupCenterY = popupRect.top + popupRect.height / 2;
             const mapCenterY = mapRect.top + mapRect.height / 2;
             const offsetY = popupCenterY - mapCenterY;
-            // Panear el mapa para centrar la popup verticalmente
             if (Math.abs(offsetY) > 10) {
-              map.panBy([0, offsetY], {animate: true});
+              map.panBy([0, offsetY], { animate: true });
             }
           }
         } catch (err) {
           console.warn('[UserMarker][popupopen] Error centrando popup:', err);
         }
-      }, 120);
+      }, 80);
     });
 
     // Inyectar función global para obtener balance si no existe
@@ -583,30 +548,301 @@ class UserMarker {
    * Resuelve la imagen de bodega con URL externa/local o fallback a Icono-Magnum
    */
   resolveBodegaImage(data = {}) {
-    const explicit = (data.userCard && data.userCard.img) ||
-      data.usercard_img ||
-      data.img_bottle ||
-      data.imgBottle ||
-      data['img-bottle'] ||
-      data.img ||
-      data.imagen;
-
-    if (explicit && typeof explicit === 'string' && explicit.trim() !== '' && !explicit.includes('default-bottle') && !explicit.includes('iconoBWred')) {
-      return this.resolveImageSrc(explicit.trim());
-    }
-
-    const textBlob = `${data.nombre || ''} ${data.bodega || ''} ${data.winery || ''} ${data.email || ''}`.toLowerCase();
-    if (textBlob.includes('traslascuestas')) {
-      return 'https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg';
-    }
-    if (textBlob.includes('pierola') || textBlob.includes('piérola')) {
-      return 'https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg';
-    }
-    if (textBlob.includes('fya')) {
-      return '/images/FyA-bodega.jpg';
-    }
-    return '/images/Icono-Magnum.png';
+    return this.getWineryImageSources(data).primarySrc;
   }
+
+  escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  resolveLocation(data = this.data) {
+    if (data.location && typeof data.location === 'string') return data.location;
+    if (data.localizacion_direccion && typeof data.localizacion_direccion === 'string') return data.localizacion_direccion;
+    if (data.localizacion && typeof data.localizacion.direccion === 'string') return data.localizacion.direccion;
+    if (data.ciudad && typeof data.ciudad === 'string') return data.ciudad;
+    if (data.municipio && typeof data.municipio === 'string') return data.municipio;
+    if (data.poblacion && typeof data.poblacion === 'string') return data.poblacion;
+    if (data.ubicacion && typeof data.ubicacion === 'string') {
+      const parts = data.ubicacion.split('-');
+      return parts[parts.length - 1].trim();
+    }
+    const text = `${data.nombre || ''} ${data.email || ''}`.toLowerCase();
+    if (text.includes('fya')) return 'Navarrete';
+    if (text.includes('traslascuestas')) return 'Valcavado de Roa';
+    if (text.includes('pierola') || text.includes('piérola')) return 'Moreda de Álava';
+
+    if (data.localizacion && data.localizacion.lat && data.localizacion.lng) {
+      return `${Number(data.localizacion.lat).toFixed(2)}, ${Number(data.localizacion.lng).toFixed(2)}`;
+    }
+    return 'Navarrete';
+  }
+
+  resolveSubscription(data = this.data) {
+    const raw = data.subscription_status || data.subscriptionStatus || data.suscripcion;
+    if (!raw) return 'Inactive';
+    const norm = String(raw).trim().toLowerCase();
+    if (norm === 'active' || norm === 'activa') return 'Active';
+    if (norm === 'inactive' || norm === 'inactiva') return 'Inactive';
+    if (norm === 'pending' || norm === 'pendiente') return 'Pending';
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
+  resolveMemberSince(data = this.data) {
+    const rawDate = data.fecha_registro || data.fechaRegistro || data.created_at || data.createdAt;
+    if (rawDate) {
+      const d = new Date(rawDate);
+      if (!isNaN(d.getTime())) {
+        return String(d.getFullYear());
+      }
+    }
+    return '2026';
+  }
+
+  resolveRoleBadge(data = this.data) {
+    if (data.role === 'winery' || (Array.isArray(data.categorias) && data.categorias.includes('bodega'))) {
+      return 'Winery';
+    }
+    if (data.role === 'wine_lover' || (Array.isArray(data.categorias) && data.categorias.includes('wine_lover'))) {
+      return 'Wine Lover';
+    }
+    if (data.role === 'minero' || (Array.isArray(data.categorias) && data.categorias.includes('minero'))) {
+      return 'Miner';
+    }
+    return 'User';
+  }
+
+  getBadgeLabel(badge) {
+    const labels = {
+      crianza_joven: 'Crianza Joven',
+      crianza_crianza: 'Crianza',
+      crianza_reserva: 'Reserva',
+      crianza_gran_reserva: 'Gran Reserva',
+      cert_ecologico: 'Cert Ecologico',
+      cert_biodinamico: 'Cert Biodinamico',
+      cert_vegano: 'Cert Vegano',
+      cert_sin_sulfitos: 'Cert Sin Sulfitos',
+      premiada: 'Premiada',
+      medalla_oro: 'Medalla Oro',
+      medalla_plata: 'Medalla Plata',
+      medalla_bronce: 'Medalla Bronce',
+    };
+    return labels[badge] || badge;
+  }
+
+  getWineryImageSources(winery = this.data) {
+    const imageFromProfile = winery?.userCard?.img || winery?.usercard_img;
+    const imageFromBottle = winery?.img_bottle || winery?.imgBottle || winery?.['img-bottle'] || winery?.img;
+    const defaultImage = '/images/Icono-Magnum.png';
+
+    const profileValue = typeof imageFromProfile === 'string' ? imageFromProfile.trim() : '';
+    const bottleValue = typeof imageFromBottle === 'string' ? imageFromBottle.trim() : '';
+    const profileLooksLocal = profileValue.startsWith('/images/');
+    const bottleLooksRemote = /^https?:\/\//i.test(bottleValue);
+
+    let explicitSrc = '';
+    if (profileLooksLocal && bottleLooksRemote) {
+      explicitSrc = bottleValue;
+    } else {
+      explicitSrc = profileValue || bottleValue;
+    }
+
+    if (explicitSrc && !explicitSrc.includes('default-bottle.png')) {
+      const primarySrc = this.resolveImageSrc(explicitSrc);
+      const fallbackSrc =
+        bottleValue && bottleValue !== primarySrc && !bottleValue.includes('default-bottle.png')
+          ? this.resolveImageSrc(bottleValue)
+          : defaultImage;
+
+      return { primarySrc, fallbackSrc };
+    }
+
+    // Resolutor semántico por nombre/email de la bodega (concordancia con magnumslocal)
+    const nameOrEmail = `${winery?.nombre || ''} ${winery?.email || ''} ${winery?.winery || ''}`.toLowerCase();
+    if (nameOrEmail.includes('traslascuestas')) {
+      return {
+        primarySrc: 'https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg',
+        fallbackSrc: defaultImage
+      };
+    }
+    if (nameOrEmail.includes('pierola') || nameOrEmail.includes('piérola')) {
+      return {
+        primarySrc: 'https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg',
+        fallbackSrc: defaultImage
+      };
+    }
+    if (nameOrEmail.includes('fya')) {
+      return {
+        primarySrc: '/images/FyA-bodega.jpg',
+        fallbackSrc: defaultImage
+      };
+    }
+
+    return { primarySrc: defaultImage, fallbackSrc: defaultImage };
+  }
+
+  attachImageFallbackHandlers(rootElement) {
+    if (!rootElement) return;
+
+    rootElement.querySelectorAll('img[data-fallback-src]').forEach((img) => {
+      if (img.dataset.fallbackBound === '1') return;
+      img.dataset.fallbackBound = '1';
+
+      img.addEventListener('error', () => {
+        const fallbackSrc = img.dataset.fallbackSrc || '/images/Icono-Magnum.png';
+        const currentSrc = img.getAttribute('src') || '';
+
+        if (currentSrc === fallbackSrc && fallbackSrc === '/images/Icono-Magnum.png') {
+          return;
+        }
+
+        img.setAttribute('src', fallbackSrc);
+        img.dataset.fallbackSrc = '/images/Icono-Magnum.png';
+      });
+    });
+  }
+
+  extractDenominacionesInfo(winery = this.data) {
+    const result = {
+      dos: [],
+      variedades: new Set(),
+      tipos: new Set()
+    };
+
+    if (Array.isArray(winery?.denominaciones) && winery.denominaciones.length > 0) {
+      winery.denominaciones.forEach(do_ => {
+        result.dos.push({
+          id: do_.id,
+          nombre: do_.nombre,
+          tipo: do_.tipo || 'DO'
+        });
+
+        if (do_.variedades && Array.isArray(do_.variedades)) {
+          do_.variedades.forEach(v => result.variedades.add(v.nombre));
+        }
+
+        if (do_.tipos_vino && Array.isArray(do_.tipos_vino)) {
+          do_.tipos_vino.forEach(t => result.tipos.add(t.nombre));
+        }
+      });
+    }
+
+    // Direct / fallback properties
+    if (result.dos.length === 0) {
+      const explicitDo = winery?.denominacion || winery?.denominacionOrigen || winery?.denominacion_origen || winery?.region;
+      if (explicitDo) {
+        result.dos.push({ id: 'do_main', nombre: explicitDo, tipo: '' });
+      }
+    }
+
+    if (result.variedades.size === 0) {
+      const vars = winery?.variedadesPrincipales || winery?.variedades || winery?.variedades_principales;
+      if (Array.isArray(vars)) {
+        vars.forEach(v => result.variedades.add(v));
+      } else if (typeof vars === 'string' && vars.trim()) {
+        vars.split(',').forEach(v => result.variedades.add(v.trim()));
+      }
+    }
+
+    if (result.tipos.size === 0) {
+      const tipos = winery?.tiposVino || winery?.tipos_vino || winery?.tipos;
+      if (Array.isArray(tipos)) {
+        tipos.forEach(t => result.tipos.add(t));
+      } else if (typeof tipos === 'string' && tipos.trim()) {
+        tipos.split(',').forEach(t => result.tipos.add(t.trim()));
+      }
+    }
+
+    // Known bodegas semantic catalog
+    const text = `${winery?.nombre || ''} ${winery?.email || ''}`.toLowerCase();
+    if (text.includes('fya')) {
+      if (result.dos.length === 0) result.dos.push({ id: 'doca_rioja', nombre: 'DOCa Rioja', tipo: '' });
+      if (result.variedades.size === 0) {
+        result.variedades.add('Tempranillo');
+        result.variedades.add('Garnacha');
+      }
+      if (result.tipos.size === 0) {
+        result.tipos.add('Blanco');
+        result.tipos.add('Gran Reserva');
+        result.tipos.add('Reserva');
+      }
+    } else if (text.includes('pierola') || text.includes('piérola')) {
+      if (result.dos.length === 0) result.dos.push({ id: 'doca_rioja', nombre: 'DOCa Rioja', tipo: '' });
+      if (result.variedades.size === 0) {
+        result.variedades.add('Tempranillo');
+      }
+      if (result.tipos.size === 0) {
+        result.tipos.add('Tinto');
+        result.tipos.add('Crianza');
+        result.tipos.add('Reserva');
+      }
+    } else if (text.includes('traslascuestas')) {
+      if (result.dos.length === 0) result.dos.push({ id: 'do_ribera', nombre: 'DO Ribera del Duero', tipo: '' });
+      if (result.variedades.size === 0) {
+        result.variedades.add('Tinta del País');
+        result.variedades.add('Tempranillo');
+      }
+      if (result.tipos.size === 0) {
+        result.tipos.add('Tinto');
+        result.tipos.add('Roble');
+      }
+    }
+
+    result.variedades = Array.from(result.variedades);
+    result.tipos = Array.from(result.tipos);
+
+    return result;
+  }
+
+  createDosSection(data) {
+    if (data.dos.length === 0 && data.variedades.length === 0 && data.tipos.length === 0) {
+      return '';
+    }
+
+    let html = '<div class="winery-card-dos">';
+
+    if (data.dos.length > 0) {
+      html += '<div class="winery-dos-section">';
+      html += '<span class="winery-dos-label">🏅 DO:</span> ';
+      html += data.dos.slice(0, 2).map(do_ => 
+        `<span class="winery-do-tag">${this.escapeHtml((do_.tipo ? do_.tipo + ' ' : '') + do_.nombre)}</span>`
+      ).join('');
+      if (data.dos.length > 2) {
+        html += `<span class="winery-more-tag">+${data.dos.length - 2}</span>`;
+      }
+      html += '</div>';
+    }
+
+    if (data.variedades.length > 0) {
+      html += '<div class="winery-variedades-section">';
+      html += '<span class="winery-dos-label">🍇 Grapes:</span> ';
+      html += data.variedades.slice(0, 3).map(v => 
+        `<span class="winery-variedad-tag">${this.escapeHtml(v)}</span>`
+      ).join('');
+      if (data.variedades.length > 3) {
+        html += `<span class="winery-more-tag">+${data.variedades.length - 3}</span>`;
+      }
+      html += '</div>';
+    }
+
+    if (data.tipos.length > 0) {
+      html += '<div class="winery-tipos-section">';
+      html += '<span class="winery-dos-label">🍷 Types:</span> ';
+      html += data.tipos.slice(0, 3).map(t => 
+        `<span class="winery-tipo-tag">${this.escapeHtml(t)}</span>`
+      ).join('');
+      if (data.tipos.length > 3) {
+        html += `<span class="winery-more-tag">+${data.tipos.length - 3}</span>`;
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
 
   /**
    * Resuelve el asset óptimo y metadatos de la botella Magnum (Cascade Asset Resolver)
@@ -707,17 +943,17 @@ class UserMarker {
   }
 
   formatRegistroFecha() {
-    const rawFecha = this.data.fechaRegistro || this.data.fecha_registro;
+    const rawFecha = this.data.fechaRegistro || this.data.fecha_registro || this.data.created_at || this.data.createdAt;
     if (!rawFecha) {
-      return 'N/D';
+      return '12/2/2026';
     }
 
     const parsed = new Date(rawFecha);
     if (Number.isNaN(parsed.getTime())) {
-      return 'N/D';
+      return '12/2/2026';
     }
 
-    return parsed.toLocaleDateString();
+    return parsed.toLocaleDateString('es-ES');
   }
 
   updateData(newData) {
