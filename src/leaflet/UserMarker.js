@@ -159,6 +159,7 @@ class UserMarker {
     // Resolver info de botella y fuentes de imagen
     const bottleInfo = this.resolveMagnumBottle(this.data, isWineLover);
     const { primarySrc, fallbackSrc } = this.getWineryImageSources(this.data);
+    const wineloverImg = this.getWineloverImageSources(this.data);
 
     let cardBodyHtml = '';
 
@@ -209,21 +210,15 @@ class UserMarker {
       `;
     } else if (userType === 'winelover') {
       cardBodyHtml = `
-        <div class="user-bottle-img-wrapper">
-          <div class="user-bottle-stage">
-            <div class="vintage-pill">${this.escapeHtml(bottleInfo.vintage)}</div>
-            <div class="critic-pill">${this.escapeHtml(bottleInfo.critic)}</div>
-            <div class="bottle-frame" onclick="window.showZoomImage && window.showZoomImage('${bottleInfo.imgUrl}')" title="Clic para ampliar botella Magnum">
-              <img 
-                src="${bottleInfo.imgUrl}" 
-                data-fallback-src="/images/Icono-Magnum.png"
-                alt="${this.escapeHtml(bottleInfo.wineTitle)}" 
-                class="user-magnum-img bottle-img-card" 
-                onerror="this.onerror=null;this.src='/images/bottel-magnum-transparent.png';" 
-              />
-            </div>
-            <div class="bottle-meta-badge">🍷 ${this.escapeHtml(bottleInfo.winery)} · ${this.escapeHtml(bottleInfo.doOrigin)}</div>
-          </div>
+        <div class="winelover-avatar-wrapper">
+          <img 
+            src="${wineloverImg.primarySrc}" 
+            data-fallback-src="${wineloverImg.fallbackSrc}"
+            alt="${this.escapeHtml(nombre)}" 
+            class="winelover-avatar-img" 
+            onerror="this.onerror=null;this.src='/images/favicon.png';" 
+            onclick="window.showZoomImage && window.showZoomImage(this.currentSrc || this.src)" 
+          />
         </div>
         <div class="winery-card-header">
           <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
@@ -233,7 +228,6 @@ class UserMarker {
         <div class="custody-indicator">
           <span class="custody-dot"></span> Custodia Activa Magnum 1.5L
         </div>
-        <div class="wine-title-sub">${this.escapeHtml(bottleInfo.wineTitle)}</div>
         <div class="winery-card-info">
           <div class="winery-info-row">
             <span class="winery-info-label">Location:</span>
@@ -683,6 +677,40 @@ class UserMarker {
     return { primarySrc: defaultImage, fallbackSrc: defaultImage };
   }
 
+  getWineloverImageSources(user = this.data) {
+    const rawImage =
+      user?.usercard_img ||
+      user?.userCard?.img ||
+      user?.userCard_img ||
+      user?.avatar ||
+      user?.photo ||
+      user?.picture ||
+      user?.img;
+
+    const defaultImage = '/images/favicon.png';
+
+    if (rawImage && typeof rawImage === 'string' && rawImage.trim() !== '') {
+      const trimmed = rawImage.trim();
+      if (
+        !trimmed.includes('default-bottle.png') &&
+        !trimmed.includes('bottel-magnum') &&
+        !trimmed.includes('magnum-042') &&
+        !trimmed.includes('Icono-Magnum')
+      ) {
+        const resolved = this.resolveImageSrc(trimmed);
+        return {
+          primarySrc: resolved,
+          fallbackSrc: defaultImage
+        };
+      }
+    }
+
+    return {
+      primarySrc: defaultImage,
+      fallbackSrc: defaultImage
+    };
+  }
+
   attachImageFallbackHandlers(rootElement) {
     if (!rootElement) return;
 
@@ -694,12 +722,14 @@ class UserMarker {
         const fallbackSrc = img.dataset.fallbackSrc || '/images/Icono-Magnum.png';
         const currentSrc = img.getAttribute('src') || '';
 
-        if (currentSrc === fallbackSrc && fallbackSrc === '/images/Icono-Magnum.png') {
+        if (currentSrc === fallbackSrc) {
           return;
         }
 
         img.setAttribute('src', fallbackSrc);
-        img.dataset.fallbackSrc = '/images/Icono-Magnum.png';
+        if (!img.classList.contains('winelover-avatar-img')) {
+          img.dataset.fallbackSrc = '/images/Icono-Magnum.png';
+        }
       });
     });
   }

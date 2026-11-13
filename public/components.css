@@ -2313,6 +2313,35 @@ kbd {
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.75));
 }
 
+/* Winelover Circular Avatar */
+.winelover-avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 12px auto 14px auto;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  padding: 3px;
+  background: radial-gradient(circle, rgba(247, 147, 26, 0.3) 0%, rgba(106, 13, 37, 0.85) 100%);
+  border: 2px solid rgba(247, 147, 26, 0.65);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px rgba(247, 147, 26, 0.35);
+  overflow: hidden;
+}
+
+.winelover-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: zoom-in;
+  transition: transform 0.25s ease;
+}
+
+.winelover-avatar-img:hover {
+  transform: scale(1.05);
+}
+
 .vintage-pill {
   position: absolute;
   top: 8px;
