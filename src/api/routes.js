@@ -12,6 +12,7 @@ import catalogRoutes from './routes/catalogRoutes.js';
 import wineloverRoutes from './routes/wineloverRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import loteRoutes from './routes/loteRoutes.js';
+import { sanitizeBlockchainAddress, sanitizeCoordinates, sanitizeString, sanitizeId } from './helpers/sanitizer.js';
 import { config } from '../config/config.js';
 
 // Instancia cliente API para magnumsmaster (fuente de verdad UTXO)
@@ -637,14 +638,15 @@ async function handleGetTransactions(req, res) {
  */
 async function handleGetBalance(req, res) {
     try {
-        const { address } = req.query;
+        const rawAddress = req.query.address;
+        const address = sanitizeBlockchainAddress(rawAddress);
         console.log(`[API] /api/balance - address recibida:`, address);
         
         if (!address) {
             return res.status(400).json({
                 success: false,
-                error: 'Dirección requerida',
-                code: 'MISSING_ADDRESS'
+                error: 'Dirección inválida o no proporcionada',
+                code: 'INVALID_ADDRESS'
             });
         }
 
@@ -1043,14 +1045,15 @@ function handleAPIError(res, error, message) {
  */
 async function handleGetUTXOBalance(req, res) {
     try {
-        const { address } = req.query;
+        const rawAddress = req.query.address;
+        const address = sanitizeBlockchainAddress(rawAddress);
         console.log(`[API] /api/utxo-balance - address:`, address);
         
         if (!address) {
             return res.status(400).json({
                 success: false,
-                error: 'Dirección requerida',
-                code: 'MISSING_ADDRESS'
+                error: 'Dirección inválida o no proporcionada',
+                code: 'INVALID_ADDRESS'
             });
         }
 
@@ -1110,12 +1113,13 @@ async function handleGetUTXOBalance(req, res) {
  */
 async function handleGetWalletUtxoSummary(req, res) {
     try {
-        const { address } = req.params;
+        const rawAddress = req.params.address;
+        const address = sanitizeBlockchainAddress(rawAddress);
         if (!address) {
             return res.status(400).json({
                 success: false,
-                error: 'Dirección requerida',
-                code: 'MISSING_ADDRESS'
+                error: 'Dirección inválida o no proporcionada',
+                code: 'INVALID_ADDRESS'
             });
         }
 

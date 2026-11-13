@@ -17,12 +17,22 @@ input:not([required])::placeholder, textarea:not([required])::placeholder {
 }
 
 :root {
-    --wine-main: #6A0D25;   /* vino intenso */
-    --wine-light: #8B1E3F;  /* luz */
-    --wine-dark: #3B0A14;   /* sombra */
-    --size: 80px;           /* tamaño más compacto para patrón */
-    --accent: #f7931a;
+    --bg-dark: #0b0b0b;
+    --bg-surface: #121212;
+    --bg-surface-elevated: #1a1a1a;
+    --wine-main: #6A0D25;       /* Vino tinto intenso BlocksWine */
+    --wine-light: #8B1E3F;      /* Resalte vino */
+    --wine-dark: #3B0A14;       /* Sombra barrica */
+    --accent-gold: #c5a880;     /* Oro barrica / madera noble */
+    --accent-gold-light: #d4bc99;
+    --accent: #f7931a;          /* Acento Bitcoin / Tokens */
     --accent-2: #ffb14a;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-gold: rgba(197, 168, 128, 0.25);
+    --text-primary: #f5f5f5;
+    --text-secondary: #c0c0c0;
+    --text-muted: #8e8e8e;
+    --header-height: 64px;
 }
 
 html, body {
@@ -35,12 +45,12 @@ html, body {
     overflow-x: hidden;
     font-size: 1.05rem;
     line-height: 1.5;
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-    background-color: #1a0b10;
-    color: #f5f5f5;
+    background-color: var(--bg-dark, #0b0b0b);
+    color: var(--text-primary, #f5f5f5);
     margin: 0;
     padding: 0;
 }

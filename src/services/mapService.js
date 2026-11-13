@@ -27,33 +27,33 @@ class MapService {
                 attributionControl: true
             });
 
-            // Definir capas base
+            // Definir capas base con Dark Matter como estética nativa BlocksWine
             const baseLayers = {
-                "🗺️ OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
+                "🍷 BlocksWine Dark": L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>',
+                    maxZoom: 19,
+                    subdomains: 'abcd'
+                }),
+                "🛰️ Satélite Terruño": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
                     maxZoom: 18
                 }),
-                "🛰️ Satélite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'Tiles &copy; Esri',
+                "🗺️ OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors',
                     maxZoom: 18
                 })
             };
 
-            // Agregar capa por defecto: preferimos la capa 'Satélite' si existe,
-            // de lo contrario caer a OpenStreetMap.
+            // Activar por defecto BlocksWine Dark para sintonizar con paleta #0b0b0b
             try {
-                const satKey = Object.keys(baseLayers).find(k => /sat(elite|élite|élite|élite|é|í)/i.test(k) || /satelite|satellite|⛰️|🛰️/i.test(k));
-                if (satKey && baseLayers[satKey]) {
-                    baseLayers[satKey].addTo(this.map);
-                } else if (baseLayers["🗺️ OpenStreetMap"]) {
-                    baseLayers["🗺️ OpenStreetMap"].addTo(this.map);
+                if (baseLayers["🍷 BlocksWine Dark"]) {
+                    baseLayers["🍷 BlocksWine Dark"].addTo(this.map);
                 } else {
-                    // Fallback to the first layer
                     const first = Object.values(baseLayers)[0];
                     if (first) first.addTo(this.map);
                 }
             } catch (err) {
-                console.warn('MapService: could not set default base layer, falling back', err);
+                console.warn('MapService: could not set default dark base layer, falling back', err);
                 const first = Object.values(baseLayers)[0];
                 if (first) first.addTo(this.map);
             }

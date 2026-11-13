@@ -386,3 +386,88 @@
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
 }
+
+/* ============================================
+   🍷 BLOCKSWINE DARK SYSTEM THEME FOR LEAFLET
+   ============================================ */
+
+/* Controles de Zoom */
+.leaflet-control-zoom a {
+    background-color: #121212 !important;
+    color: #c5a880 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: background 0.2s, color 0.2s;
+}
+
+.leaflet-control-zoom a:hover {
+    background-color: #1c1418 !important;
+    color: #f7931a !important;
+}
+
+/* Control de Capas (Layers Control) */
+.leaflet-control-layers {
+    background: rgba(11, 11, 11, 0.94) !important;
+    border: 1px solid rgba(197, 168, 128, 0.25) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+    color: #f5f5f5 !important;
+    padding: 8px 12px !important;
+    font-size: 0.88rem !important;
+    backdrop-filter: blur(8px);
+}
+
+.leaflet-control-layers-toggle {
+    background-color: #121212 !important;
+    border-radius: 6px !important;
+}
+
+.leaflet-control-layers-expanded {
+    background: rgba(11, 11, 11, 0.96) !important;
+    color: #e0e0e0 !important;
+}
+
+.leaflet-control-layers-base label,
+.leaflet-control-layers-overlays label {
+    margin: 4px 0 !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Popups Leaflet Dark BlocksWine */
+.leaflet-popup-content-wrapper {
+    background: #121212 !important;
+    color: #f5f5f5 !important;
+    border: 1px solid rgba(197, 168, 128, 0.25) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+    border-radius: 10px !important;
+}
+
+.leaflet-popup-tip {
+    background: #121212 !important;
+    border: 1px solid rgba(197, 168, 128, 0.25) !important;
+    box-shadow: none !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+    color: #c5a880 !important;
+    padding: 6px 6px 0 0 !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+    color: #f7931a !important;
+}
+
+/* Atribución */
+.leaflet-control-attribution {
+    background: rgba(11, 11, 11, 0.8) !important;
+    color: #888 !important;
+    font-size: 0.75rem !important;
+    border-top-left-radius: 4px;
+}
+
+.leaflet-control-attribution a {
+    color: #c5a880 !important;
+    text-decoration: none;
+}

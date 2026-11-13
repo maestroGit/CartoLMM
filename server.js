@@ -27,41 +27,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = createServer(app);
 
-// Middleware para CORS (permitir comunicación entre proyectos)
-const corsOriginsRaw = process.env.CORS_ORIGIN || '*';
-const corsOrigins = String(corsOriginsRaw)
-    .split(',')
-    .map(o => o.trim())
-    .filter(Boolean);
-const corsAllowAll = corsOrigins.includes('*');
+import { registerSecurityMiddleware } from './src/middlewares/security.js';
 
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-
-    // Si no hay Origin (server-to-server), no forzamos nada.
-    if (origin) {
-        if (corsAllowAll) {
-            res.header('Access-Control-Allow-Origin', origin);
-            res.header('Vary', 'Origin');
-        } else if (corsOrigins.includes(origin)) {
-            res.header('Access-Control-Allow-Origin', origin);
-            res.header('Vary', 'Origin');
-        }
-    }
-
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-
-    if (req.method === 'OPTIONS') {
-        res.sendStatus(204);
-        return;
-    }
-
-    next();
-});
+// Registrar capa base de seguridad (Helmet, CSP y CORS unificado)
+registerSecurityMiddleware(app, { isProduction: process.env.NODE_ENV === 'production' });
 
 // Middleware para parsear JSON
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
 
 // Servir archivos estáticos de Vite (dist) en producción
