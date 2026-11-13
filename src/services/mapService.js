@@ -27,13 +27,8 @@ class MapService {
                 attributionControl: true
             });
 
-            // Definir capas base con Dark Matter como estética nativa BlocksWine
+            // Definir capas base
             const baseLayers = {
-                "🍷 BlocksWine Dark": L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>',
-                    maxZoom: 19,
-                    subdomains: 'abcd'
-                }),
                 "🛰️ Satélite Terruño": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                     attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
                     maxZoom: 18
@@ -44,16 +39,12 @@ class MapService {
                 })
             };
 
-            // Activar por defecto BlocksWine Dark para sintonizar con paleta #0b0b0b
+            // Activar capa base por defecto
             try {
-                if (baseLayers["🍷 BlocksWine Dark"]) {
-                    baseLayers["🍷 BlocksWine Dark"].addTo(this.map);
-                } else {
-                    const first = Object.values(baseLayers)[0];
-                    if (first) first.addTo(this.map);
-                }
+                const first = Object.values(baseLayers)[0];
+                if (first) first.addTo(this.map);
             } catch (err) {
-                console.warn('MapService: could not set default dark base layer, falling back', err);
+                console.warn('MapService: could not set default base layer, falling back', err);
                 const first = Object.values(baseLayers)[0];
                 if (first) first.addTo(this.map);
             }

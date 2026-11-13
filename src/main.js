@@ -3,13 +3,9 @@
  * Inicializa todo el sistema cuando se carga la página
  */
 
-// Importar VineyardLayer, WineryLayer y DoTerritoryLayer
-import { VineyardLayer } from './leaflet/VineyardLayer.js';
-import { WineryLayer } from './leaflet/WineryLayer.js';
+// Importar DoTerritoryLayer
 import { DoTerritoryLayer } from './leaflet/DoTerritoryLayer.js';
 
-let vineyardLayerInstance = null;
-let wineryLayerInstance = null;
 let doTerritoryLayerInstance = null;
 // Configuración global
 window.CartoLMM = {
@@ -25,7 +21,7 @@ window.CartoLMM = {
 };
 
 /**
- * Inicializa las capas geográficas (D.O., Viñedos, Bodegas) de forma determinista
+ * Inicializa las capas geográficas (D.O.) de forma determinista
  */
 async function initMapLayers() {
     try {
@@ -46,28 +42,6 @@ async function initMapLayers() {
             // Activar por defecto para mostrar las regiones de referencia inmediatamente
             doTerritoryLayerInstance.layer.addTo(window.mapService.map);
             console.log('✅ Capa de Denominaciones de Origen (D.O.) activada');
-        }
-
-        // 2. Capa de viñedos OSM
-        if (!vineyardLayerInstance) {
-            vineyardLayerInstance = new VineyardLayer(window.mapService.map);
-            if (window.mapService.layersControl && vineyardLayerInstance.layer) {
-                window.mapService.layersControl.addOverlay(
-                    vineyardLayerInstance.layer,
-                    '🍇 Viñedos (landuse=vineyard)'
-                );
-            }
-        }
-
-        // 3. Capa de bodegas OSM
-        if (!wineryLayerInstance) {
-            wineryLayerInstance = new WineryLayer(window.mapService.map);
-            if (window.mapService.layersControl && wineryLayerInstance.layer) {
-                window.mapService.layersControl.addOverlay(
-                    wineryLayerInstance.layer,
-                    '🏛️ Bodegas (amenity=winery)'
-                );
-            }
         }
     } catch (err) {
         console.warn('⚠️ Error inicializando capas geográficas:', err);
@@ -97,7 +71,7 @@ async function initializeCartoLMM() {
             throw new Error('No se pudo inicializar el dashboard');
         }
 
-        // Inicializar capas geográficas (D.O., Viñedos, Bodegas)
+        // Inicializar capas geográficas (D.O.)
         await initMapLayers();
 
         // Configurar listeners globales
