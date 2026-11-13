@@ -30,7 +30,7 @@ async function initMapLayers() {
             return;
         }
 
-        // 1. Capa de Denominaciones de Origen (D.O.)
+        // 1. Capa de Denominaciones de Origen (D.O.) - desactivada por defecto al inicio
         if (!doTerritoryLayerInstance) {
             doTerritoryLayerInstance = new DoTerritoryLayer(window.mapService.map);
             if (window.mapService.layersControl && doTerritoryLayerInstance.layer) {
@@ -39,9 +39,7 @@ async function initMapLayers() {
                     '🍷 Denominaciones de Origen (D.O.)'
                 );
             }
-            // Activar por defecto para mostrar las regiones de referencia inmediatamente
-            doTerritoryLayerInstance.layer.addTo(window.mapService.map);
-            console.log('✅ Capa de Denominaciones de Origen (D.O.) activada');
+            console.log('ℹ️ Capa de Denominaciones de Origen (D.O.) registrada (desactivada al inicio)');
         }
     } catch (err) {
         console.warn('⚠️ Error inicializando capas geográficas:', err);
