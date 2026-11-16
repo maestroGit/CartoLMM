@@ -909,7 +909,7 @@ class UserMarker {
     const catalog = {
       'magnum-042': {
         imgUrl: '/images/bottles/magnum-042.png',
-        wineTitle: 'VITIUM · Selección Familiar',
+        wineTitle: 'VITIUM',
         winery: 'Fernández de Piérola',
         vintage: '2018',
         critic: '★ 95 Parker',
@@ -917,7 +917,7 @@ class UserMarker {
       },
       'magnum-088': {
         imgUrl: '/images/bottles/magnum-088.png',
-        wineTitle: 'VALCAVADO · Edición Limitada',
+        wineTitle: 'VALCAVADO',
         winery: 'Traslascuestas',
         vintage: '2019',
         critic: '★ 96 Peñín',
