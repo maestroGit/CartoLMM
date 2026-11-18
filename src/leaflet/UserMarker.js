@@ -173,7 +173,6 @@ class UserMarker {
           <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
           <span class="winery-role-badge">Winery</span>
         </div>
-        <p class="winery-card-email">${this.escapeHtml(email)}</p>
         <div class="winery-card-info">
           <div class="winery-info-row">
             <span class="winery-info-label">Location:</span>
@@ -203,7 +202,6 @@ class UserMarker {
         </div>
         <div class="footer-popup">
           <p class="footer-popup-item">Registrado: ${this.formatRegistroFecha()} - <span class="categoria-tag categoria-bodega">bodega</span></p>
-          <p class="footer-popup-item"><strong>Email:</strong> ${this.escapeHtml(email)}</p>
           ${webField}
           ${blockchainStatus}
         </div>
@@ -224,7 +222,6 @@ class UserMarker {
           <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
           <span class="winery-role-badge">Wine Lover</span>
         </div>
-        <p class="winery-card-email">${this.escapeHtml(email)}</p>
         <div class="custody-indicator">
           <span class="custody-dot"></span> Custodia Activa Magnum 1.5L
         </div>
@@ -295,7 +292,6 @@ class UserMarker {
         ${this.data.descripcion ? `<div class="user-card-description">${this.escapeHtml(this.data.descripcion)}</div>` : ''}
         <div class="footer-popup">
           <p class="footer-popup-item">Registrado: ${this.formatRegistroFecha()} - <span class="categoria-tag categoria-wine_lover">wine_lover</span></p>
-          <p class="footer-popup-item"><strong>Email:</strong> ${this.escapeHtml(email)}</p>
           ${blockchainStatus}
         </div>
       `;
@@ -310,7 +306,6 @@ class UserMarker {
           <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
           <span class="winery-role-badge">${this.escapeHtml(roleBadge)}</span>
         </div>
-        <p class="winery-card-email">${this.escapeHtml(email)}</p>
         <div class="winery-card-info">
           <div class="winery-info-row">
             <span class="winery-info-label">Location:</span>
@@ -339,7 +334,6 @@ class UserMarker {
         </div>
         <div class="footer-popup">
           <p class="footer-popup-item">Registrado: ${this.formatRegistroFecha()} - ${categoriesHtml}</p>
-          <p class="footer-popup-item"><strong>Email:</strong> ${this.escapeHtml(email)}</p>
           ${blockchainStatus}
         </div>
       `;

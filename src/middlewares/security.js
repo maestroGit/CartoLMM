@@ -40,7 +40,10 @@ export const registerSecurityMiddleware = (app, { isProduction = false } = {}) =
     'https://overpass-api.de',
     'https://*.basemaps.cartocdn.com',
     'https://*.tile.openstreetmap.org',
-    'https://server.arcgisonline.com'
+    'https://server.arcgisonline.com',
+    'https://unpkg.com',
+    'https://cdn.socket.io',
+    'https://d3js.org'
   ];
 
   const scriptSrc = [

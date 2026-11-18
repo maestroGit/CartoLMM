@@ -693,7 +693,6 @@ class WineryListManager {
           <h3 class="winery-card-name">${this.escapeHtml(nombre)}</h3>
           <span class="winery-role-badge">Winery</span>
         </div>
-        <p class="winery-card-email">${this.escapeHtml(email)}</p>
         <div class="winery-card-info">
           <div class="winery-info-row">
             <span class="winery-info-label">Location:</span>
