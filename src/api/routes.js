@@ -1062,11 +1062,16 @@ async function handleGetUTXOBalance(req, res) {
 
         if (response && response.success && response.data) {
             const raw = response.data;
+            const isCoinbaseReward = (u) => {
+                if (!u || String(u.txId || '') === 'init-fund-1') return false;
+                return Array.isArray(u.inputs) && u.inputs.length === 0 && Number(u.amount || 0) <= 100;
+            };
             
-            // Validar y normalizar estructura
-            const utxos = Array.isArray(raw.utxosDisponibles) ? raw.utxosDisponibles : (Array.isArray(raw.utxos) ? raw.utxos : []);
+            // Validar y normalizar estructura excluyendo recompensas coinbase de minería
+            const rawUtxos = Array.isArray(raw.utxosDisponibles) ? raw.utxosDisponibles : (Array.isArray(raw.utxos) ? raw.utxos : []);
+            const utxos = rawUtxos.filter((u) => !isCoinbaseReward(u));
             const utxosPendientes = Array.isArray(raw.utxosPendientes) ? raw.utxosPendientes : [];
-            const balance = typeof raw.balance !== 'undefined' ? raw.balance : utxos.reduce((sum, u) => sum + (Number(u.amount) || 0), 0);
+            const balance = utxos.reduce((sum, u) => sum + (Number(u.amount) || 0), 0);
 
             console.log(`✅ [API] /api/utxo-balance - Datos obtenidos: ${utxos.length} disponibles, ${utxosPendientes.length} pendientes, balance: ${balance}`);
             
@@ -1125,12 +1130,18 @@ async function handleGetWalletUtxoSummary(req, res) {
 
         const buildSummaryFromUtxoRuntime = (payload, fallbackAddress) => {
             const data = payload?.data ?? {};
-            const utxosDisponibles = Array.isArray(data?.utxosDisponibles)
-                ? data.utxosDisponibles.length
+            const isCoinbaseReward = (u) => {
+                if (!u || String(u.txId || '') === 'init-fund-1') return false;
+                return Array.isArray(u.inputs) && u.inputs.length === 0 && Number(u.amount || 0) <= 100;
+            };
+            const rawList = Array.isArray(data?.utxosDisponibles)
+                ? data.utxosDisponibles
                 : Array.isArray(data?.utxos)
-                    ? data.utxos.length
-                    : 0;
-            const balanceDisponible = Number(data?.balance || 0);
+                    ? data.utxos
+                    : [];
+            const bottleList = rawList.filter((u) => !isCoinbaseReward(u));
+            const utxosDisponibles = bottleList.length;
+            const balanceDisponible = bottleList.reduce((sum, u) => sum + (Number(u?.amount) || 0), 0);
             return {
                 address: data?.address || fallbackAddress,
                 utxosDisponibles: Number.isFinite(utxosDisponibles) ? utxosDisponibles : 0,
