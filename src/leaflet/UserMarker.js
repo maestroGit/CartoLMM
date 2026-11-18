@@ -5,7 +5,6 @@
 
 class UserMarker {
   constructor(userData, map) {
-    console.log('[UserMarker] constructor', userData);
     this.data = userData;
     this.map = map;
     this.marker = null;
@@ -13,13 +12,10 @@ class UserMarker {
   }
 
   createMarker() {
-    console.log('[UserMarker] createMarker', this.data.localizacion);
-    
     // Validar que el usuario tenga coordenadas
     if (!this.data.localizacion || 
         typeof this.data.localizacion.lat === 'undefined' || 
         typeof this.data.localizacion.lng === 'undefined') {
-      console.warn('[UserMarker] Usuario sin coordenadas, no se puede crear marcador:', this.data.nombre);
       return;
     }
     

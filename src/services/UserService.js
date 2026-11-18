@@ -80,10 +80,9 @@ class UserService {
     const usersWithCoords = normalizedUsers.filter(user => {
       const hasCoords = user.localizacion && 
                        typeof user.localizacion.lat !== 'undefined' && 
-                       typeof user.localizacion.lng !== 'undefined';
-      if (!hasCoords) {
-        console.warn(`⚠️  Usuario sin coordenadas: ${user.nombre} (${user.id})`);
-      }
+                       typeof user.localizacion.lng !== 'undefined' &&
+                       user.localizacion.lat !== null &&
+                       user.localizacion.lng !== null;
       return hasCoords;
     });
 
