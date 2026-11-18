@@ -59,8 +59,8 @@ export function sanitizeCoordinates(lat, lng) {
 export function sanitizeBlockchainAddress(address) {
   if (typeof address !== 'string') return null;
   const clean = address.trim();
-  // Validar caracteres seguros alfanuméricos y guiones
-  if (!/^[a-zA-Z0-9_-]{8,128}$/.test(clean)) {
+  // Validar caracteres seguros alfanuméricos y guiones (incluye claves públicas secp256k1 sin comprimir de 130 caracteres)
+  if (!/^[a-zA-Z0-9_-]{8,160}$/.test(clean)) {
     return null;
   }
   return clean;

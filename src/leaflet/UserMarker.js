@@ -411,78 +411,46 @@ class UserMarker {
     // Inyectar función global para obtener balance si no existe
     if (!window.getWalletBalance) {
       window.getWalletBalance = function(address, btn) {
-        if (!address) {
-          console.warn('[Balance] No address provided');
-          return;
-        }
-        console.log('[Balance] btn recibido:', btn);
+        if (!address) return;
         const resultDiv = btn.nextElementSibling;
-        console.log('[Balance] resultDiv (nextElementSibling):', resultDiv);
-        
         if (resultDiv) {
           resultDiv.textContent = 'Consultando...';
-          console.log('[Balance] Texto inicial establecido: "Consultando..."');
-        } else {
-          console.error('[Balance] ❌ No se encontró resultDiv (nextElementSibling del botón)');
         }
-        console.log('[Balance] Solicitando resumen UTXO para address:', address);
-          fetch(`/api/wallet/${encodeURIComponent(address)}/utxo-summary`)
-            .then(res => {
-              console.log('[Balance] Respuesta fetch:', res);
-              return res.text();
-            })
-            .then(text => {
-              console.log('[Balance] Texto bruto de respuesta:', text);
-              if (!text || text.trim() === '') {
-                resultDiv.textContent = 'Respuesta vacía del backend';
-                console.warn('[Balance] El backend respondió vacío');
-                return;
-              }
-              let data;
-              try {
-                data = JSON.parse(text);
-              } catch (e) {
-                console.error('[Balance] Error al parsear JSON:', e, text);
+        fetch(`/api/wallet/${encodeURIComponent(address)}/utxo-summary`)
+          .then(res => res.text())
+          .then(text => {
+            if (!text || text.trim() === '') {
+              if (resultDiv) resultDiv.textContent = 'Respuesta vacía del backend';
+              return;
+            }
+            let data;
+            try {
+              data = JSON.parse(text);
+            } catch (e) {
+              if (resultDiv) {
                 resultDiv.textContent = 'Error al obtener balance';
                 resultDiv.style.color = '#a22';
-                return;
               }
-              console.log('[Balance] Respuesta JSON:', data);
-              console.log('[Balance] resultDiv existe:', !!resultDiv);
-              console.log('[Balance] resultDiv element:', resultDiv);
-              
-              if (resultDiv) {
-                console.log('[Balance] Validando datos...');
-                console.log('[Balance] - data existe:', !!data);
-                console.log('[Balance] - data.success:', data?.success);
-                console.log('[Balance] - data.data existe:', !!data?.data);
-                console.log('[Balance] - data.data.utxosDisponibles:', data?.data?.utxosDisponibles);
-                console.log('[Balance] - data.data.balanceDisponible:', data?.data?.balanceDisponible);
-                
-                if (data && data.success && data.data && typeof data.data.utxosDisponibles !== 'undefined') {
-                  const utxosCount = Number(data.data.utxosDisponibles || 0);
-                  const balance = Number(data.data.balanceDisponible || 0);
-                  const displayValue = `${utxosCount} Magnums · ${balance} Balance`;
-                  console.log('[Balance] ✅ Actualizando DOM con resumen:', displayValue);
-                  resultDiv.textContent = displayValue;
-                  resultDiv.style.color = '#222';
-                  console.log('[Balance] ✅ DOM actualizado. Nuevo texto:', resultDiv.textContent);
-                } else {
-                  console.warn('[Balance] ⚠️ Condición fallida, mostrando "Resumen no disponible"');
-                  resultDiv.textContent = 'Resumen no disponible';
-                  resultDiv.style.color = '#a22';
-                }
+              return;
+            }
+            if (resultDiv) {
+              if (data && data.success && data.data && typeof data.data.utxosDisponibles !== 'undefined') {
+                const utxosCount = Number(data.data.utxosDisponibles || 0);
+                const balance = Number(data.data.balanceDisponible || 0);
+                resultDiv.textContent = `${utxosCount} Magnums · ${balance} Balance`;
+                resultDiv.style.color = '#222';
               } else {
-                console.error('[Balance] ❌ resultDiv no encontrado en el DOM');
+                resultDiv.textContent = '0 Magnums · 0 Balance';
+                resultDiv.style.color = '#222';
               }
-            })
-            .catch((err) => {
-              console.error('[Balance] Error en fetch:', err);
-              if (resultDiv) {
-                resultDiv.textContent = 'Error';
-                resultDiv.style.color = '#a22';
-              }
-            });
+            }
+          })
+          .catch(() => {
+            if (resultDiv) {
+              resultDiv.textContent = 'Error';
+              resultDiv.style.color = '#a22';
+            }
+          });
       };
     }
   }
@@ -506,6 +474,13 @@ class UserMarker {
 
     // Normalizar prefijos de carpeta public/ para que resuelvan desde la raíz servida por Vite/Express
     candidate = candidate.replace(/^\/public\//, '/');
+
+    if (candidate.includes('pierola.com')) {
+      return '/images/pierola-bodega.jpg';
+    }
+    if (candidate.includes('bodegastraslascuestas.com')) {
+      return '/images/traslascuestas-bodega.jpg';
+    }
 
     if (!candidate.startsWith('http://') && !candidate.startsWith('https://')) {
       return candidate;
@@ -647,13 +622,13 @@ class UserMarker {
     const nameOrEmail = `${winery?.nombre || ''} ${winery?.email || ''} ${winery?.winery || ''}`.toLowerCase();
     if (nameOrEmail.includes('traslascuestas')) {
       return {
-        primarySrc: 'https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg',
+        primarySrc: '/images/traslascuestas-bodega.jpg',
         fallbackSrc: defaultImage
       };
     }
     if (nameOrEmail.includes('pierola') || nameOrEmail.includes('piérola')) {
       return {
-        primarySrc: 'https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg',
+        primarySrc: '/images/pierola-bodega.jpg',
         fallbackSrc: defaultImage
       };
     }

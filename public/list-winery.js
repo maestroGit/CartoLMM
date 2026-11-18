@@ -928,7 +928,9 @@ class WineryListManager {
     }
 
     if (explicitSrc && !explicitSrc.includes('default-bottle.png')) {
-      const primarySrc = explicitSrc;
+      let primarySrc = explicitSrc;
+      if (primarySrc.includes('pierola.com')) primarySrc = '/images/pierola-bodega.jpg';
+      if (primarySrc.includes('bodegastraslascuestas.com')) primarySrc = '/images/traslascuestas-bodega.jpg';
       const fallbackSrc =
         bottleValue && bottleValue !== primarySrc && !bottleValue.includes('default-bottle.png')
           ? bottleValue
@@ -941,13 +943,13 @@ class WineryListManager {
     const nameOrEmail = `${winery?.nombre || ''} ${winery?.email || ''} ${winery?.winery || ''}`.toLowerCase();
     if (nameOrEmail.includes('traslascuestas')) {
       return {
-        primarySrc: 'https://www.terranostrum.es/images/content/full/Bodega-traslascuestas-1.jpg',
+        primarySrc: '/images/traslascuestas-bodega.jpg',
         fallbackSrc: defaultImage
       };
     }
     if (nameOrEmail.includes('pierola') || nameOrEmail.includes('piérola')) {
       return {
-        primarySrc: 'https://pierola.com/wp-content/uploads/2022/03/Bodegas-Pie%CC%81rola-exterior-1536x539.jpg',
+        primarySrc: '/images/pierola-bodega.jpg',
         fallbackSrc: defaultImage
       };
     }
